@@ -39,3 +39,5 @@ class Convex_problems:
             raise Exception('The number of parameters is higher than observations!')
         if n1!=n2:
             raise Exception('the input and the output should have the same number of observations!')
+        if p!=1:
+            raise Exception('Currently the algorithms is not suitable for multi-output problems')
