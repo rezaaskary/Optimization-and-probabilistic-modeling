@@ -24,14 +24,19 @@ class Convex_problems:
         x = self.x
         A = self.A
         b = self.b
+        y = self.y
         def Loss_F(x):
             P = np.eye(len(x))
             F = x.T @ P @ x
             return F
-
+        # =======================================================================
         def Linear_Constraint(A,b,x):
-            R = self.A @ self.x - self.b
+            R = A @ x - b
             return R
+        #=======================================================================
+        def Lagrangian(A,x,b,y):
+            L = Loss_F(x) + Linear_Constraint(A,b,x)
+            return L
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
         h = 1e-12
@@ -46,11 +51,8 @@ class Convex_problems:
         R = Linear_Constraint(A,b,x)
         L = F + self.y.T@R
         return L, dL_dx
-
-
-
+    #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :np.float=0.1):
-
         """
         minimize f(x)
         subject to Ax=b
