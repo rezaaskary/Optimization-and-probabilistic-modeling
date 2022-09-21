@@ -19,28 +19,36 @@ class Convex_problems:
         :param x:       R mx1
         :return:
         """
-
+        # =======================================================================
         ## loss function (a quadratic function is used as an example)
         x = self.x
+        A = self.A
+        b = self.b
         def Loss_F(x):
             P = np.eye(len(x))
             F = x.T @ P @ x
             return F
 
-        dF_dx = np.zeros((self.L,1))
-        h = 1e-10
-
+        def Linear_Constraint(A,b,x):
+            R = self.A @ self.x - self.b
+            return R
+        #=======================================================================
+        dL_dx = np.zeros((self.L,1))
+        h = 1e-12
         for i in range(self.L):
-            dF_dx[i,0] = (1/(2*h))*(Loss_F(x[i] + h)-Loss_F(x[i] - h))
-        dL_dx = dF_dx + self.y.T@self.A
+            x_r,x_l = x,x
+            x_r[i] += h
+            x_l[i] -= h
+            dL_dx[i,0] = (1/(2*h))*(Loss_F(x_r)-Loss_F(x_l)) +\
+                         (1/(2*h))*(Linear_Constraint(A,b,x_r) - Linear_Constraint(A,b,x_l))
 
 
-        dF_dx = self.x.T@(self.A + self.A.T)
+        # dF_dx = self.x.T@(self.A + self.A.T)
         ## linear constraints
-        R = self.A@self.x - self.b  # =0
+          # =0
         ## The Lagrangian for problem
         L = F + self.y.T@R
-        return L, dF_dx, F
+        return L, dL_dx
 
 
 
