@@ -42,11 +42,8 @@ class Convex_problems:
             dL_dx[i,0] = (1/(2*h))*(Loss_F(x_r)-Loss_F(x_l)) +\
                          (1/(2*h))*(Linear_Constraint(A,b,x_r) - Linear_Constraint(A,b,x_l))
 
-
-        # dF_dx = self.x.T@(self.A + self.A.T)
-        ## linear constraints
-          # =0
-        ## The Lagrangian for problem
+        F = Loss_F(x)
+        R = Linear_Constraint(A,b,x)
         L = F + self.y.T@R
         return L, dL_dx
 
