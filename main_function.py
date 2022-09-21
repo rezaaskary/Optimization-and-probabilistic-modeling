@@ -33,7 +33,9 @@ class Convex_problems:
         and the dual function is g(y) = inf x L(x,y) = −f ∗(−AT y) − bT y
         :return:
         """
-        n,m = x.shape
-        if n<m:
+        n1,m = x.shape
+        n2,p = y.shape
+        if n1 < m:
             raise Exception('The number of parameters is higher than observations!')
-        if
+        if n1!=n2:
+            raise Exception('the input and the output should have the same number of observations!')
