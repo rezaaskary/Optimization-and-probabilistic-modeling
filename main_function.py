@@ -14,18 +14,33 @@ class Convex_problems:
 
     def Dual_Ascent_problem(self):
         """
+        In this method, you should define the  loss function F and its first derivatves
         define a function f : Rn → R
         :param x:       R mx1
         :return:
         """
-        ## loss function for minimization
-        P = np.eye(self.L)
-        F = x.T@P@x
+
+        ## loss function (a quadratic function is used as an example)
+        x = self.x
+        def Loss_F(x):
+            P = np.eye(len(x))
+            F = x.T @ P @ x
+            return F
+
+        dF_dx = np.zeros((self.L,1))
+        h = 1e-10
+
+        for i in range(self.L):
+            dF_dx[i,0] = (1/(2*h))*(Loss_F(x[i] + h)-Loss_F(x[i] - h))
+        dL_dx = dF_dx + self.y.T@self.A
+
+
+        dF_dx = self.x.T@(self.A + self.A.T)
         ## linear constraints
         R = self.A@self.x - self.b  # =0
         ## The Lagrangian for problem
         L = F + self.y.T@R
-        return L
+        return L, dF_dx, F
 
 
 
@@ -42,7 +57,7 @@ class Convex_problems:
         :param alpha: the learning rate
         :return:
         """
-
+        alpha = 0.01;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -65,6 +80,7 @@ class Convex_problems:
         iterations = 100;
         for itr in range(iterations):
             Q = self.Dual_Ascent_problem()
+
 
 
 
