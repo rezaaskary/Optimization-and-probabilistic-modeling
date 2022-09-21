@@ -18,6 +18,8 @@ class Convex_problems:
         define a function f : Rn → R
         :param x:       R mx1
         :return:
+        L: lagrangian
+        dL_dx: derivatives of lagrangian
         """
         # =======================================================================
         ## loss function (a quadratic function is used as an example)
@@ -56,12 +58,13 @@ class Convex_problems:
                 x_ll[i] -= 2*h
                 x_l[i] -= h
                 dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
+        elif precision == 'analytical':
+            pass
+
         else:
             raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
-        L =
-
-
+        L = Lagrangian(A,x,b,y)
         return L, dL_dx
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :np.float=0.1):
@@ -98,8 +101,10 @@ class Convex_problems:
 
         iterations = 100;
         for itr in range(iterations):
-            Q = self.Dual_Ascent_problem()
+            L, dL_dx = self.Dual_Ascent_problem()
+        while True:
 
+            self.x =
 
 
 
