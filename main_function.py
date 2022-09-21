@@ -9,11 +9,12 @@ class Convex_problems:
 
 
 
-    def Dual_Ascent():
+    def Dual_Ascent(self):
         """
         minimize f(x)
         subject to ax=b
         with variable x ∈ Rn, where A ∈ Rm×n and f : Rn → R is convex
         The Lagrangian for the problem is L(x,y) = f(x) + yT (Ax − b)
+        and the dual function is g(y) = inf x L(x,y) = −f ∗(−AT y) − bT y
         :return:
         """
