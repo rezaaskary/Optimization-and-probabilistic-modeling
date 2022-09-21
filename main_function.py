@@ -2,21 +2,17 @@ import numpy as np
 import scipy as sc
 
 
-def loss_function
-
-
 
 class Convex_problems:
     def __init__(self,problem_type: int=1, L:int = 1):
         """
-
         :param problem_type:
         :param L: the number of parameter for the ajustmnet
         """
         self.problem_type = problem_type
         self.L = L
 
-    def Dual_Ascent_model(self):
+    def Dual_Ascent_problem(self):
         """
         define a function f : Rn → R
         :param x:       R mx1
@@ -47,19 +43,31 @@ class Convex_problems:
         :return:
         """
 
-        m,n = A.shape
+        m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
+
         if m != m2:
             raise Exception('The number of parameters and equation is not consistent!')
+
         if n2 != 1:
             raise Exception('Currently the algorithms is not suitable for multi-output problems!')
 
+        if self.L != n:
+            raise Exception('the dimention of variables and the problem is not consistent!')
 
-        x = np.random.randn(self.L,1)
-        y =  np.random.randn(1,n1)
+        x = np.random.randn(n,1)
+        y =  np.random.randn(m,1)
         self.y = y
         self.x = y
         self.A = A
         self.b = b
 
+        iterations = 100;
+        for itr in range(iterations):
+            Q = self.Dual_Ascent_problem()
+
+
+
+
+        return 1
 
