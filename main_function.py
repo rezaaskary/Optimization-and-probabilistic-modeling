@@ -40,16 +40,28 @@ class Convex_problems:
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
         h = 1e-12
-        for i in range(self.L):
-            x_r,x_l = x,x
-            x_r[i] += h
-            x_l[i] -= h
-            dL_dx[i,0] = (1/(2*h))*(Loss_F(x_r)-Loss_F(x_l)) +\
-                         (1/(2*h))*(Linear_Constraint(A,b,x_r) - Linear_Constraint(A,b,x_l))
 
-        F = Loss_F(x)
-        R = Linear_Constraint(A,b,x)
-        L = F + self.y.T@R
+        if precision == 'quadratic':
+            for i in range(self.L):
+                x_r,x_l = x.copy(),x.copy()
+                x_r[i] += h
+                x_l[i] -= h
+                dL_dx[i,0] = (1/(2*h))*(Lagrangian(A,x_r,b,y) - Lagrangian(A,x_l,b,y))
+
+        elif precision == 'quartic ':
+            for i in range(self.L):
+                x_rr,x_ll,x_r,x_l = x.copy(),x.copy(),x.copy(),x.copy()
+                x_rr[i] += 2*h
+                x_r[i] += h
+                x_ll[i] -= 2*h
+                x_l[i] -= h
+                dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
+        else:
+            raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
+
+        L =
+
+
         return L, dL_dx
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :np.float=0.1):
