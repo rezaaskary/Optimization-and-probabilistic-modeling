@@ -12,6 +12,16 @@ class Convex_problems:
         self.problem_type = problem_type
         self.L = L
 
+    # =================================================================
+    def Loss_F(self):
+        x = self.x
+        A = self.A
+        b = self.b
+        y = self.y
+        P = np.eye(len(x))
+        F = x.T @ P @ x
+        return F.ravel()
+    #=================================================================
     def Dual_Ascent_problem(self):
         """
         In this method, you should define the  loss function F and its first derivatves
@@ -30,15 +40,15 @@ class Convex_problems:
         def Loss_F(x):
             P = np.eye(len(x))
             F = x.T @ P @ x
-            return F
+            return F.ravel()
         # =======================================================================
         def Linear_Constraint(A,b,x):
             R = A @ x - b
             return R
         #=======================================================================
         def Lagrangian(A,x,b,y):
-            L = Loss_F(x) + Linear_Constraint(A,b,x)
-            return L
+            L = Loss_F(x) + y.T@Linear_Constraint(A,b,x)
+            return L.ravel()
 
         def analytical_solution(A,y):
             """
@@ -51,7 +61,7 @@ class Convex_problems:
 
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
-        h = 1e-12
+        h = 1e-10
         precision = 'quadratic'
         if precision == 'quadratic':
             for i in range(self.L):
