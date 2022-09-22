@@ -29,7 +29,6 @@ class Convex_problems:
         R = A @ x - b
         return R
     #=================================================================
-
     def Dual_Ascent_problem(self):
         """
         In this method, you should define the  loss function F and its first derivatves
