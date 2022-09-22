@@ -18,12 +18,12 @@ class Convex_problems:
         F = x.T @ P @ x
         return F.ravel()
     #=======================================================================
-    def Linear_Constraint(self,x,A,b):
+    def Linear_Constraint(self,A,x,b):
         R = A @ x - b
         return R.ravel()
     #============================================================
     def Lagrangian(self,A,x,b,y):
-        L = Loss_F(x,A,b,y) + y.T @ Linear_Constraint(A, b, x)
+        L = self.Loss_F(x,A,b,y) + y.T @ self.Linear_Constraint(A, b, x)
         return L.ravel()
     #=============================================================
     def analytical_solution(self):
@@ -65,7 +65,7 @@ class Convex_problems:
                 y_r, y_l = y.copy(), y.copy()
                 y_r[i] += h
                 y_l[i] -= h
-                dL_dy[i,0] = (1/(2*h))*(Lagrangian(A,x,b,y_r) - Lagrangian(A,x,b,y_l))
+                dL_dy[i,0] = (1/(2*h))*(self.Lagrangian(A,x,b,y_r) - self.Lagrangian(A,x,b,y_l))
 
 
         # elif precision == 'quartic ':
@@ -81,7 +81,7 @@ class Convex_problems:
         # else:
         #     raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
-        L = Lagrangian(A,x,b,y)
+        L = self.Lagrangian(A,x,b,y)
         return L, dL_dx,dL_dy
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1):
@@ -96,7 +96,7 @@ class Convex_problems:
         :param alpha: the learning rate
         :return:
         """
-        self.alpha = 0.01;
+        self.alpha = 0.1;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -127,9 +127,10 @@ class Convex_problems:
 
                 xnew = xold - self.alpha*dL_dx
                 self.x = xnew
-                ynew = yold - self.alpha*dL_dy
+                ynew = yold + self.alpha*dL_dy
                 self.y = ynew
-
+                print(f'norm = :  {((self.A@self.x-self.b)**2).sum()}')
+                print(f'lagrangian:  {L}')
 
 
 
