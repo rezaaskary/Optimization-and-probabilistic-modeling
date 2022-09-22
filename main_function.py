@@ -52,7 +52,7 @@ class Convex_problems:
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
         h = 1e-12
-        precision = 'analytical'
+        precision = 'quadratic'
         if precision == 'quadratic':
             for i in range(self.L):
                 x_r,x_l = x.copy(),x.copy()
@@ -108,7 +108,7 @@ class Convex_problems:
         self.A = A
         self.b = b
 
-        iterations = 100;
+        iterations = 1000;
         for itr in range(iterations):
             x_new = self.Dual_Ascent_problem()
             self.y = self.y + alpha*(self.A@x_new - self.b)
