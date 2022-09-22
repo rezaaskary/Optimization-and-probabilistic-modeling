@@ -76,7 +76,7 @@ class Convex_problems:
         L = Lagrangian(A,x,b,y)
         return L, dL_dx
     #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :np.float=0.1):
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1):
         """
         minimize f(x)
         subject to Ax=b
