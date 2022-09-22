@@ -13,21 +13,18 @@ class Convex_problems:
         self.L = L
 
     # =================================================================
-    def Loss_F(self):
-        x = self.x
-        A = self.A
-        b = self.b
-        y = self.y
+    def Loss_F(self,x,A,b,y):
         P = np.eye(len(x))
         F = x.T @ P @ x
         return F.ravel()
     #=======================================================================
-    def Linear_Constraint(self):
-        x = self.x
-        A = self.A
-        b = self.b
+    def Linear_Constraint(self,x,A,b):
         R = A @ x - b
-        return R
+        return R.ravel()
+    #============================================================
+    def Lagrangian(self):
+        L = Loss_F() + y.T @ Linear_Constraint(A, b, x)
+        return L.ravel()
     #=================================================================
     def Dual_Ascent_problem(self):
         """
@@ -38,25 +35,6 @@ class Convex_problems:
         L: lagrangian
         dL_dx: derivatives of lagrangian
         """
-        # =======================================================================
-        ## loss function (a quadratic function is used as an example)
-        x = self.x
-        A = self.A
-        b = self.b
-        y = self.y
-        def Loss_F(x):
-            P = np.eye(len(x))
-            F = x.T @ P @ x
-            return F.ravel()
-        # =======================================================================
-        def Linear_Constraint(A,b,x):
-            R = A @ x - b
-            return R
-        #=======================================================================
-        def Lagrangian(A,x,b,y):
-            L = Loss_F(x) + y.T@Linear_Constraint(A,b,x)
-            return L.ravel()
-
         def analytical_solution(A,y):
             """
             we solve the derivatives of dL/dx and obtain the value of x
@@ -68,14 +46,25 @@ class Convex_problems:
 
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
+        dL_dy = np.zeros((self.m, 1))
         h = 1e-10
         precision = 'quadratic'
+
+
         if precision == 'quadratic':
             for i in range(self.L):
                 x_r,x_l = x.copy(),x.copy()
                 x_r[i] += h
                 x_l[i] -= h
                 dL_dx[i,0] = (1/(2*h))*(Lagrangian(A,x_r,b,y) - Lagrangian(A,x_l,b,y))
+
+            for i in range(self.m):
+                y_r, y_l = y.copy(), y.copy()
+                y_r[i] += h
+                y_l[i] -= h
+                dL_dy[i,0] = (1/(2*h))*(Lagrangian(A,x_r,b,y) - Lagrangian(A,x_l,b,y))
+
+
 
         elif precision == 'quartic ':
             for i in range(self.L):
@@ -124,6 +113,20 @@ class Convex_problems:
         self.x = y
         self.A = A
         self.b = b
+        self.m = m
+        self.iterations = 1000
+        derivatives_method = 'quadratic'
+        self.solution = 'numerical'
+        if self.solution == 'numerical':
+
+            for itr in range(self.iterations):
+
+
+
+
+
+
+
 
         iterations = 1000;
         for itr in range(iterations):
