@@ -120,8 +120,8 @@ class Convex_problems:
 
 
 if __name__=='__main__':
-    A = np.random.rand((4,4))
-    b = np.random.rand((4,1))
+    A = np.random.rand(4,4)
+    b = np.random.rand(4,1)
     D = Convex_problems(problem_type = 1, L= 4)
     D.Dual_Ascent(A=A,b=b,alpha=0.01)
 
