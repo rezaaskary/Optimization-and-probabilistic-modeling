@@ -119,3 +119,4 @@ class Convex_problems:
 
 A = np.random.rand((4,4))
 b = np.random.rand((4,1))
+D = Convex_problems(problem_type = 1, L= 4)
