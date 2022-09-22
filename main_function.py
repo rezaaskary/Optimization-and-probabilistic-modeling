@@ -111,7 +111,7 @@ class Convex_problems:
         iterations = 100;
         for itr in range(iterations):
             x_new = self.Dual_Ascent_problem()
-            self.y = self.y + alpha@(A@x_new - self.b)
+            self.y = self.y + alpha*(self.A@x_new - self.b)
             self.x = x_new
 
         return self.x
