@@ -59,7 +59,7 @@ class Convex_problems:
                 x_r,x_l = x.copy(),x.copy()
                 x_r[i] += h
                 x_l[i] -= h
-                dL_dx[i,0] = (1/(2*h))*(Lagrangian(A,x_r,b,y) - Lagrangian(A,x_l,b,y))
+                dL_dx[i,0] = (1/(2*h))*(self.Lagrangian(A,x_r,b,y) - self.Lagrangian(A,x_l,b,y))
 
             for i in range(self.m):
                 y_r, y_l = y.copy(), y.copy()
@@ -82,7 +82,7 @@ class Convex_problems:
         #     raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
         L = Lagrangian(A,x,b,y)
-        return L, dL_dx
+        return L, dL_dx,dL_dy
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1):
         """
@@ -123,9 +123,12 @@ class Convex_problems:
             xold = x.copy()
             yold = y.copy()
             for itr in range(self.iterations):
+                L, dL_dx,dL_dy = self.Dual_Ascent_problem()
 
-                xnew = xold - self.alpha*()
-
+                xnew = xold - self.alpha*dL_dx
+                self.x = xnew
+                ynew = yold - self.alpha*dL_dy
+                self.y = ynew
 
 
 
