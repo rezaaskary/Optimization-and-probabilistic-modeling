@@ -51,31 +51,45 @@ class Convex_problems:
 
         dL_dx = np.zeros((self.L,1))
         dL_dy = np.zeros((self.m, 1))
-        h = 1e-8
+        self.h = 1e-12
         # precision = 'quadratic'
 
         if self.derivatives_method == 'quadratic':
             for i in range(self.L):
-                x_r,x_l = x.copy(),x.copy()
-                x_r[i] += h
-                x_l[i] -= h
-                dL_dx[i,0] = (1/(2*h))*(self.Lagrangian(self.A,x_r,self.b,self.y) - self.Lagrangian(self.A,x_l,self.b,self.y))
+                x_r,x_l = self.x.copy(),self.x.copy()
+                x_r[i] += self.h
+                x_l[i] -= self.h
+                dL_dx[i,0] = (1/(2*self.h))*(self.Lagrangian(self.A,x_r,self.b,self.y) - self.Lagrangian(self.A,x_l,self.b,self.y))
 
             for i in range(self.m):
-                y_r, y_l = y.copy(), y.copy()
-                y_r[i] += h
-                y_l[i] -= h
-                dL_dy[i,0] = (1/(2*h))*(self.Lagrangian(self.A,self.x,self.b,y_r) - self.Lagrangian(self.A,self.x,self.b,y_l))
+                y_r, y_l = self.y.copy(), self.y.copy()
+                y_r[i] += self.h
+                y_l[i] -= self.h
+                dL_dy[i,0] = (1/(2*self.h))*(self.Lagrangian(self.A,self.x,self.b,y_r) - self.Lagrangian(self.A,self.x,self.b,y_l))
 
 
-        # elif precision == 'quartic ':
-        #     for i in range(self.L):
-        #         x_rr,x_ll,x_r,x_l = x.copy(),x.copy(),x.copy(),x.copy()
-        #         x_rr[i] += 2*h
-        #         x_r[i] += h
-        #         x_ll[i] -= 2*h
-        #         x_l[i] -= h
-        #         dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
+        elif precision == 'quartic ':
+            #
+            for i in range(self.L):
+                x_rr,x_ll,x_r,x_l = self.x.copy(),self.x.copy(),self.x.copy(),self.x.copy()
+                x_rr[i] += 2*self.h
+                x_r[i] += self.h
+                x_ll[i] -= 2*self.h
+                x_l[i] -= self.h
+                dL_dx[i,0] = (1/(12*self.h))*(-self.Lagrangian(self.A,x_rr,self.b,self.y) + 8.0*self.Lagrangian(self.A,x_r,self.b,self.y)\
+                                         - 8.0*self.Lagrangian(self.A,x_l,self.b,self.y) + self.Lagrangian(self.A,x_ll,self.b,self.y))
+
+            for i in range(self.m):
+                y_rr, y_ll, y_r, y_l = self.y.copy(), self.y.copy(), self.y.copy(), self.y.copy()
+                y_rr[i] += 2 * self.h
+                y_r[i] += self.h
+                y_ll[i] -= 2 * self.h
+                y_l[i] -= self.h
+                dL_dx[i, 0] = (1 / (12 * self.h)) * (-self.Lagrangian(self.A, x_rr, self.b, self.y) + 8.0 * self.Lagrangian(self.A, x_r, self.b,self.y) \
+                            - 8.0 * self.Lagrangian(self.A, x_l, self.b, self.y) + self.Lagrangian(self.A, x_ll, self.b,self.y))
+
+
+
         # elif precision == 'analytical':
         #     return analytical_solution(A,y)
         # else:
@@ -96,7 +110,7 @@ class Convex_problems:
         :param alpha: the learning rate
         :return:
         """
-        self.alpha = 0.3;
+        self.alpha = 0.2;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -116,7 +130,7 @@ class Convex_problems:
         self.A = A
         self.b = b
         self.m = m
-        self.iterations = 1000
+        self.iterations = 2000
         self.derivatives_method = 'quadratic'
         self.solution = 'numerical'
         if self.solution == 'numerical':
