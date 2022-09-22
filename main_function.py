@@ -39,6 +39,16 @@ class Convex_problems:
         def Lagrangian(A,x,b,y):
             L = Loss_F(x) + Linear_Constraint(A,b,x)
             return L
+
+        def analytical_solution(A,y):
+            """
+            we solve the derivatives of dL/dx and obtain the value of x
+            :param A:
+            :param y:
+            :return: x
+            """
+            return np.linalg.inv(A.T+A)@A.T@y
+
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
         h = 1e-12
@@ -59,8 +69,7 @@ class Convex_problems:
                 x_l[i] -= h
                 dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
         elif precision == 'analytical':
-            pass
-
+            return analytical_solution(A,y)
         else:
             raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
@@ -101,13 +110,12 @@ class Convex_problems:
 
         iterations = 100;
         for itr in range(iterations):
-            L, dL_dx = self.Dual_Ascent_problem()
-        while True:
+            x_new = self.Dual_Ascent_problem()
+            self.y = self.y + alpha@(A@x_new - self.b)
+            self.x = x_new
 
-            self.x =
+        return self.x
 
 
-
-
-        return 1
-
+A = np.random.rand((4,4))
+b = np.random.rand((4,1))
