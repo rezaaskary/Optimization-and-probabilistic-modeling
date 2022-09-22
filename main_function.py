@@ -23,7 +23,7 @@ class Convex_problems:
         return R.ravel()
     #============================================================
     def Lagrangian(self,A,x,b,y):
-        L = self.Loss_F(x,A,b,y) + y.T @ self.Linear_Constraint(A, b, x)
+        L = self.Loss_F(x,A,b,y) + y.T @ self.Linear_Constraint(A, x, b)
         return L.ravel()
     #=============================================================
     def analytical_solution(self):
@@ -59,13 +59,13 @@ class Convex_problems:
                 x_r,x_l = x.copy(),x.copy()
                 x_r[i] += h
                 x_l[i] -= h
-                dL_dx[i,0] = (1/(2*h))*(self.Lagrangian(A,x_r,b,y) - self.Lagrangian(A,x_l,b,y))
+                dL_dx[i,0] = (1/(2*h))*(self.Lagrangian(self.A,x_r,self.b,self.y) - self.Lagrangian(self.A,x_l,self.b,self.y))
 
             for i in range(self.m):
                 y_r, y_l = y.copy(), y.copy()
                 y_r[i] += h
                 y_l[i] -= h
-                dL_dy[i,0] = (1/(2*h))*(self.Lagrangian(A,x,b,y_r) - self.Lagrangian(A,x,b,y_l))
+                dL_dy[i,0] = (1/(2*h))*(self.Lagrangian(self.A,self.x,self.b,y_r) - self.Lagrangian(self.A,self.x,self.b,y_l))
 
 
         # elif precision == 'quartic ':
@@ -81,7 +81,7 @@ class Convex_problems:
         # else:
         #     raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
-        L = self.Lagrangian(A,x,b,y)
+        L = self.Lagrangian(self.A,self.x,self.b,self.y)
         return L, dL_dx,dL_dy
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1):
@@ -96,7 +96,7 @@ class Convex_problems:
         :param alpha: the learning rate
         :return:
         """
-        self.alpha = 0.1;
+        self.alpha = 0.3;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -112,7 +112,7 @@ class Convex_problems:
         x = np.random.randn(n,1)
         y =  np.random.randn(m,1)
         self.y = y
-        self.x = y
+        self.x = x
         self.A = A
         self.b = b
         self.m = m
@@ -124,14 +124,18 @@ class Convex_problems:
             yold = y.copy()
             for itr in range(self.iterations):
                 L, dL_dx,dL_dy = self.Dual_Ascent_problem()
+                self.P = np.eye(len(x))
+                print(self.x.T@self.P@self.x)
+                # dL_dx = (self.P+self.P.T)@self.x +self.A.T@self.y
 
-                xnew = xold - self.alpha*dL_dx
-                self.x = xnew
-                ynew = yold + self.alpha*dL_dy
-                self.y = ynew
+
+                self.x = self.x - self.alpha*dL_dx
+                self.y = self.y + self.alpha*(self.A@self.x-self.b)
+
+
                 print(f'norm = :  {((self.A@self.x-self.b)**2).sum()}')
-                print(f'lagrangian:  {L}')
-
+                # print(f'lagrangian:  {L}')
+        self.x
 
 
 
