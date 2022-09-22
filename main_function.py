@@ -52,7 +52,7 @@ class Convex_problems:
         #=======================================================================
         dL_dx = np.zeros((self.L,1))
         h = 1e-12
-
+        precision = 'analytical'
         if precision == 'quadratic':
             for i in range(self.L):
                 x_r,x_l = x.copy(),x.copy()
