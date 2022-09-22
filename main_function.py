@@ -22,9 +22,18 @@ class Convex_problems:
         R = A @ x - b
         return R.ravel()
     #============================================================
-    def Lagrangian(self):
-        L = Loss_F() + y.T @ Linear_Constraint(A, b, x)
+    def Lagrangian(self,A,x,b,y):
+        L = Loss_F(x,A,b,y) + y.T @ Linear_Constraint(A, b, x)
         return L.ravel()
+    #=============================================================
+    def analytical_solution(self):
+        """
+        we solve the derivatives of dL/dx and obtain the value of x
+        :param A:
+        :param y:
+        :return: x
+        """
+        return np.linalg.inv(self.A.T + self.A) @ self.A.T @ self.y
     #=================================================================
     def Dual_Ascent_problem(self):
         """
@@ -35,23 +44,17 @@ class Convex_problems:
         L: lagrangian
         dL_dx: derivatives of lagrangian
         """
-        def analytical_solution(A,y):
-            """
-            we solve the derivatives of dL/dx and obtain the value of x
-            :param A:
-            :param y:
-            :return: x
-            """
-            return np.linalg.inv(A.T+A)@A.T@y
 
         #=======================================================================
+        x = self.x
+        y = self.y
+
         dL_dx = np.zeros((self.L,1))
         dL_dy = np.zeros((self.m, 1))
-        h = 1e-10
-        precision = 'quadratic'
+        h = 1e-8
+        # precision = 'quadratic'
 
-
-        if precision == 'quadratic':
+        if self.derivatives_method == 'quadratic':
             for i in range(self.L):
                 x_r,x_l = x.copy(),x.copy()
                 x_r[i] += h
@@ -62,22 +65,21 @@ class Convex_problems:
                 y_r, y_l = y.copy(), y.copy()
                 y_r[i] += h
                 y_l[i] -= h
-                dL_dy[i,0] = (1/(2*h))*(Lagrangian(A,x_r,b,y) - Lagrangian(A,x_l,b,y))
+                dL_dy[i,0] = (1/(2*h))*(Lagrangian(A,x,b,y_r) - Lagrangian(A,x,b,y_l))
 
 
-
-        elif precision == 'quartic ':
-            for i in range(self.L):
-                x_rr,x_ll,x_r,x_l = x.copy(),x.copy(),x.copy(),x.copy()
-                x_rr[i] += 2*h
-                x_r[i] += h
-                x_ll[i] -= 2*h
-                x_l[i] -= h
-                dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
-        elif precision == 'analytical':
-            return analytical_solution(A,y)
-        else:
-            raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
+        # elif precision == 'quartic ':
+        #     for i in range(self.L):
+        #         x_rr,x_ll,x_r,x_l = x.copy(),x.copy(),x.copy(),x.copy()
+        #         x_rr[i] += 2*h
+        #         x_r[i] += h
+        #         x_ll[i] -= 2*h
+        #         x_l[i] -= h
+        #         dL_dx[i,0] = (1/(12*h))*(-Lagrangian(A,x_rr,b,y) + 8.0*Lagrangian(A,x_r,b,y) - 8.0*Lagrangian(A,x_l,b,y) + Lagrangian(A,x_ll,b,y))
+        # elif precision == 'analytical':
+        #     return analytical_solution(A,y)
+        # else:
+        #     raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
 
         L = Lagrangian(A,x,b,y)
         return L, dL_dx
@@ -94,7 +96,7 @@ class Convex_problems:
         :param alpha: the learning rate
         :return:
         """
-        alpha = 0.01;
+        self.alpha = 0.01;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -115,11 +117,14 @@ class Convex_problems:
         self.b = b
         self.m = m
         self.iterations = 1000
-        derivatives_method = 'quadratic'
+        self.derivatives_method = 'quadratic'
         self.solution = 'numerical'
         if self.solution == 'numerical':
-
+            xold = x.copy()
+            yold = y.copy()
             for itr in range(self.iterations):
+
+                xnew = xold - self.alpha*()
 
 
 
