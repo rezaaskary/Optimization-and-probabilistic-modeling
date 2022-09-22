@@ -21,7 +21,15 @@ class Convex_problems:
         P = np.eye(len(x))
         F = x.T @ P @ x
         return F.ravel()
+    #=======================================================================
+    def Linear_Constraint(self):
+        x = self.x
+        A = self.A
+        b = self.b
+        R = A @ x - b
+        return R
     #=================================================================
+
     def Dual_Ascent_problem(self):
         """
         In this method, you should define the  loss function F and its first derivatves
