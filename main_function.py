@@ -2,8 +2,6 @@ import numpy as np
 import scipy as sc
 from tqdm import tqdm
 
-
-
 class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
@@ -130,7 +128,7 @@ class Convex_problems():
             L, dl_dx, dl_dy = self.lagrangian()
             self.x = variable_optimizer.fit(self.x,dl_dx,itr)
             self.y = lagrange_optimizer.fit(self.y,dl_dy,itr)
-            print(self.opt)
+            # print(self.opt)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
             if tol<self.tolerance:
