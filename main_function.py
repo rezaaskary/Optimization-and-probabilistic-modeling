@@ -14,7 +14,9 @@ class optimizer:
         self.dimention = dimention
         self.bias_vector = np.ones((self.dimention, 1))
         self.m_adam = np.ones((self.dimention, 1))
+        self.m_hat_adam = np.ones((self.dimention, 1))
         self.v_adam = np.ones((self.dimention, 1))
+        self.v_hat_adam = np.ones((self.dimention, 1))
 
 
     def gradient_desent(self, parameter, derivatives):
@@ -26,10 +28,10 @@ class optimizer:
         return parameter
 
     def adam_desent(self,parameter, derivatives):
-        self.m = beta_1 * m + (1 - beta_1) * derivatives
-        v = beta_2 * v + (1 - beta_2) * derivatives**2
-        m_hat = m / (1 - np.power(beta_1, t))
-        v_hat = v / (1 - np.power(beta_2, t))
+        self.m_adam = beta_1 * self.m_adam + (1 - beta_1) * derivatives
+        self.v_adam = beta_2 * self.v_adam + (1 - beta_2) * derivatives**2
+        self.m_hat_adam = self.m_adam / (1 - np.power(beta_1, t))
+        self.v_hat_adam = self.v_adam / (1 - np.power(beta_2, t))
         parameter = parameter - step_size * m_hat / (np.sqrt(v_hat) + epsilon)
 
 
