@@ -70,7 +70,6 @@ class Convex_problems():
         return R.ravel()
     #============================================================
     def lagrangian(self):
-
         self.opt = self.loss_f()
         L =   self.opt + self.y.T @ self.linear_constraint()
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
@@ -79,10 +78,8 @@ class Convex_problems():
         return L.ravel(), dL_dx, dL_dy
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
-
-
         self.tolerance = tolerance
-        self.alpha = 0.2;
+
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -102,7 +99,7 @@ class Convex_problems():
         self.A = A
         self.b = b
         self.m = m
-        self.iterations = 145000
+        self.iterations = 20000
         #
         # variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
         # lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
@@ -132,7 +129,7 @@ class Convex_problems():
         print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
         print(f'the value of loss function= :  {self.opt}')
         return self.x, self.opt
-
+#===============================================================================================
 
 if __name__=='__main__':
     A = np.random.rand(5,12)
