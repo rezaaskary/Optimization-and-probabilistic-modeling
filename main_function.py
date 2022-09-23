@@ -81,6 +81,10 @@ class Convex_problems():
         augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
         L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
 
+        daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
+        dL_dy = self.A @ self.x - self.b
+        return L.ravel(), dL_dx, dL_dy
 
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
