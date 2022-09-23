@@ -125,14 +125,14 @@ class Convex_problems:
             if self.opt<self.old_opt:
                 relative_error = np.abs(self.opt - self.old_opt)/self.opt
                 if relative_error<self.tolerance:
+                    print('minimum realtive error achieved!')
+                    break
 
-
-
-
-
-                # print(f'lagrangian:  {L}')
+        if itr == self.iterations-1:
+            print('Optimization terminated due to the maximum iteration!')
+        return self.x, self.opt,
         print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
-        print(self.opt)
+        print()
 
 
 
