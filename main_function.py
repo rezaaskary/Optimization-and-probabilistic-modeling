@@ -6,9 +6,9 @@ from tqdm import tqdm
 
 class optimizer:
     def __init__(self, algorithm: str='sgd',alpha: float = 0.2, epsilon: float = None, beta1 :float = None, beta2 :float = None, dimention: int=1):
-        self.epsilon = epsilon
-        self.beta1 = beta1
-        self.beta2 = beta2
+        self.epsilon_adam = epsilon
+        self.beta1_adam = beta1
+        self.beta2_adam = beta2
         self.algorithm = algorithm
         self.alpha = alpha
         self.dimention = dimention
@@ -17,7 +17,6 @@ class optimizer:
         self.m_hat_adam = np.ones((self.dimention, 1))
         self.v_adam = np.ones((self.dimention, 1))
         self.v_hat_adam = np.ones((self.dimention, 1))
-
 
     def gradient_desent(self, parameter, derivatives):
         parameter = parameter - self.alpha * derivatives
@@ -28,11 +27,11 @@ class optimizer:
         return parameter
 
     def adam_desent(self,parameter, derivatives):
-        self.m_adam = beta_1 * self.m_adam + (1 - beta_1) * derivatives
-        self.v_adam = beta_2 * self.v_adam + (1 - beta_2) * derivatives**2
+        self.m_adam = self.beta_1_adam * self.m_adam + (1 - self.beta_1_adam) * derivatives
+        self.v_adam = self.beta_2_adam * self.v_adam + (1 - self.beta_2_adam) * derivatives**2
         self.m_hat_adam = self.m_adam / (1 - np.power(beta_1, t))
         self.v_hat_adam = self.v_adam / (1 - np.power(beta_2, t))
-        parameter = parameter - step_size * m_hat / (np.sqrt(v_hat) + epsilon)
+        parameter = parameter - self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam) + self.epsilon_adam)
 
 
 
