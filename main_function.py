@@ -26,6 +26,13 @@ class optimizer:
         else:
             raise Exception('Please correctly enter the type of optimization!')
 
+        if self.algorithm == 'SGD':
+            return self.SGD
+        elif self.algorithm == 'ADAM':
+            return self.ADAM
+        else:
+            raise Exception('Please use a correct optimizer')
+
     def SGD(self, parameter, derivatives):
         parameter = parameter + self.type_of_optimization * self.alpha * derivatives
         return parameter
