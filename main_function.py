@@ -107,15 +107,6 @@ class Convex_problems():
         self.b = b
         self.m = m
         self.iterations = 20000
-        #
-        # variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
-        # lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
-
-        # variable_optimizer = Optimizer(algorithm='RMSprop', alpha=0.0001, epsilon=1e-8, beta1=0.9,
-        #                                type_of_optimization='min', beta2=0.999, dimention=self.L)
-        # lagrange_optimizer = Optimizer(algorithm='RMSprop', alpha=0.0001, epsilon=1e-8, beta1=0.9,
-        #                                type_of_optimization='max', beta2=0.999, dimention=self.m)
-
 
         variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
         lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
