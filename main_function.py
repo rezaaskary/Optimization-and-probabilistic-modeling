@@ -71,18 +71,22 @@ class Convex_problems():
     #============================================================
     def lagrangian(self):
         self.opt = self.loss_f()
-        L =   self.opt + self.y.T @ self.linear_constraint()
+        L = self.opt + self.y.T @ self.linear_constraint()
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
         dL_dy = self.A @ self.x - self.b
-
         return L.ravel(), dL_dx, dL_dy
+
+    def augmented_lagrangian(self):
+        self.rho = 0.01
+        augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
+        L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
+
+
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
         self.tolerance = tolerance
-
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
-
         if m>n:
             raise Exception('Overdetermined Problem!')
         if m != m2:
