@@ -13,17 +13,17 @@ class Convex_problems:
         self.L = L
 
     # =================================================================
-    def loss_f(self,x,A,b,y):
+    def loss_f(self,x):
         P = np.eye(len(x))
         F = x.T @ P @ x
         return F.ravel()
     #=======================================================================
-    def linear_constraint(self,A,x,b):
-        R = A @ x - b
+    def linear_constraint(self,x):
+        R = self.A @ x - self.b
         return R.ravel()
     #============================================================
-    def lagrangian(self,A,x,b,y):
-        L = self.loss_f(x,A,b,y) + y.T @ self.linear_constraint(A, x, b)
+    def lagrangian(self,x,y):
+        L = self.loss_f(x) + y.T @ self.linear_constraint(x)
         return L.ravel()
     #=================================================================
     def dual_ascent_problem(self):
