@@ -11,7 +11,7 @@ class optimizer:
         self.beta2 = beta2
         self.algorithm = algorithm
 
-    def gradient_desent(self, parameter):
+    # def gradient_desent(self, parameter):
 
 
 
@@ -29,76 +29,76 @@ class Convex_problems:
         self.old_opt = np.inf
         self.parameter_optimization = (1e65) * np.ones((self.L, 1))
     # =================================================================
-    def loss_f(self,x):
-        self.P = np.eye(len(x))
-        F = x.T @self.P @ x
+    def loss_f(self):
+        self.P = np.eye(self.L)
+        F = self.x.T @self.P @ self.x
         return F.ravel()
     #=======================================================================
-    def linear_constraint(self,x):
-        R = self.A @ x - self.b
+    def linear_constraint(self):
+        R = self.A @ self.x - self.b
         return R.ravel()
     #============================================================
-    def lagrangian(self,x,y):
+    def lagrangian(self):
         """
         This function returns the value and the
         :param x:
         :param y:
         :return:
         """
-        L = self.loss_f(x) + y.T @ self.linear_constraint(x)
-        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.x
+        self.opt = self.loss_f()
+        L =   self.opt + self.y.T @ self.linear_constraint()
+        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
         dL_dy = self.A @ self.x - self.b
+
         return L.ravel(), dL_dx, dL_dy
     #=================================================================
-    def dual_ascent_problem(self):
-        """
-        Calculating the partial derivativs with respect to the variables and the lagrange multiplier
-        :return:
-        """
-        temp_x = self.x
-        temp_y = self.y
-
-        self.dL_dx = np.zeros((self.L,1))
-        self.dL_dy = np.zeros((self.m, 1))
-        self.h = 1e-12
-
-        if self.derivatives_method == 'quadratic':
-            # calcualting the derivatives with respect to x
-            for i in range(self.L):
-                x_r,x_l = self.x.copy(),self.x.copy()
-                x_r[i] += self.h
-                x_l[i] -= self.h
-                self.dL_dx[i,0] = (1/(2*self.h))*(self.lagrangian(x_r,self.y) - self.lagrangian(x_l,self.y))
-            # calcualting the derivatives with respect to y
-            for i in range(self.m):
-                y_r, y_l = self.y.copy(), self.y.copy()
-                y_r[i] += self.h
-                y_l[i] -= self.h
-                self.dL_dy[i,0] = (1/(2*self.h))*(self.lagrangian(self.x, y_r) - self.lagrangian(self.x, y_l))
-
-        elif self.derivatives_method == 'quartic':     # 4th oder numerical derivatives
-            # calcualting the derivatives with respect to x
-            for i in range(self.L):
-                x_rr,x_ll,x_r,x_l = self.x.copy(),self.x.copy(),self.x.copy(),self.x.copy()
-                x_rr[i] += 2*self.h
-                x_r[i] += self.h
-                x_ll[i] -= 2*self.h
-                x_l[i] -= self.h
-                self.dL_dx[i,0] = (1/(12*self.h))*(-self.lagrangian(x_rr, self.y) + 8.0*self.lagrangian(x_r, self.y)\
-                                         - 8.0*self.lagrangian(x_l, self.y) + self.lagrangian(x_ll, self.y))
-            # calcualting the derivatives with respect to y
-            for i in range(self.m):
-                y_rr, y_ll, y_r, y_l = self.y.copy(), self.y.copy(), self.y.copy(), self.y.copy()
-                y_rr[i] += 2 * self.h
-                y_r[i] += self.h
-                y_ll[i] -= 2 * self.h
-                y_l[i] -= self.h
-                self.dL_dy[i, 0] = (1 / (12 * self.h)) * (-self.lagrangian(self.x, y_rr) + 8.0 * self.lagrangian(self.x, y_r) \
-                            - 8.0 * self.lagrangian(self.x, y_l) + self.lagrangian(self.x, y_ll))
-        else:
-            raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
-        self.Lag = self.lagrangian(self.x,self.y)
-        self.opt = self.loss_f(self.x)
+    # def dual_ascent_problem(self):
+    #     """
+    #     Calculating the partial derivativs with respect to the variables and the lagrange multiplier
+    #     :return:
+    #     """
+    #
+    #     self.dL_dx = np.zeros((self.L,1))
+    #     self.dL_dy = np.zeros((self.m, 1))
+    #     self.h = 1e-12
+    #
+    #     if self.derivatives_method == 'quadratic':
+    #         # calcualting the derivatives with respect to x
+    #         for i in range(self.L):
+    #             x_r,x_l = self.x.copy(),self.x.copy()
+    #             x_r[i] += self.h
+    #             x_l[i] -= self.h
+    #             self.dL_dx[i,0] = (1/(2*self.h))*(self.lagrangian(x_r,self.y) - self.lagrangian(x_l,self.y))
+    #         # calcualting the derivatives with respect to y
+    #         for i in range(self.m):
+    #             y_r, y_l = self.y.copy(), self.y.copy()
+    #             y_r[i] += self.h
+    #             y_l[i] -= self.h
+    #             self.dL_dy[i,0] = (1/(2*self.h))*(self.lagrangian(self.x, y_r) - self.lagrangian(self.x, y_l))
+    #
+    #     elif self.derivatives_method == 'quartic':     # 4th oder numerical derivatives
+    #         # calcualting the derivatives with respect to x
+    #         for i in range(self.L):
+    #             x_rr,x_ll,x_r,x_l = self.x.copy(),self.x.copy(),self.x.copy(),self.x.copy()
+    #             x_rr[i] += 2*self.h
+    #             x_r[i] += self.h
+    #             x_ll[i] -= 2*self.h
+    #             x_l[i] -= self.h
+    #             self.dL_dx[i,0] = (1/(12*self.h))*(-self.lagrangian(x_rr, self.y) + 8.0*self.lagrangian(x_r, self.y)\
+    #                                      - 8.0*self.lagrangian(x_l, self.y) + self.lagrangian(x_ll, self.y))
+    #         # calcualting the derivatives with respect to y
+    #         for i in range(self.m):
+    #             y_rr, y_ll, y_r, y_l = self.y.copy(), self.y.copy(), self.y.copy(), self.y.copy()
+    #             y_rr[i] += 2 * self.h
+    #             y_r[i] += self.h
+    #             y_ll[i] -= 2 * self.h
+    #             y_l[i] -= self.h
+    #             self.dL_dy[i, 0] = (1 / (12 * self.h)) * (-self.lagrangian(self.x, y_rr) + 8.0 * self.lagrangian(self.x, y_r) \
+    #                         - 8.0 * self.lagrangian(self.x, y_l) + self.lagrangian(self.x, y_ll))
+    #     else:
+    #         raise Exception('Select a proper numerical method for the calculation of the first derivatives!')
+    #     self.Lag = self.lagrangian(self.x,self.y)
+    #     self.opt = self.loss_f(self.x)
 
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-6):
@@ -116,7 +116,7 @@ class Convex_problems:
         """
 
         self.tolerance = tolerance
-        self.alpha = 0.01;
+        self.alpha = 0.001;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -141,19 +141,31 @@ class Convex_problems:
         self.derivatives_method = 'quartic'
 
         # solving by using gradient decent approach
-        for itr in tqdm(range(self.iterations)):
-            self.dual_ascent_problem()
-            self.x = self.x - self.alpha*self.dL_dx
-            # self.y = self.y + self.alpha*(self.A@self.x-self.b)
-            self.y = self.y + self.alpha *self.dL_dy
-            # error = (np.abs(self.old_opt - self.opt)).sum()
-            if self.opt<self.old_opt:
-                error = (np.abs(self.old_opt - self.opt)).sum()
-                self.old_opt = self.opt
-                self.parameter_optimization = self.x
-                if error<self.tolerance:
-                    print('minimum realtive error achieved!')
-                    break
+        while True:
+            L, dl_dx, dl_dy = self.lagrangian()
+            self.x = self.x - self.alpha * dl_dx
+            self.y = self.y + self.alpha * dl_dy
+            if
+
+
+        # for itr in tqdm(range(self.iterations)):
+
+
+
+
+
+            # self.dual_ascent_problem()
+            # self.x = self.x - self.alpha*self.dL_dx
+            # # self.y = self.y + self.alpha*(self.A@self.x-self.b)
+            # self.y = self.y + self.alpha *self.dL_dy
+            # # error = (np.abs(self.old_opt - self.opt)).sum()
+            # if self.opt<self.old_opt:
+            #     error = (np.abs(self.old_opt - self.opt)).sum()
+            #     self.old_opt = self.opt
+            #     self.parameter_optimization = self.x
+            #     if error<self.tolerance:
+            #         print('minimum realtive error achieved!')
+            #         break
         print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
         if itr == self.iterations-1:
             print('Optimization terminated due to the maximum iteration!')
