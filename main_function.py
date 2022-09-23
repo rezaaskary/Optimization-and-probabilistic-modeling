@@ -39,6 +39,12 @@ class Convex_problems:
         return R.ravel()
     #============================================================
     def lagrangian(self,x,y):
+        """
+        This function returns the value and the
+        :param x:
+        :param y:
+        :return:
+        """
         L = self.loss_f(x) + y.T @ self.linear_constraint(x)
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.x
         dL_dy = self.A @ self.x - self.b
@@ -49,6 +55,8 @@ class Convex_problems:
         Calculating the partial derivativs with respect to the variables and the lagrange multiplier
         :return:
         """
+        temp_x = self.x
+        temp_y = self.y
 
         self.dL_dx = np.zeros((self.L,1))
         self.dL_dy = np.zeros((self.m, 1))
