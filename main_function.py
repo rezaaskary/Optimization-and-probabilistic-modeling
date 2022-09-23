@@ -122,6 +122,7 @@ class Convex_problems():
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dy = self.lagrangian()
+            L, dl_dx, dl_dy = self.augmented_lagrangian()
             self.x = variable_optimizer.fit(self.x, dl_dx, itr//1000)
             self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
             tol = np.abs(self.opt - self.old_opt)
