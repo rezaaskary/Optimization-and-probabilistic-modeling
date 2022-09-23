@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 
 
-class optimizer:
+class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
                  beta2 :float = None, dimention: int=1):
@@ -26,14 +26,16 @@ class optimizer:
         else:
             raise Exception('Please correctly enter the type of optimization!')
 
+
+
         if self.algorithm == 'SGD':
-            return self.SGD
+            self.fit = self.SGD
         elif self.algorithm == 'ADAM':
-            return self.ADAM
+            self.fit = self.ADAM
         else:
             raise Exception('Please use a correct optimizer')
 
-    def SGD(self, parameter, derivatives):
+    def SGD(self, parameter, derivatives, t):
         parameter = parameter + self.type_of_optimization * self.alpha * derivatives
         return parameter
 
@@ -46,7 +48,7 @@ class optimizer:
         return parameter
 
 ##================================================================================================
-class Convex_problems(optimizer):
+class Convex_problems(Optimizer):
     def __init__(self,problem_type: int=1, L:int = 1):
         """
         :param problem_type:
@@ -120,17 +122,16 @@ class Convex_problems(optimizer):
         self.m = m
         self.iterations = 5000
 
-        variable_optimizer = optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
-        lagrange_optimizer = optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
-
+        variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
+        lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
 
         # variable_optimizer = optimizer(algorithm='SGD', alpha = 0.1,type_of_optimization = 'min')
         # lagrange_optimizer = optimizer(algorithm='SGD', alpha = 0.1,type_of_optimization = 'max')
         # solving by using gradient decent approach
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dy = self.lagrangian()
-            self.x = variable_optimizer.ADAM(self.x,dl_dx,itr)
-            self.y = lagrange_optimizer.ADAM(self.y,dl_dy,itr)
+            self.x = variable_optimizer.fit(self.x,dl_dx,itr)
+            self.y = lagrange_optimizer.fit(self.y,dl_dy,itr)
             print(self.opt)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
