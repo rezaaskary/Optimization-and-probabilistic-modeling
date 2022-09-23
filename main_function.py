@@ -69,7 +69,7 @@ class Convex_problems:
 
 
         elif precision == 'quartic ':
-            #
+            # calcualting the derivatives with respect to x
             for i in range(self.L):
                 x_rr,x_ll,x_r,x_l = self.x.copy(),self.x.copy(),self.x.copy(),self.x.copy()
                 x_rr[i] += 2*self.h
@@ -78,15 +78,15 @@ class Convex_problems:
                 x_l[i] -= self.h
                 dL_dx[i,0] = (1/(12*self.h))*(-self.Lagrangian(self.A,x_rr,self.b,self.y) + 8.0*self.Lagrangian(self.A,x_r,self.b,self.y)\
                                          - 8.0*self.Lagrangian(self.A,x_l,self.b,self.y) + self.Lagrangian(self.A,x_ll,self.b,self.y))
-
+            # calcualting the derivatives with respect to x
             for i in range(self.m):
                 y_rr, y_ll, y_r, y_l = self.y.copy(), self.y.copy(), self.y.copy(), self.y.copy()
                 y_rr[i] += 2 * self.h
                 y_r[i] += self.h
                 y_ll[i] -= 2 * self.h
                 y_l[i] -= self.h
-                dL_dx[i, 0] = (1 / (12 * self.h)) * (-self.Lagrangian(self.A, x_rr, self.b, self.y) + 8.0 * self.Lagrangian(self.A, x_r, self.b,self.y) \
-                            - 8.0 * self.Lagrangian(self.A, x_l, self.b, self.y) + self.Lagrangian(self.A, x_ll, self.b,self.y))
+                dL_dy[i, 0] = (1 / (12 * self.h)) * (-self.Lagrangian(self.A, self.x, self.b, y_rr) + 8.0 * self.Lagrangian(self.A, self.x, self.b,y_r) \
+                            - 8.0 * self.Lagrangian(self.A, self.x, self.b, y_l) + self.Lagrangian(self.A, self.x, self.b,y_ll))
 
 
 
