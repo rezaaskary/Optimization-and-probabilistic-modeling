@@ -28,6 +28,8 @@ class Optimizer:
             self.fit = self.SGD
         elif self.algorithm == 'ADAM':
             self.fit = self.ADAM
+        elif self.algorithm == 'RMSprop':
+            self.fit = self.RMSprop
         else:
             raise Exception('Please use a correct optimizer')
 
@@ -42,6 +44,10 @@ class Optimizer:
         self.v_hat_adam = self.v_adam / (1 - self.beta2_adam**(t+1))
         parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam + self.epsilon_adam) )
         return parameter
+
+    def RMSprop(self,parameter, derivatives, t):
+        self.m_adam = self.beta1_adam * self.m_adam + (1 - self.beta1_adam) * derivatives**2
+        parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam))
 
 ##================================================================================================
 class Convex_problems():
