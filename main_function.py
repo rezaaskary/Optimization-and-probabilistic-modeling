@@ -41,9 +41,8 @@ class Convex_problems:
     def lagrangian(self,x,y):
         L = self.loss_f(x) + y.T @ self.linear_constraint(x)
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.x
-
-
-        return L.ravel()
+        dL_dy = self.A @ self.x - self.b
+        return L.ravel(), dL_dx, dL_dy
     #=================================================================
     def dual_ascent_problem(self):
         """
