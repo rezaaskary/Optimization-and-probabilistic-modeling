@@ -5,7 +5,9 @@ from tqdm import tqdm
 
 
 class optimizer:
-    def __init__(self, algorithm: str='sgd',alpha: float = 0.2, epsilon: float = None, beta1 :float = None, beta2 :float = None, dimention: int=1):
+    def __init__(self, algorithm: str='sgd',alpha: float = 0.2,\
+                 epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
+                 beta2 :float = None, dimention: int=1):
         self.epsilon_adam = epsilon
         self.beta1_adam = beta1
         self.beta2_adam = beta2
@@ -17,24 +19,24 @@ class optimizer:
         self.m_hat_adam = np.ones((self.dimention, 1))
         self.v_adam = np.ones((self.dimention, 1))
         self.v_hat_adam = np.ones((self.dimention, 1))
+        if type_of_optimization == 'min':
+            self.type_of_optimization = -1
+        elif type_of_optimization == 'max':
+            self.type_of_optimization = 1
+        else:
+            raise Exception('Please correctly enter the type of optimization!')
 
-    def gradient_desent(self, parameter, derivatives):
-        parameter = parameter - self.alpha * derivatives
+    def SGD(self, parameter, derivatives):
+        parameter = parameter + self.type_of_optimization * self.alpha * derivatives
         return parameter
 
-    def gradient_asend(self,parameter, derivatives):
-        parameter = parameter + self.alpha * derivatives
-        return parameter
-
-    def adam_desent(self,parameter, derivatives):
+    def adam_desent(self,parameter, derivatives, t):
         self.m_adam = self.beta_1_adam * self.m_adam + (1 - self.beta_1_adam) * derivatives
         self.v_adam = self.beta_2_adam * self.v_adam + (1 - self.beta_2_adam) * derivatives**2
-        self.m_hat_adam = self.m_adam / (1 - np.power(beta_1, t))
-        self.v_hat_adam = self.v_adam / (1 - np.power(beta_2, t))
-        parameter = parameter - self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam) + self.epsilon_adam)
-
-
-
+        self.m_hat_adam = self.m_adam / (1 - self.beta_1_adam**t)
+        self.v_hat_adam = self.v_adam / (1 - self.beta_2_adam**t)
+        parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam) + self.epsilon_adam)
+        return parameter
 
 
 class Convex_problems:
