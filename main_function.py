@@ -112,23 +112,30 @@ class Convex_problems(optimizer):
         self.b = b
         self.m = m
         self.iterations = 5000
-        self.derivatives_method = 'quadratic'
-        self.derivatives_method = 'quartic'
+
+        variable_optimizer = optimizer(algorithm='SGD', alpha = 0.2,type_of_optimization = 'min')
 
         # solving by using gradient decent approach
-        while True:
-            L, dl_dx, dl_dy = self.lagrangian()
-            self.x = self.x - self.alpha * dl_dx
-            self.y = self.y + self.alpha * dl_dy
-            print(self.opt)
-            tol = np.abs(self.opt - self.old_opt)
-            self.old_opt = self.opt
-            if tol<self.tolerance:
-                break
+        for itr in tqdm(range(self.iterations)):
 
 
 
-        # for itr in tqdm(range(self.iterations)):
+
+
+
+        # while True:
+        #     L, dl_dx, dl_dy = self.lagrangian()
+        #     self.x = self.x - self.alpha * dl_dx
+        #     self.y = self.y + self.alpha * dl_dy
+        #     print(self.opt)
+        #     tol = np.abs(self.opt - self.old_opt)
+        #     self.old_opt = self.opt
+        #     if tol<self.tolerance:
+        #         break
+
+
+
+        #
 
 
 
