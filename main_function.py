@@ -123,7 +123,7 @@ class Convex_problems():
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
             if tol<self.tolerance:
-                print('Optimization terminated due to the maximum iteration!')
+                print('Optimum values acheived!')
                 break
 
         if itr == self.iterations - 1:
@@ -134,49 +134,11 @@ class Convex_problems():
         return self.x, self.opt
 
 
-
-
-
-
-
-        # while True:
-        #     L, dl_dx, dl_dy = self.lagrangian()
-        #     self.x = self.x - self.alpha * dl_dx
-        #     self.y = self.y + self.alpha * dl_dy
-        #     print(self.opt)
-        #     tol = np.abs(self.opt - self.old_opt)
-        #     self.old_opt = self.opt
-        #     if tol<self.tolerance:
-        #         break
-
-
-
-        #
-
-
-
-
-
-            # self.dual_ascent_problem()
-            # self.x = self.x - self.alpha*self.dL_dx
-            # # self.y = self.y + self.alpha*(self.A@self.x-self.b)
-            # self.y = self.y + self.alpha *self.dL_dy
-            # # error = (np.abs(self.old_opt - self.opt)).sum()
-            # if self.opt<self.old_opt:
-            #     error = (np.abs(self.old_opt - self.opt)).sum()
-            #     self.old_opt = self.opt
-            #     self.parameter_optimization = self.x
-            #     if error<self.tolerance:
-            #         print('minimum realtive error achieved!')
-            #         break
-
-
-
 if __name__=='__main__':
     A = np.random.rand(5,12)
     b = np.random.rand(5,1)
-    D = Convex_problems(problem_type = 1, L= A.shape[1],learning_rate=0.05, )
-    val,opt = D.Dual_Ascent(A=A,b=b,alpha=0.01)
+    D = Convex_problems(problem_type = 1, L= A.shape[1],learning_rate=0.05, algorithm='SGD')
+    val,opt = D.Dual_Ascent(A=A, b=b, alpha=0.01)
 
 
 
