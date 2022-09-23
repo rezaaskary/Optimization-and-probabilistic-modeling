@@ -12,11 +12,11 @@ class Optimizer:
         self.algorithm = algorithm
         self.alpha = alpha
         self.dimention = dimention
-        self.bias_vector = np.ones((self.dimention, 1))
-        self.m_adam = np.ones((self.dimention, 1))
-        self.m_hat_adam = np.ones((self.dimention, 1))
-        self.v_adam = np.ones((self.dimention, 1))
-        self.v_hat_adam = np.ones((self.dimention, 1))
+        self.bias_vector = np.abs(np.random.randn(self.dimention, 1))
+        self.m_adam =  np.abs(np.random.randn(self.dimention, 1))
+        self.m_hat_adam =  np.abs(np.random.randn(self.dimention, 1))
+        self.v_adam =  np.abs(np.random.randn(self.dimention, 1))
+        self.v_hat_adam =  np.abs(np.random.randn(self.dimention, 1))
         if type_of_optimization == 'min':
             self.type_of_optimization = -1
         elif type_of_optimization == 'max':
@@ -42,13 +42,13 @@ class Optimizer:
         self.v_adam = self.beta2_adam * self.v_adam + (1 - self.beta2_adam) * derivatives**2
         self.m_hat_adam = self.m_adam / (1 - self.beta1_adam**(t+1))
         self.v_hat_adam = self.v_adam / (1 - self.beta2_adam**(t+1))
-        parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam + self.epsilon_adam) )
+        parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam ) + self.epsilon_adam)
         return parameter
 
     def RMSprop(self,parameter, derivatives, t):
         self.m_adam = self.beta1_adam * self.m_adam + (1 - self.beta1_adam) * derivatives**2
-        parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam))
-
+        parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam) + self.epsilon_adam)
+        return parameter
 ##================================================================================================
 class Convex_problems():
     def __init__(self,problem_type: int=1, L:int = 1):
@@ -83,9 +83,6 @@ class Convex_problems():
         dL_dy = self.A @ self.x - self.b
 
         return L.ravel(), dL_dx, dL_dy
-    #=================================================================
-
-
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
         """
@@ -122,28 +119,42 @@ class Convex_problems():
         self.A = A
         self.b = b
         self.m = m
-        self.iterations = 15000
+        self.iterations = 145000
+        #
+        variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
+        lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
 
-        variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.0005, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
-        lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.0005, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
+        # variable_optimizer = Optimizer(algorithm='RMSprop', alpha=0.0001, epsilon=1e-8, beta1=0.9,
+        #                                type_of_optimization='min', beta2=0.999, dimention=self.L)
+        # lagrange_optimizer = Optimizer(algorithm='RMSprop', alpha=0.0001, epsilon=1e-8, beta1=0.9,
+        #                                type_of_optimization='max', beta2=0.999, dimention=self.m)
 
-        # variable_optimizer = Optimizer(algorithm='SGD', alpha = 0.2,type_of_optimization = 'min')
-        # lagrange_optimizer = Optimizer(algorithm='SGD', alpha = 0.2,type_of_optimization = 'max')
+
+        # variable_optimizer = Optimizer(algorithm='SGD', alpha = 0.05,type_of_optimization = 'min')
+        # lagrange_optimizer = Optimizer(algorithm='SGD', alpha = 0.05,type_of_optimization = 'max')
         # solving by using gradient decent approach
+
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dy = self.lagrangian()
-            self.x = variable_optimizer.fit(self.x,dl_dx,itr)
-            self.y = lagrange_optimizer.fit(self.y,dl_dy,itr)
+            t = itr//1000
+            self.x = variable_optimizer.fit(self.x,dl_dx,t)
+            self.y = lagrange_optimizer.fit(self.y,dl_dy,t)
             # print(self.opt)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
             if tol<self.tolerance:
                 break
 
-        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
         if itr == self.iterations - 1:
             print('Optimization terminated due to the maximum iteration!')
+
+        print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
+        print(f'norm of loss function= :  {self.opt}')
         return self.x, self.opt, np.abs(self.opt - self.old_opt) / self.opt
+
+
+
+
 
 
 
@@ -189,9 +200,9 @@ class Convex_problems():
 
 
 if __name__=='__main__':
-    A = np.random.rand(3,4)
-    b = np.random.rand(3,1)
-    D = Convex_problems(problem_type = 1, L= 4)
+    A = np.random.rand(5,12)
+    b = np.random.rand(5,1)
+    D = Convex_problems(problem_type = 1, L= 12)
     D.Dual_Ascent(A=A,b=b,alpha=0.01)
 
 
