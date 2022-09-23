@@ -11,7 +11,7 @@ class Convex_problems:
         """
         self.problem_type = problem_type
         self.L = L
-
+        self.old_opt = np.inf
     # =================================================================
     def loss_f(self,x):
         P = np.eye(len(x))
@@ -116,10 +116,19 @@ class Convex_problems:
         self.derivatives_method = 'quadratic'
         self.derivatives_method = 'quartic'
 
+        # solving by using gradient decent approach
         for itr in tqdm(range(self.iterations)):
             self.dual_ascent_problem()
             self.x = self.x - self.alpha*self.dL_dx
             self.y = self.y + self.alpha*(self.A@self.x-self.b)
+
+            if self.opt<self.old_opt:
+                relative_error = np.abs(self.opt - self.old_opt)/self.opt
+                if relative_error<self.tolerance:
+
+
+
+
 
                 # print(f'lagrangian:  {L}')
         print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
