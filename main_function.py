@@ -80,7 +80,6 @@ class Convex_problems():
         self.rho = 0.01
         augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
         L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
-
         daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
         dL_dy = self.A @ self.x - self.b
