@@ -3,6 +3,21 @@ import scipy as sc
 from tqdm import tqdm
 
 
+
+class optimizer:
+    def __init__(self, algorithm: str='sgd', epsilon: float = None, beta1 :float = None, beta2 :float = None):
+        self.epsilon = epsilon
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.algorithm = algorithm
+
+    def gradient_desent(self, parameter):
+
+
+
+
+
+
 class Convex_problems:
     def __init__(self,problem_type: int=1, L:int = 1):
         """
@@ -12,11 +27,11 @@ class Convex_problems:
         self.problem_type = problem_type
         self.L = L
         self.old_opt = np.inf
-        self.parameter_optimization_error = np.inf * np.ones((self.L, 1))
+        self.parameter_optimization = (1e65) * np.ones((self.L, 1))
     # =================================================================
     def loss_f(self,x):
-        P = np.eye(len(x))
-        F = x.T @ P @ x
+        self.P = np.eye(len(x))
+        F = x.T @self.P @ x
         return F.ravel()
     #=======================================================================
     def linear_constraint(self,x):
@@ -25,6 +40,9 @@ class Convex_problems:
     #============================================================
     def lagrangian(self,x,y):
         L = self.loss_f(x) + y.T @ self.linear_constraint(x)
+        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.x
+
+
         return L.ravel()
     #=================================================================
     def dual_ascent_problem(self):
@@ -91,7 +109,7 @@ class Convex_problems:
         """
 
         self.tolerance = tolerance
-        self.alpha = 0.1;
+        self.alpha = 0.01;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -119,20 +137,21 @@ class Convex_problems:
         for itr in tqdm(range(self.iterations)):
             self.dual_ascent_problem()
             self.x = self.x - self.alpha*self.dL_dx
-            self.y = self.y + self.alpha*(self.A@self.x-self.b)
-
-            self.cur_performance =
+            # self.y = self.y + self.alpha*(self.A@self.x-self.b)
+            self.y = self.y + self.alpha *self.dL_dy
+            # error = (np.abs(self.old_opt - self.opt)).sum()
             if self.opt<self.old_opt:
-                relative_error = np.abs(self.opt - self.old_opt)/self.opt
+                error = (np.abs(self.old_opt - self.opt)).sum()
                 self.old_opt = self.opt
-                if relative_error<self.tolerance:
+                self.parameter_optimization = self.x
+                if error<self.tolerance:
                     print('minimum realtive error achieved!')
                     break
-
+        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
         if itr == self.iterations-1:
             print('Optimization terminated due to the maximum iteration!')
         return self.x, self.opt, np.abs(self.opt - self.old_opt)/self.opt
-        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
+
         print()
 
 
