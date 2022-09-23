@@ -51,15 +51,14 @@ class Optimizer:
         return parameter
 ##================================================================================================
 class Convex_problems():
-    def __init__(self,problem_type: int=1, L:int = 1):
-        """
-        :param problem_type:
-        :param L: the number of parameter for the ajustmnet
-        """
+    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
+
         self.problem_type = problem_type
         self.L = L
         self.old_opt = np.inf
         self.parameter_optimization = (1e65) * np.ones((self.L, 1))
+        self.learning_rate = learning_rate
+        self.algorithm = algorithm
     # =================================================================
     def loss_f(self):
         self.P = np.eye(self.L)
@@ -71,12 +70,7 @@ class Convex_problems():
         return R.ravel()
     #============================================================
     def lagrangian(self):
-        """
-        This function returns the value and the
-        :param x:
-        :param y:
-        :return:
-        """
+
         self.opt = self.loss_f()
         L =   self.opt + self.y.T @ self.linear_constraint()
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
@@ -85,18 +79,7 @@ class Convex_problems():
         return L.ravel(), dL_dx, dL_dy
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
-        """
-        minimize f(x)
-        subject to Ax=b
-        with variable x ∈ Rn, where A ∈ Rm×n and f : Rn → R is convex
-        The Lagrangian for the problem is L(x,y) = f(x) + yT (Ax − b)
-        and the dual function is g(y) = inf x L(x,y) = −f ∗(−AT y) − bT y
-        :param A:
-        :param b:
-        :param alpha:
-        :param tolerance:
-        :return:
-        """
+
 
         self.tolerance = tolerance
         self.alpha = 0.2;
@@ -121,8 +104,8 @@ class Convex_problems():
         self.m = m
         self.iterations = 145000
         #
-        variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
-        lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
+        # variable_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
+        # lagrange_optimizer = Optimizer(algorithm = 'ADAM', alpha = 0.001, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'max', beta2 = 0.999, dimention = self.m)
 
         # variable_optimizer = Optimizer(algorithm='RMSprop', alpha=0.0001, epsilon=1e-8, beta1=0.9,
         #                                type_of_optimization='min', beta2=0.999, dimention=self.L)
@@ -130,27 +113,25 @@ class Convex_problems():
         #                                type_of_optimization='max', beta2=0.999, dimention=self.m)
 
 
-        # variable_optimizer = Optimizer(algorithm='SGD', alpha = 0.05,type_of_optimization = 'min')
-        # lagrange_optimizer = Optimizer(algorithm='SGD', alpha = 0.05,type_of_optimization = 'max')
-        # solving by using gradient decent approach
+        variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dy = self.lagrangian()
-            t = itr//1000
-            self.x = variable_optimizer.fit(self.x,dl_dx,t)
-            self.y = lagrange_optimizer.fit(self.y,dl_dy,t)
-            # print(self.opt)
+            self.x = variable_optimizer.fit(self.x, dl_dx, itr//1000)
+            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
             if tol<self.tolerance:
+                print('Optimization terminated due to the maximum iteration!')
                 break
 
         if itr == self.iterations - 1:
             print('Optimization terminated due to the maximum iteration!')
 
         print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
-        print(f'norm of loss function= :  {self.opt}')
-        return self.x, self.opt, np.abs(self.opt - self.old_opt) / self.opt
+        print(f'the value of loss function= :  {self.opt}')
+        return self.x, self.opt
 
 
 
@@ -190,20 +171,12 @@ class Convex_problems():
             #         break
 
 
-        print()
-
-
-
-
-
-
-
 
 if __name__=='__main__':
     A = np.random.rand(5,12)
     b = np.random.rand(5,1)
-    D = Convex_problems(problem_type = 1, L= 12)
-    D.Dual_Ascent(A=A,b=b,alpha=0.01)
+    D = Convex_problems(problem_type = 1, L= A.shape[1],learning_rate=0.05, )
+    val,opt = D.Dual_Ascent(A=A,b=b,alpha=0.01)
 
 
 
