@@ -5,14 +5,32 @@ from tqdm import tqdm
 
 
 class optimizer:
-    def __init__(self, algorithm: str='sgd', epsilon: float = None, beta1 :float = None, beta2 :float = None):
+    def __init__(self, algorithm: str='sgd',alpha: float = 0.2, epsilon: float = None, beta1 :float = None, beta2 :float = None, dimention: int=1):
         self.epsilon = epsilon
         self.beta1 = beta1
         self.beta2 = beta2
         self.algorithm = algorithm
+        self.alpha = alpha
+        self.dimention = dimention
+        self.bias_vector = np.ones((self.dimention, 1))
+        self.m_adam = np.ones((self.dimention, 1))
+        self.v_adam = np.ones((self.dimention, 1))
 
-    # def gradient_desent(self, parameter):
 
+    def gradient_desent(self, parameter, derivatives):
+        parameter = parameter - self.alpha * derivatives
+        return parameter
+
+    def gradient_asend(self,parameter, derivatives):
+        parameter = parameter + self.alpha * derivatives
+        return parameter
+
+    def adam_desent(self,parameter, derivatives):
+        self.m = beta_1 * m + (1 - beta_1) * derivatives
+        v = beta_2 * v + (1 - beta_2) * derivatives**2
+        m_hat = m / (1 - np.power(beta_1, t))
+        v_hat = v / (1 - np.power(beta_2, t))
+        parameter = parameter - step_size * m_hat / (np.sqrt(v_hat) + epsilon)
 
 
 
@@ -101,7 +119,7 @@ class Convex_problems:
     #     self.opt = self.loss_f(self.x)
 
     #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-6):
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
         """
         minimize f(x)
         subject to Ax=b
@@ -116,7 +134,7 @@ class Convex_problems:
         """
 
         self.tolerance = tolerance
-        self.alpha = 0.001;
+        self.alpha = 0.2;
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
 
@@ -145,7 +163,12 @@ class Convex_problems:
             L, dl_dx, dl_dy = self.lagrangian()
             self.x = self.x - self.alpha * dl_dx
             self.y = self.y + self.alpha * dl_dy
-            if
+            print(self.opt)
+            tol = np.abs(self.opt - self.old_opt)
+            self.old_opt = self.opt
+            if tol<self.tolerance:
+                break
+
 
 
         # for itr in tqdm(range(self.iterations)):
