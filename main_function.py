@@ -12,6 +12,7 @@ class Convex_problems:
         self.problem_type = problem_type
         self.L = L
         self.old_opt = np.inf
+        self.parameter_optimization_error = np.inf * np.ones((self.L, 1))
     # =================================================================
     def loss_f(self,x):
         P = np.eye(len(x))
@@ -105,10 +106,8 @@ class Convex_problems:
         if self.L != n:
             raise Exception('the dimention of variables and the problem is not consistent!')
 
-        x = np.random.randn(n,1)
-        y =  np.random.randn(m,1)
-        self.y = y
-        self.x = x
+        self.y = np.random.randn(m,1)
+        self.x =  np.random.randn(n,1)
         self.A = A
         self.b = b
         self.m = m
@@ -122,6 +121,7 @@ class Convex_problems:
             self.x = self.x - self.alpha*self.dL_dx
             self.y = self.y + self.alpha*(self.A@self.x-self.b)
 
+            self.cur_performance =
             if self.opt<self.old_opt:
                 relative_error = np.abs(self.opt - self.old_opt)/self.opt
                 self.old_opt = self.opt
@@ -132,6 +132,8 @@ class Convex_problems:
         if itr == self.iterations-1:
             print('Optimization terminated due to the maximum iteration!')
         return self.x, self.opt, np.abs(self.opt - self.old_opt)/self.opt
+        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
+        print()
 
 
 
