@@ -38,7 +38,7 @@ class optimizer:
         parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam) + self.epsilon_adam)
         return parameter
 
-
+##================================================================================================
 class Convex_problems(optimizer):
     def __init__(self,problem_type: int=1, L:int = 1):
         """
@@ -113,13 +113,27 @@ class Convex_problems(optimizer):
         self.m = m
         self.iterations = 5000
 
-        variable_optimizer = optimizer(algorithm='SGD', alpha = 0.2,type_of_optimization = 'min')
+        variable_optimizer = optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
+        lagrange_optimizer = optimizer(algorithm = 'ADAM', alpha = 0.2, epsilon = 1e-8, beta1 = 0.9, type_of_optimization = 'min', beta2 = 0.999, dimention = self.L)
 
+
+        # variable_optimizer = optimizer(algorithm='SGD', alpha = 0.1,type_of_optimization = 'min')
+        # lagrange_optimizer = optimizer(algorithm='SGD', alpha = 0.1,type_of_optimization = 'max')
         # solving by using gradient decent approach
         for itr in tqdm(range(self.iterations)):
+            L, dl_dx, dl_dy = self.lagrangian()
+            self.x = variable_optimizer.ADAM(self.x,dl_dx,itr)
+            self.y = lagrange_optimizer.ADAM(self.y,dl_dy,itr)
+            print(self.opt)
+            tol = np.abs(self.opt - self.old_opt)
+            self.old_opt = self.opt
+            if tol<self.tolerance:
+                break
 
-
-
+        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
+        if itr == self.iterations - 1:
+            print('Optimization terminated due to the maximum iteration!')
+        return self.x, self.opt, np.abs(self.opt - self.old_opt) / self.opt
 
 
 
@@ -153,10 +167,7 @@ class Convex_problems(optimizer):
             #     if error<self.tolerance:
             #         print('minimum realtive error achieved!')
             #         break
-        print(f'norm = :  {((self.A @ self.x - self.b) ** 2).sum()}')
-        if itr == self.iterations-1:
-            print('Optimization terminated due to the maximum iteration!')
-        return self.x, self.opt, np.abs(self.opt - self.old_opt)/self.opt
+
 
         print()
 
