@@ -138,17 +138,17 @@ class Convex_problems_dual_ascend():
         return self.x, self.opt
 #===============================================================================================
 
-if __name__=='__main__':
-    A = np.random.rand(10,12)
-    b = np.random.rand(10,1)
-    D = Convex_problems_dual_ascend(problem_type = 1, learning_rate=0.05, algorithm='SGD')
-    val,opt = D.Dual_Ascent(A=A, b=b)
-    val
+# if __name__=='__main__':
+#     A = np.random.rand(10,12)
+#     b = np.random.rand(10,1)
+#     D = Convex_problems_dual_ascend(problem_type = 1, learning_rate=0.05, algorithm='SGD')
+#     val,opt = D.Dual_Ascent(A=A, b=b)
+#     val
 #=================================================================================
 #=================================================================================
 #=================================================================================
 
-class ADMM():
+class ADMM:
     def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
         self.tolerance = tolerance
         self.problem_type = problem_type
@@ -197,7 +197,7 @@ class ADMM():
 
         return L, dL_dx, dL_dz, dL_dy
     #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
+    def ADMM_dual_ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
 
         p1,n1 = A.shape
         p2, n2 = B.shape
@@ -230,11 +230,9 @@ class ADMM():
         lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
 
         for itr in tqdm(range(self.iterations)):
-
-
-            L, dL_dx, dL_dz, dL_dy = self.augmented_lagrangian()
-            self.x = variable_optimizer.fit(self.x, dl_dx, itr//1000)
-            self.z = variable_optimizer.fit(self.z, dl_dx, itr // 1000)
+            L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
+            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
+            self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
             self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
@@ -250,7 +248,13 @@ class ADMM():
         return self.x, self.opt
 
 
-
+if __name__=='__main__':
+    A = np.random.rand(10,12)
+    B = np.random.rand(10, 4)
+    c = np.random.rand(10,1)
+    D = ADMM(problem_type = 1, learning_rate=0.05, algorithm='SGD')
+    val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
+    val
 
 
 
