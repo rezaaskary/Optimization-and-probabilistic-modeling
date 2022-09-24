@@ -150,24 +150,25 @@ class ADMM():
         self.iterations = iterations
     # =================================================================
     def loss_f(self):
-        self.P1 = np.eye(self.n)
+        self.P1 = np.eye(self.n1)
+        self.P2 = np.eye(self.n2)
 
-        F = self.x.T @self.P @ self.x
+        F1 = self.x.T @self.P1 @ self.x
+        F2 = self.z.T @ self.P2 @ self.z
+
+        F = F1 + F2
         return F.ravel()
     #=======================================================================
     def linear_constraint(self):
-        R = self.A @ self.x - self.b
+        R = self.A @ self.x + self.B @ self.z - self.c
         return R.ravel()
     #============================================================
-    def lagrangian(self):
-        self.opt = self.loss_f()
-        L = self.opt + self.y.T @ self.linear_constraint()
-        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
-        dL_dy = self.A @ self.x - self.b
-        return L.ravel(), dL_dx, dL_dy
-
     def augmented_lagrangian(self):
         self.rho = 0.01
+
+
+
+
         augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
         L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
         daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
@@ -193,16 +194,16 @@ class ADMM():
         #     raise Exception('The array C is specified incorrectly!')
 
 
+        self.n1 = n1
+        self.n2 = n2
 
         self.y = np.random.randn(self.p,1)
         self.x =  np.random.randn(n1,1)
-        self.z = np.random.randn(n1, 1)
+        self.z = np.random.randn(n2, 1)
 
         self.A = A
         self.B = B
         self.b = c
-
-        self.iterations = 20000
 
         variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
         variable_optimizer_y = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
