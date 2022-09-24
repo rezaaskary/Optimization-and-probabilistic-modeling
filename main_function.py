@@ -174,13 +174,14 @@ class ADMM():
 
         R = self.A @ self.x + self.B @ self.z - self.c
         aug = R.T @ R
-        adug_dx = 2 * self.A.T @ R
-        adug_dz = 2 * self.B.T @ R
 
         dR_dx = self.A.T
         dR_dz = self.B.T
 
-        return R.ravel(), dR_dx, dR_dz
+        adug_dx = 2 * dR_dx @ R
+        adug_dz = 2 * dR_dz @ R
+
+        return R, dR_dx, dR_dz, adug_dx, adug_dz
 
 
 
