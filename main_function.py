@@ -52,6 +52,8 @@ class Optimizer:
         parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam) + self.epsilon_adam)
         return parameter
 ##================================================================================================
+##================================================================================================
+##================================================================================================
 class Convex_problems_dual_ascend():
     def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
 
@@ -137,6 +139,86 @@ if __name__=='__main__':
     b = np.random.rand(5,1)
     D = Convex_problems(problem_type = 1, L= A.shape[1],learning_rate=0.05, algorithm='SGD')
     val,opt = D.Dual_Ascent(A=A, b=b, alpha=0.01)
+#=================================================================================
+
+class Convex_problems_dual_ascend():
+    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
+
+        self.problem_type = problem_type
+        self.L = L
+        self.old_opt = np.inf
+        self.parameter_optimization = (1e65) * np.ones((self.L, 1))
+        self.learning_rate = learning_rate
+        self.algorithm = algorithm
+    # =================================================================
+    def loss_f(self):
+        self.P = np.eye(self.L)
+        F = self.x.T @self.P @ self.x
+        return F.ravel()
+    #=======================================================================
+    def linear_constraint(self):
+        R = self.A @ self.x - self.b
+        return R.ravel()
+    #============================================================
+    def lagrangian(self):
+        self.opt = self.loss_f()
+        L = self.opt + self.y.T @ self.linear_constraint()
+        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
+        dL_dy = self.A @ self.x - self.b
+        return L.ravel(), dL_dx, dL_dy
+
+    def augmented_lagrangian(self):
+        self.rho = 0.01
+        augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
+        L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
+        daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
+        dL_dy = self.A @ self.x - self.b
+        return L.ravel(), dL_dx, dL_dy
+
+    #===========================================================================
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
+        self.tolerance = tolerance
+        m,n = A.shape       # m is the number of linear constraints
+        m2,n2 = b.shape
+        if m>n:
+            raise Exception('Overdetermined Problem!')
+        if m != m2:
+            raise Exception('The number of parameters and equation is not consistent!')
+
+        if n2 != 1:
+            raise Exception('Currently the algorithms is not suitable for multi-output problems!')
+
+        if self.L != n:
+            raise Exception('the dimention of variables and the problem is not consistent!')
+
+        self.y = np.random.randn(m,1)
+        self.x =  np.random.randn(n,1)
+        self.A = A
+        self.b = b
+        self.m = m
+        self.iterations = 20000
+
+        variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
+
+        for itr in tqdm(range(self.iterations)):
+            L, dl_dx, dl_dy = self.lagrangian()
+            L, dl_dx, dl_dy = self.augmented_lagrangian()
+            self.x = variable_optimizer.fit(self.x, dl_dx, itr//1000)
+            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+            tol = np.abs(self.opt - self.old_opt)
+            self.old_opt = self.opt
+            if tol<self.tolerance:
+                print('Optimum values acheived!')
+                break
+
+        if itr == self.iterations - 1:
+            print('Optimization terminated due to the maximum iteration!')
+
+        print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
+        print(f'the value of loss function= :  {self.opt}')
+        return self.x, self.opt
 
 
 
