@@ -181,20 +181,15 @@ class ADMM():
         adug_dx = 2 * dR_dx @ R
         adug_dz = 2 * dR_dz @ R
 
-        return R, dR_dx, dR_dz, adug_dx, adug_dz
+        return R, aug, dR_dx, dR_dz, adug_dx, adug_dz
 
-
-
-
-    # def linear_constraint(self):
-    #     dR_dx = self.A.T
-    #
-    #     adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
-    #     return R, dR_dx, aug, adug_dx
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
-        F = self.loss_f()
+        F, dF_dx, dF_dz = self.loss_f()
+        R, aug, dR_dx, dR_dz, adug_dx, adug_dz = self.linear_constraint()
+
+
         Cons = self.y.T @ self.linear_constraint()
         augmented = (self.rho/2) * (self.linear_constraint()).T @ (self.linear_constraint())
         L = F + Cons + augmented
@@ -206,7 +201,7 @@ class ADMM():
         daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
         dL_dy = self.A @ self.x - self.b
-        return L.ravel(), dL_dx, dL_dy
+        return L, dL_dx, dL_dy
 
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
