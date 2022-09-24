@@ -65,17 +65,21 @@ class Convex_problems_dual_ascend():
     def loss_f(self):
         self.P = np.eye(self.n)
         F = self.x.T @self.P @ self.x
-        return F.ravel()
+        dF_dx = (self.P + self.P.T)@ self.x
+        return F.ravel(), dF_dx
     #=======================================================================
     def linear_constraint(self):
-        R = self.A @ self.x - self.b
-        return R.ravel()
+        R = (self.A @ self.x - self.b)
+        dR_dx = self.A.T
+        return R.ravel(), dR_dx
     #============================================================
     def lagrangian(self):
-        self.opt = self.loss_f()
-        L = self.opt + self.y.T @ self.linear_constraint()
-        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y
-        dL_dy = self.A @ self.x - self.b
+        self.opt, dF_dx = self.loss_f()
+        lin_cons, dR_dx = self.linear_constraint()
+
+        L = self.opt + self.y.T @ lin_cons
+        dL_dx = dF_dx + dR_dx @ self.y
+        dL_dy = lin_cons
         return L.ravel(), dL_dx, dL_dy
 
     def augmented_lagrangian(self):
@@ -156,22 +160,31 @@ class ADMM():
         F1 = self.x.T @self.P1 @ self.x
         F2 = self.z.T @ self.P2 @ self.z
 
+        dF_dx = (self.P1 + self.P1.T) @ self.x
+        dF_dz = (self.P2 + self.P2.T) @ self.z
+
         F = F1 + F2
-        return F.ravel()
+        return F.ravel(), dF_dx, dF_dz
     #=======================================================================
     def linear_constraint(self):
         R = self.A @ self.x + self.B @ self.z - self.c
-        return R.ravel()
+
+        dR_dx = self.A.T
+        dR_dz = self.B.T
+
+        return R.ravel(), dR_dx, dR_dz
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
         F = self.loss_f()
         Cons = self.y.T @ self.linear_constraint()
+        augmented = (self.rho/2) * (self.linear_constraint()).T @ (self.linear_constraint())
+        L = F + Cons + augmented
 
-        augmented = (self.linear_constraint()).T@(self.linear_constraint())
+        dL_dx =
 
 
-        L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
+
         daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
         dL_dy = self.A @ self.x - self.b
