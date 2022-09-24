@@ -86,10 +86,11 @@ class Convex_problems_dual_ascend():
         self.rho = 0.01
         self.opt, dF_dx = self.loss_f()
         lin_cons, dR_dx = self.linear_constraint()
+        augmented = (self.A @ self.x - self.b).T @ (self.A @ self.x - self.b)
+
+        L = self.opt + self.y.T @ lin_cons + (self.rho/2) *
 
 
-
-        augmented = (self.A @ self.x - self.b).T@(self.A @ self.x - self.b)
         L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
         daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
         dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
