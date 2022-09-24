@@ -7,7 +7,8 @@ from tqdm import tqdm
 class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
-                 beta2 :float = None, dimention: int=1):
+                 beta2 :float = None, dimention: int=1,tolerance: float=1e-12):
+        self.tolerance = tolerance
         self.epsilon_adam = epsilon
         self.beta1_adam = beta1
         self.beta2_adam = beta2
@@ -143,17 +144,17 @@ if __name__=='__main__':
 
 
 class ADMM():
-    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
-
+    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12):
+        self.tolerance = tolerance
         self.problem_type = problem_type
         self.L = L
         self.old_opt = np.inf
-        self.parameter_optimization = (1e65) * np.ones((self.L, 1))
         self.learning_rate = learning_rate
         self.algorithm = algorithm
     # =================================================================
     def loss_f(self):
-        self.P = np.eye(self.L)
+        self.P1 = np.eye(self.L)
+
         F = self.x.T @self.P @ self.x
         return F.ravel()
     #=======================================================================
@@ -178,8 +179,8 @@ class ADMM():
         return L.ravel(), dL_dx, dL_dy
 
     #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
-        self.tolerance = tolerance
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
+
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
         if m>n:
