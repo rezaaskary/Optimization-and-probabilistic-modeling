@@ -2,6 +2,8 @@ import numpy as np
 import scipy as sc
 from tqdm import tqdm
 
+
+#=================================================================================
 class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
@@ -50,7 +52,7 @@ class Optimizer:
         parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam) + self.epsilon_adam)
         return parameter
 ##================================================================================================
-class Convex_problems():
+class Convex_problems_dual_ascend():
     def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
 
         self.problem_type = problem_type
