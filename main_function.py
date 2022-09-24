@@ -72,7 +72,7 @@ class Convex_problems_dual_ascend():
         R = (self.A @ self.x - self.b)
         dR_dx = self.A.T
         aug = R.T @ R
-        adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+        adug_dx = 2 * self.A.T @ R
         return R, dR_dx, aug, adug_dx
     #============================================================
     def lagrangian(self):
@@ -82,7 +82,7 @@ class Convex_problems_dual_ascend():
         L = self.opt + self.y.T @ lin_cons
         dL_dx = dF_dx + dR_dx @ self.y
         dL_dy = lin_cons
-        return L.ravel(), dL_dx, dL_dy
+        return L, dL_dx, dL_dy
 
     # ============================================================
     def augmented_lagrangian(self):
@@ -168,12 +168,14 @@ class ADMM():
         dF_dz = (self.P2 + self.P2.T) @ self.z
 
         F = F1 + F2
-        return F.ravel(), dF_dx, dF_dz
+        return F, dF_dx, dF_dz
     #=======================================================================
     def linear_constraint(self):
+
         R = self.A @ self.x + self.B @ self.z - self.c
         aug = R.T @ R
-        adug_dx = 2 * self.A.T @ self.A @ self.x + 2 * self.B.T @ self.B @ self.z - 2 * self.A.T @ self.c
+        adug_dx = 2 * self.A.T @ R
+        adug_dz = 2 * self.B.T @ R
 
         dR_dx = self.A.T
         dR_dz = self.B.T
@@ -183,11 +185,11 @@ class ADMM():
 
 
 
-    def linear_constraint(self):
-        dR_dx = self.A.T
-
-        adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
-        return R, dR_dx, aug, adug_dx
+    # def linear_constraint(self):
+    #     dR_dx = self.A.T
+    #
+    #     adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+    #     return R, dR_dx, aug, adug_dx
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
