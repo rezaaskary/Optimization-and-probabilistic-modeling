@@ -168,6 +168,7 @@ class ADMM:
         dF_dz = (self.P2 + self.P2.T) @ self.z
 
         F = F1 + F2
+
         return F, dF_dx, dF_dz
     #=======================================================================
     def linear_constraint(self):
@@ -194,7 +195,7 @@ class ADMM:
         dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
         dL_dz = dF_dz + dR_dz @ self.y + (self.rho/2) * adug_dz
         dL_dy = R
-
+        self.opt = F + (self.rho/2) * aug
         return L, dL_dx, dL_dz, dL_dy
     #===========================================================================
     def ADMM_dual_ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
@@ -223,7 +224,7 @@ class ADMM:
 
         self.A = A
         self.B = B
-        self.b = c
+        self.c = c
 
         variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
         variable_optimizer_z = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
@@ -231,9 +232,11 @@ class ADMM:
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
+
             self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
             self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
             self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
             if tol<self.tolerance:
@@ -243,7 +246,7 @@ class ADMM:
         if itr == self.iterations - 1:
             print('Optimization terminated due to the maximum iteration!')
 
-        print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
+        print(f'norm of constraint Error= :  {((self.A @ self.x +self.B @ self.z - self.c) ** 2).sum()}')
         print(f'the value of loss function= :  {self.opt}')
         return self.x, self.opt
 
