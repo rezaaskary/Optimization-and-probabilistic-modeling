@@ -60,7 +60,6 @@ class Convex_problems_dual_ascend():
         self.problem_type = problem_type
         self.L = L
         self.old_opt = np.inf
-        self.parameter_optimization = (1e65) * np.ones((self.L, 1))
         self.learning_rate = learning_rate
         self.algorithm = algorithm
     # =================================================================
@@ -90,7 +89,7 @@ class Convex_problems_dual_ascend():
         return L.ravel(), dL_dx, dL_dy
 
     #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), alpha :float=0.1, tolerance: float=1e-12):
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), tolerance: float=1e-12):
         self.tolerance = tolerance
         m,n = A.shape       # m is the number of linear constraints
         m2,n2 = b.shape
@@ -137,11 +136,13 @@ class Convex_problems_dual_ascend():
 if __name__=='__main__':
     A = np.random.rand(5,12)
     b = np.random.rand(5,1)
-    D = Convex_problems(problem_type = 1, L= A.shape[1],learning_rate=0.05, algorithm='SGD')
-    val,opt = D.Dual_Ascent(A=A, b=b, alpha=0.01)
+    D = Convex_problems_dual_ascend(problem_type = 1, L= A.shape[1],learning_rate=0.05, algorithm='SGD')
+    val,opt = D.Dual_Ascent(A=A, b=b)
+    val
 #=================================================================================
 
-class Convex_problems_dual_ascend():
+
+class ADMM():
     def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
 
         self.problem_type = problem_type
