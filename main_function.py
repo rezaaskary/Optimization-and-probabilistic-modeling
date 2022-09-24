@@ -188,13 +188,12 @@ class ADMM():
         F, dF_dx, dF_dz = self.loss_f()
         R, aug, dR_dx, dR_dz, adug_dx, adug_dz = self.linear_constraint()
 
+        Cons = self.y.T @ R
+        L = F + Cons + (self.rho/2) * aug
 
-
-
-
-        Cons = self.y.T @ self.linear_constraint()
-        augmented = (self.rho/2) * (self.linear_constraint()).T @ (self.linear_constraint())
-        L = F + Cons + augmented
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
+        dL_dz = dF_dz + dR_dz @ self.y + (self.rho/2) * adug_dz
+        dL_dy =
 
         dL_dx =1
 
