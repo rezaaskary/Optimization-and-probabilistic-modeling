@@ -7,8 +7,7 @@ from tqdm import tqdm
 class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
-                 beta2 :float = None, dimention: int=1,tolerance: float=1e-12):
-        self.tolerance = tolerance
+                 beta2 :float = None, dimention: int=1):
         self.epsilon_adam = epsilon
         self.beta1_adam = beta1
         self.beta2_adam = beta2
@@ -56,16 +55,15 @@ class Optimizer:
 ##================================================================================================
 ##================================================================================================
 class Convex_problems_dual_ascend():
-    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD'):
-
+    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD', tolerance: float=1e-12):
+        self.tolerance = tolerance
         self.problem_type = problem_type
-        self.L = L
         self.old_opt = np.inf
         self.learning_rate = learning_rate
         self.algorithm = algorithm
     # =================================================================
     def loss_f(self):
-        self.P = np.eye(self.L)
+        self.P = np.eye(self.n)
         F = self.x.T @self.P @ self.x
         return F.ravel()
     #=======================================================================
@@ -102,14 +100,12 @@ class Convex_problems_dual_ascend():
         if n2 != 1:
             raise Exception('Currently the algorithms is not suitable for multi-output problems!')
 
-        if self.L != n:
-            raise Exception('the dimention of variables and the problem is not consistent!')
-
         self.y = np.random.randn(m,1)
         self.x =  np.random.randn(n,1)
         self.A = A
         self.b = b
         self.m = m
+        self.n = n
         self.iterations = 20000
 
         variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
@@ -137,23 +133,24 @@ class Convex_problems_dual_ascend():
 if __name__=='__main__':
     A = np.random.rand(5,12)
     b = np.random.rand(5,1)
-    D = Convex_problems_dual_ascend(problem_type = 1, L= A.shape[1],learning_rate=0.05, algorithm='SGD')
+    D = Convex_problems_dual_ascend(problem_type = 1, learning_rate=0.05, algorithm='SGD')
     val,opt = D.Dual_Ascent(A=A, b=b)
     val
 #=================================================================================
-
+#=================================================================================
+#=================================================================================
 
 class ADMM():
-    def __init__(self,problem_type: int=1, L:int = 1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12):
+    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
         self.tolerance = tolerance
         self.problem_type = problem_type
-        self.L = L
         self.old_opt = np.inf
         self.learning_rate = learning_rate
         self.algorithm = algorithm
+        self.iterations = iterations
     # =================================================================
     def loss_f(self):
-        self.P1 = np.eye(self.L)
+        self.P1 = np.eye(self.n)
 
         F = self.x.T @self.P @ self.x
         return F.ravel()
@@ -181,27 +178,34 @@ class ADMM():
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
 
-        m,n = A.shape       # m is the number of linear constraints
-        m2,n2 = b.shape
-        if m>n:
-            raise Exception('Overdetermined Problem!')
-        if m != m2:
-            raise Exception('The number of parameters and equation is not consistent!')
+        p1,n1 = A.shape
+        p2, n2 = B.shape
+        p3,n3 = c.shape
 
-        if n2 != 1:
-            raise Exception('Currently the algorithms is not suitable for multi-output problems!')
+        if p1==p2==p3:
+            self.p = p1
+        else:
+            raise Exception('The matrices of linear constraint are not consistent!')
 
-        if self.L != n:
-            raise Exception('the dimention of variables and the problem is not consistent!')
+        # if m>n:
+        #     raise Exception('Overdetermined Problem!')
+        # if n3 != 1:
+        #     raise Exception('The array C is specified incorrectly!')
 
-        self.y = np.random.randn(m,1)
-        self.x =  np.random.randn(n,1)
+
+
+        self.y = np.random.randn(self.p,1)
+        self.x =  np.random.randn(n1,1)
+        self.z = np.random.randn(n1, 1)
+
         self.A = A
-        self.b = b
-        self.m = m
+        self.B = B
+        self.b = c
+
         self.iterations = 20000
 
-        variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        variable_optimizer_y = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
         lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
 
         for itr in tqdm(range(self.iterations)):
