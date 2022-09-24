@@ -66,37 +66,35 @@ class Convex_problems_dual_ascend():
         self.P = np.eye(self.n)
         F = self.x.T @self.P @ self.x
         dF_dx = (self.P + self.P.T)@ self.x
-        return F.ravel(), dF_dx
+        return F, dF_dx
     #=======================================================================
     def linear_constraint(self):
         R = (self.A @ self.x - self.b)
         dR_dx = self.A.T
-        return R.ravel(), dR_dx
+        aug = R.T @ R
+        adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+        return R, dR_dx, aug, adug_dx
     #============================================================
     def lagrangian(self):
         self.opt, dF_dx = self.loss_f()
-        lin_cons, dR_dx = self.linear_constraint()
+        lin_cons, dR_dx,_,_ = self.linear_constraint()
 
         L = self.opt + self.y.T @ lin_cons
         dL_dx = dF_dx + dR_dx @ self.y
         dL_dy = lin_cons
         return L.ravel(), dL_dx, dL_dy
 
+    # ============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
         self.opt, dF_dx = self.loss_f()
-        lin_cons, dR_dx = self.linear_constraint()
-        augmented = (self.A @ self.x - self.b).T @ (self.A @ self.x - self.b)
+        lin_cons, dR_dx, aug, adug_dx = self.linear_constraint()
 
-        L = self.opt + self.y.T @ lin_cons + (self.rho/2) *
+        L = self.opt + self.y.T @ lin_cons + (self.rho/2) * aug
 
-
-        L = self.opt + self.y.T @ self.linear_constraint() + (self.rho/2)*augmented
-        daug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
-        dL_dx = (self.P + self.P.T)@self.x + self.A.T@self.y + (self.rho/2)* daug_dx
-        dL_dy = self.A @ self.x - self.b
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
+        dL_dy = lin_cons
         return L.ravel(), dL_dx, dL_dy
-
     #===========================================================================
     def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), tolerance: float=1e-12):
         self.tolerance = tolerance
@@ -141,8 +139,8 @@ class Convex_problems_dual_ascend():
 #===============================================================================================
 
 if __name__=='__main__':
-    A = np.random.rand(5,12)
-    b = np.random.rand(5,1)
+    A = np.random.rand(10,12)
+    b = np.random.rand(10,1)
     D = Convex_problems_dual_ascend(problem_type = 1, learning_rate=0.05, algorithm='SGD')
     val,opt = D.Dual_Ascent(A=A, b=b)
     val
@@ -174,11 +172,22 @@ class ADMM():
     #=======================================================================
     def linear_constraint(self):
         R = self.A @ self.x + self.B @ self.z - self.c
+        aug = R.T @ R
+        adug_dx = 2 * self.A.T @ self.A @ self.x + 2 * self.B.T @ self.B @ self.z - 2 * self.A.T @ self.c
 
         dR_dx = self.A.T
         dR_dz = self.B.T
 
         return R.ravel(), dR_dx, dR_dz
+
+
+
+
+    def linear_constraint(self):
+        dR_dx = self.A.T
+
+        adug_dx = 2*self.A.T@self.A@self.x - 2*self.A.T@self.b
+        return R, dR_dx, aug, adug_dx
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
@@ -187,7 +196,7 @@ class ADMM():
         augmented = (self.rho/2) * (self.linear_constraint()).T @ (self.linear_constraint())
         L = F + Cons + augmented
 
-        dL_dx =
+        dL_dx =1
 
 
 
