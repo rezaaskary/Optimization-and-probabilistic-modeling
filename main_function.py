@@ -182,12 +182,14 @@ class ADMM():
         adug_dz = 2 * dR_dz @ R
 
         return R, aug, dR_dx, dR_dz, adug_dx, adug_dz
-
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
         F, dF_dx, dF_dz = self.loss_f()
         R, aug, dR_dx, dR_dz, adug_dx, adug_dz = self.linear_constraint()
+
+
+
 
 
         Cons = self.y.T @ self.linear_constraint()
