@@ -273,8 +273,8 @@ class Linear_quadratic_programming:
         self.q = -0.1 * np.ones((self.n,))
         self.r = 5
 
-        F = (1/2) * self.x.T @self.P1 @ self.x + self.q.T @ self.x + self.r
-        dF_dx = (1/2) * (self.P1 + self.P1.T) @ self.q
+        F = (1/2) * self.x.T @self.P @ self.x + self.q.T @ self.x + self.r
+        dF_dx = (1/2) * (self.P + self.P.T) @ self.q
 
         return F, dF_dx
     #=======================================================================
@@ -291,12 +291,13 @@ class Linear_quadratic_programming:
     #============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
-        F, dF_dx, dF_dz = self.loss_f()
+        F, dF_dx = self.loss_f()
         R, aug, dR_dx, adug_dx = self.linear_constraint()
 
 
+
         dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
-        dL_dz = dF_dz + dR_dz @ self.y + (self.rho/2) * adug_dz
+
         dL_dy = R
         self.opt = F + (self.rho/2) * aug
         return L, dL_dx, dL_dz, dL_dy
