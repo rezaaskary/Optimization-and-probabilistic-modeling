@@ -269,18 +269,15 @@ class Linear_quadratic_programming:
         self.iterations = iterations
     # =================================================================
     def loss_f(self):
-        self.P1 = np.eye(self.n1)
-        self.P2 = np.eye(self.n2)
+        self.P = np.eye(self.n)
+        self.q = -0.1 * np.ones((self.n,))
+        self.r = 5
 
-        F1 = self.x.T @self.P1 @ self.x
-        F2 = self.z.T @ self.P2 @ self.z
+        F = (1/2) * self.x.T @self.P1 @ self.x + self.q.T @ self.x + self.r
 
-        dF_dx = (self.P1 + self.P1.T) @ self.x
-        dF_dz = (self.P2 + self.P2.T) @ self.z
+        dF_dx = (1/2) * (self.P1 + self.P1.T) @ self.q
 
-        F = F1 + F2
-
-        return F, dF_dx, dF_dz
+        return F, dF_dx
     #=======================================================================
     def linear_constraint(self):
 
@@ -309,34 +306,42 @@ class Linear_quadratic_programming:
         self.opt = F + (self.rho/2) * aug
         return L, dL_dx, dL_dz, dL_dy
     #===========================================================================
-        def LQR(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
+    def LQR(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1)):
+        """
+        The standard form quadratic program (QP) is
+        minimize (1/2)xTP x + qT x
+        subject to Ax = b, x ≥ 0, (5.3)
+        with variable x ∈ Rn; we assume that P ∈ Sn
+        +. When P = 0, this reduces to the standard form linear program (LP).
+        """
+
+        m1, n = A.shape
+        m2, n2 = b.shape
 
 
-
-
-        m,n = A.shape
-        p2, n2 = B.shape
-        p3,n3 = c.shape
-
-        if p1==p2==p3:
-            self.p = p1
+        if m1==m2:
+            self.m = m1
         else:
             raise Exception('The matrices of linear constraint are not consistent!')
 
-        self.n1 = n1
-        self.n2 = n2
+        if n!=1:
+            raise Exception('Select a correct array b!')
+        else:
+            self.n = n1
 
-        self.y = np.random.randn(self.p,1)
-        self.x =  np.random.randn(n1,1)
-        self.z = np.random.randn(n2, 1)
+
+        if self.m > self.n:
+            raise Exception('over specified optimization problem!')
+
+
+        self.z = np.random.randn(self.n,1)
+        self.x =  np.random.randn(self.n,1)
+        self.u = np.random.randn(self.n, 1)
 
         self.A = A
-        self.B = B
-        self.c = c
+        self.b = b
 
         variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
-        variable_optimizer_z = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
-        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
