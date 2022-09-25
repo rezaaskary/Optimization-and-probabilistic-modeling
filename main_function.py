@@ -259,7 +259,7 @@ class ADMM:
 #=================================================================================
 #=================================================================================
 #=================================================================================
-class ADMM:
+class Linear_quadratic_programming:
     def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
         self.tolerance = tolerance
         self.problem_type = problem_type
@@ -309,9 +309,12 @@ class ADMM:
         self.opt = F + (self.rho/2) * aug
         return L, dL_dx, dL_dz, dL_dy
     #===========================================================================
-    def ADMM_dual_ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
+        def LQR(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
 
-        p1,n1 = A.shape
+
+
+
+        m,n = A.shape
         p2, n2 = B.shape
         p3,n3 = c.shape
 
