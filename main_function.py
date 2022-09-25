@@ -144,10 +144,12 @@ class Convex_problems_dual_ascend():
 #     D = Convex_problems_dual_ascend(problem_type = 1, learning_rate=0.05, algorithm='SGD')
 #     val,opt = D.Dual_Ascent(A=A, b=b)
 #     val
-#=================================================================================
-#=================================================================================
-#=================================================================================
 
+
+
+#=================================================================================
+#=================================================================================
+#=================================================================================
 class ADMM:
     def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
         self.tolerance = tolerance
@@ -245,15 +247,113 @@ class ADMM:
         return self.x, self.opt
 
 
-if __name__=='__main__':
-    A = np.random.rand(10,12)
-    B = np.random.rand(10, 4)
-    c = np.random.rand(10,1)
-    D = ADMM(problem_type = 1, learning_rate=0.05, algorithm='SGD')
-    val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
-    val
+# if __name__=='__main__':
+#     A = np.random.rand(10,12)
+#     B = np.random.rand(10, 4)
+#     c = np.random.rand(10,1)
+#     D = ADMM(problem_type = 1, learning_rate=0.05, algorithm='SGD')
+#     val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
+#     val
 
 
+#=================================================================================
+#=================================================================================
+#=================================================================================
+class ADMM:
+    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
+        self.tolerance = tolerance
+        self.problem_type = problem_type
+        self.old_opt = np.inf
+        self.learning_rate = learning_rate
+        self.algorithm = algorithm
+        self.iterations = iterations
+    # =================================================================
+    def loss_f(self):
+        self.P1 = np.eye(self.n1)
+        self.P2 = np.eye(self.n2)
+
+        F1 = self.x.T @self.P1 @ self.x
+        F2 = self.z.T @ self.P2 @ self.z
+
+        dF_dx = (self.P1 + self.P1.T) @ self.x
+        dF_dz = (self.P2 + self.P2.T) @ self.z
+
+        F = F1 + F2
+
+        return F, dF_dx, dF_dz
+    #=======================================================================
+    def linear_constraint(self):
+
+        R = self.A @ self.x + self.B @ self.z - self.c
+        aug = R.T @ R
+
+        dR_dx = self.A.T
+        dR_dz = self.B.T
+
+        adug_dx = 2 * dR_dx @ R
+        adug_dz = 2 * dR_dz @ R
+
+        return R, aug, dR_dx, dR_dz, adug_dx, adug_dz
+    #============================================================
+    def augmented_lagrangian(self):
+        self.rho = 0.01
+        F, dF_dx, dF_dz = self.loss_f()
+        R, aug, dR_dx, dR_dz, adug_dx, adug_dz = self.linear_constraint()
+
+        Cons = self.y.T @ R
+        L = F + Cons + (self.rho/2) * aug
+
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
+        dL_dz = dF_dz + dR_dz @ self.y + (self.rho/2) * adug_dz
+        dL_dy = R
+        self.opt = F + (self.rho/2) * aug
+        return L, dL_dx, dL_dz, dL_dy
+    #===========================================================================
+    def ADMM_dual_ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
+
+        p1,n1 = A.shape
+        p2, n2 = B.shape
+        p3,n3 = c.shape
+
+        if p1==p2==p3:
+            self.p = p1
+        else:
+            raise Exception('The matrices of linear constraint are not consistent!')
+
+        self.n1 = n1
+        self.n2 = n2
+
+        self.y = np.random.randn(self.p,1)
+        self.x =  np.random.randn(n1,1)
+        self.z = np.random.randn(n2, 1)
+
+        self.A = A
+        self.B = B
+        self.c = c
+
+        variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        variable_optimizer_z = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
+
+        for itr in tqdm(range(self.iterations)):
+            L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
+
+            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
+            self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
+            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+
+            tol = np.abs(self.opt - self.old_opt)
+            self.old_opt = self.opt
+            if tol<self.tolerance:
+                print('Optimum values acheived!')
+                break
+
+        if itr == self.iterations - 1:
+            print('Optimization terminated due to the maximum iteration!')
+
+        print(f'norm of constraint Error= :  {((self.A @ self.x +self.B @ self.z - self.c) ** 2).sum()}')
+        print(f'the value of loss function= :  {self.opt}')
+        return self.x, self.opt
 
 
 
