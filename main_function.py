@@ -361,4 +361,16 @@ class Linear_quadratic_programming:
         return self.x, self.opt
 
 
+if __name__=='__main__':
+    n = 7       # the number of variables x
+    m = 3       # the number of equality constraints
+    p = 2       # the number of inequality
+    d =
 
+
+    A = np.random.rand(10,12)
+    B = np.random.rand(10, 4)
+    c = np.random.rand(10,1)
+    D = Linear_quadratic_programming(problem_type = 1, learning_rate=0.05, algorithm='SGD')
+    val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
+    val
