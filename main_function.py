@@ -365,7 +365,14 @@ if __name__=='__main__':
     n = 7       # the number of variables x
     m = 3       # the number of equality constraints
     p = 2       # the number of inequality
-    d =
+    d = 4
+    P = np.eye(n)
+    g = np.random.rand(p,n)
+    h = np.random.rand(m,n)
+    ub = 100 * np.ones((n,1))
+    lb = -100 * np.ones((n,1))
+
+
 
 
     A = np.random.rand(10,12)
