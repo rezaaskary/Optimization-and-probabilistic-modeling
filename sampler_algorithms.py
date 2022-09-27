@@ -51,5 +51,6 @@ class Metropolis_Hastings:
 def Gaussian_liklihood(x):
     sigma = 5
     mean = 0
-
+    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
+    return log_gauss
 
