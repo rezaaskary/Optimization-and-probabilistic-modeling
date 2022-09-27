@@ -331,9 +331,16 @@ class Linear_quadratic_programming:
         if 'linear_term' not in Problem_parameters:
             Problem_parameters.update({'linear_term':np.zeros((row,1))})
         else:
-            if np.any(np.isnan(Problem_parameters['linear_term'])):
-                raise Exception('The linear term of the loss function includes ')
+            if Problem_parameters['linear_term'] is None:
+                Problem_parameters['linear_term'] = np.zeros((row,1))
+            elif np.any(np.isnan(Problem_parameters['linear_term'])):
+                raise Exception('The linear term of the loss function includes NaN values')
+            else:
+                row_linear_term,cul_linear_term = Problem_parameters['linear_term'].shape
+                if cul_linear_term != 1:
+                    raise Exception(r'The linear term has {cul_linear_term} column which is incorrect!')
 
+        #==================================================
 
 
         m1, n = A.shape
