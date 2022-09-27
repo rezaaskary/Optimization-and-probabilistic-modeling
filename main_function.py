@@ -341,6 +341,21 @@ class Linear_quadratic_programming:
                     raise Exception(r'The linear term has {cul_linear_term} column which is incorrect!')
                 elif row_linear_term != row:
                     raise Exception('The linear term is not compatible with the weight matrix!')
+        #====================================================
+        if 'bias' not in Problem_parameters:
+            Problem_parameters.update({'bias':0})
+        elif Problem_parameters['bias'] is None:
+            Problem_parameters['bias'] = 0
+        elif np.any(np.isnan(Problem_parameters['bias'])):
+            Problem_parameters['bias'] = 0
+        else:
+            if isinstance(Problem_parameters['bias'],float) or isinstance(Problem_parameters['bias'],int):
+
+
+
+
+
+        self.n = row
 
         #==================================================
 
