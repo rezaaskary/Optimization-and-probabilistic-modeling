@@ -343,15 +343,21 @@ class Linear_quadratic_programming:
                     raise Exception('The linear term is not compatible with the weight matrix!')
         #====================================================
         if 'bias' not in Problem_parameters:
+            print('The bias is not defined!')
             Problem_parameters.update({'bias':0})
         elif Problem_parameters['bias'] is None:
+            print('The bias is not defined!')
             Problem_parameters['bias'] = 0
         elif np.any(np.isnan(Problem_parameters['bias'])):
+            print('The bias is NaN!')
             Problem_parameters['bias'] = 0
         else:
             if isinstance(Problem_parameters['bias'],float) or isinstance(Problem_parameters['bias'],int):
+                pass
+            else:
+                raise Exception('The bias input is not a number!')
 
-
+        # ====================================================
 
 
 
