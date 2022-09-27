@@ -303,14 +303,38 @@ class Linear_quadratic_programming:
         self.opt = F + (self.rho/2) * aug
         return L, dL_dx, dL_dz, dL_dy
     #===========================================================================
-    def LQR(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1)):
-        """
-        The standard form quadratic program (QP) is
-        minimize (1/2)xTP x + qT x
-        subject to Ax = b, x ≥ 0, (5.3)
-        with variable x ∈ Rn; we assume that P ∈ Sn
-        +. When P = 0, this reduces to the standard form linear program (LP).
-        """
+    def LQR(self, Problem_parameters: dict = Problem_parameters):
+
+        # checking for the correctness of the weight matrix
+        if 'weight' not in Problem_parameters:
+            raise Exception('The weight matrix is not defined!')
+        elif Problem_parameters['weight'] is None:
+            raise Exception('The weight matrix is not defined')
+        else:
+            if np.any(np.isnan(Problem_parameters['weight'])):
+                raise Exception('The weight matrix includes NaN values!')
+            row, cul = Problem_parameters['weight'].shape
+            if row!=cul:
+                raise Exception('The weight matrix is not squared!')
+            if problem_type is 'minimization'  and  np.all(np.linalg.eigvals(Problem_parameters['weight']) > 0):
+                raise Exception('The weight matrix should be positive definite!')
+            elif problem_type is 'maximization'  and  np.all(np.linalg.eigvals(Problem_parameters['weight']) < 0):
+                raise Exception('The weight matrix should be negative definite!')
+            elif not (problem_type is 'maximization' or problem_type is 'maximization'):
+                raise Exception('The problem type is not defined properly!')
+            else:
+                eigen_positive = (np.linalg.eigvals(Problem_parameters['weight']) >= 0).sum()
+                eigen_negative = (np.linalg.eigvals(Problem_parameters['weight']) < 0).sum()
+                raise Exception(r'The eright matrix is not positive/negative semi definite. The eright matrix has {eigen_positive}\
+                 positive eigen values and {eigen_negative} negative eigen values!')
+        #==================================================
+        if 'linear_term' not in Problem_parameters:
+            Problem_parameters.update({'linear_term':np.zeros((row,1))})
+        else:
+            if np.any(np.isnan(Problem_parameters['linear_term'])):
+                raise Exception('The linear term of the loss function includes ')
+
+
 
         m1, n = A.shape
         m2, n2 = b.shape
@@ -368,6 +392,7 @@ if __name__=='__main__':
     d = 4
     P = np.eye(n)
     q = np.random.randn(n,1)
+    r = np.random.randn(1)
 
     g = np.random.randn(p,n)
     h = np.random.randn(m,n)
@@ -375,7 +400,16 @@ if __name__=='__main__':
     lb = -100 * np.ones((n,1))
 
     Problem_parameters = dict()
-    Problem_parameters.update({})
+    Problem_parameters.update({'weight':p})
+    Problem_parameters.update({'linear_term':q})
+    Problem_parameters.update({'bias':r})
+    Problem_parameters.update({'equality':h})
+    Problem_parameters.update({'inequality':g})
+    Problem_parameters.update({'upper_bound':ub})
+    Problem_parameters.update({'lower_bound':lb})
+
+
+
 
 
 
