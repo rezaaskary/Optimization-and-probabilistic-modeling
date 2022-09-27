@@ -336,9 +336,11 @@ class Linear_quadratic_programming:
             elif np.any(np.isnan(Problem_parameters['linear_term'])):
                 raise Exception('The linear term of the loss function includes NaN values')
             else:
-                row_linear_term,cul_linear_term = Problem_parameters['linear_term'].shape
+                row_linear_term, cul_linear_term = Problem_parameters['linear_term'].shape
                 if cul_linear_term != 1:
                     raise Exception(r'The linear term has {cul_linear_term} column which is incorrect!')
+                elif row_linear_term != row:
+                    raise Exception('The linear term is not compatible with the weight matrix!')
 
         #==================================================
 
