@@ -367,17 +367,19 @@ if __name__=='__main__':
     p = 2       # the number of inequality
     d = 4
     P = np.eye(n)
-    g = np.random.rand(p,n)
-    h = np.random.rand(m,n)
+    q = np.random.randn(n,1)
+
+    g = np.random.randn(p,n)
+    h = np.random.randn(m,n)
     ub = 100 * np.ones((n,1))
     lb = -100 * np.ones((n,1))
 
+    Problem_parameters = dict()
+    Problem_parameters.update({})
 
 
 
-    A = np.random.rand(10,12)
-    B = np.random.rand(10, 4)
-    c = np.random.rand(10,1)
+
     D = Linear_quadratic_programming(problem_type = 1, learning_rate=0.05, algorithm='SGD')
     val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
     val
