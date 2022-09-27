@@ -21,12 +21,12 @@ class Metropolis_Hastings:
         self.logprop[:,0] = self.logprop_fcn(self.x0)
 
     def MH_non_vectorized_sampling(self):
-
+        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
         for ch in tqdm(range(self.Nchain)):
             self.n_of_accept = 0
             for iter in range(1,self.iterations):
-                self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1],sigma = 0.1)
-                uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=1)
+                self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1],sigma = 0.05)
+
 
                 Ln_prop = self.logprop_fcn(self.proposed)
 
@@ -35,7 +35,7 @@ class Metropolis_Hastings:
                 Index_min = hastings < 1
                 min_ratio[Index_min] = hastings[Index_min]
                 min_ratio[~Index_min] = 1
-                criteria = uniform_random_number < min_ratio
+                criteria = uniform_random_number[ch,iter] < min_ratio
                 if criteria:
                     self.chains[:, ch, iter] = self.proposed
                     self.logprop[:, iter] = Ln_prop
@@ -61,7 +61,7 @@ class Metropolis_Hastings:
 
 
 def Gaussian_liklihood(x):
-    sigma = 5
+    sigma = 15
     mean = 0
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
@@ -71,5 +71,5 @@ def Gaussian_liklihood(x):
 
 
 if __name__=='__main__':
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=100000, x0 = 10 * np.ones((1,1)), vectorized=False,chains=1)
+    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=100000, x0 = 100 * np.ones((1,1)), vectorized=False,chains=1)
     G.MH_non_vectorized_sampling()
