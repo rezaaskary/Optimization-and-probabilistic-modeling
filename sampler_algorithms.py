@@ -1,13 +1,13 @@
 import numpy as np
 import scipy as sc
 from tqdm import tqdm
-import emcee
-from emcee import EnsembleSampler
+# import emcee
+# from emcee import EnsembleSampler
 
 
 
 class Metropolis_Hastings:
-    def __int__(self, logprop_fcn, iterations:int = 1000, x0:np.ndarray = np.ones((1,1)), vectorized:bool = False, chains:int = 1):
+    def __init__(self,iterations, x0, vectorized, chains):
         self.iterations = iterations
         self.x0 = x0
         self.Ndim = len(self.x0)
@@ -35,11 +35,10 @@ class Metropolis_Hastings:
                 else:
                     self.chains[:, ch, iter] = self.chains[:, ch, iter-1]
 
-
-
-    def MH_vectorized_sampling(self):
-
-        return 1
+    #
+    #
+    # def MH_vectorized_sampling(self):
+    #     return 1
 
 
     def gaussian_proposal(self, x_old, sigma:float = 0.01):
@@ -54,3 +53,10 @@ def Gaussian_liklihood(x):
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
 
+ # logprop_fcn,
+# logprop_fcn = Gaussian_liklihood,
+
+
+if __name__=='__main__':
+    G = Metropolis_Hastings(iterations=1000, x0 = 50, vectorized=False,chains=1)
+    G.MH_non_vectorized_sampling()

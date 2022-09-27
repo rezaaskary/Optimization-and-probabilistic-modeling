@@ -342,10 +342,10 @@ class Linear_quadratic_programming:
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
-
-            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
-            self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
-            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+            #
+            # self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
+            # self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
+            # self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
 
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
@@ -365,7 +365,7 @@ if __name__=='__main__':
     n = 7       # the number of variables x
     m = 3       # the number of equality constraints
     p = 2       # the number of inequality
-    d =
+    d =1
 
 
     A = np.random.rand(10,12)
