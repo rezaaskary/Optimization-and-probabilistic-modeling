@@ -21,13 +21,16 @@ class Metropolis_Hastings:
         self.logprop[:,0] = self.logprop_fcn(self.x0)
 
     def MH_non_vectorized_sampling(self):
-        uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size = 1)
+
         for ch in tqdm(range(self.Nchain)):
             self.n_of_accept = 0
             for iter in range(1,self.iterations):
                 self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1],sigma = 0.1)
+                uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=1)
 
-                hastings = np.exp(self.logprop_fcn(self.proposed))/np.exp(self.logprop[:,iter-1])
+                Ln_prop = self.logprop_fcn(self.proposed)
+
+                hastings = np.exp(Ln_prop) / np.exp(self.logprop[:,iter-1])
                 min_ratio = hastings
                 Index_min = hastings < 1
                 min_ratio[Index_min] = hastings[Index_min]
@@ -35,11 +38,16 @@ class Metropolis_Hastings:
                 criteria = uniform_random_number < min_ratio
                 if criteria:
                     self.chains[:, ch, iter] = self.proposed
+                    self.logprop[:, iter] = Ln_prop
                     self.n_of_accept += 1
                     self.accept_rate[ch,iter] = self.n_of_accept / iter
                 else:
-                    self.chains[:, ch, iter] = self.chains[:, ch, iter-1]
-        self.chains
+                    self.chains[:, ch, iter] = self.chains[:, ch, iter - 1]
+                    self.logprop[:, iter] = self.logprop[:, iter - 1]
+        T = self.chains
+        plt.plot(T.ravel())
+        plt.show()
+        T
     #
     #
     # def MH_vectorized_sampling(self):
@@ -63,5 +71,5 @@ def Gaussian_liklihood(x):
 
 
 if __name__=='__main__':
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=1000, x0 = 50*np.ones((1,1)), vectorized=False,chains=1)
+    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=100000, x0 = 10 * np.ones((1,1)), vectorized=False,chains=1)
     G.MH_non_vectorized_sampling()
