@@ -163,6 +163,10 @@ class Continuous_Truncated_Gaussian:
 # =============================================================================
 class Continuous_Half_Gaussian:
     def __init__(self, std: float = 1.0):
+        """
+        The half normal distribution function
+        :param std: the standard deviation of the half normal distribution
+        """
         self.std = std
 
     def Prob(self, x: float = 0.5):
