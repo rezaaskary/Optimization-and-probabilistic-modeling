@@ -9,7 +9,10 @@ import matplotlib.pyplot as plt
 
 class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = 1000, x0:np.ndarray = np.ones((1,1)), vectorized:bool = False, chains:int = 1):
-        self.iterations = iterations
+        if isinstance(iterations,int):
+            self.iterations = iterations
+        else:
+            self.iterations = 1000
         self.x0 = x0
         self.Ndim = self.x0.shape[0]
         self.Nchain = chains
@@ -20,20 +23,21 @@ class Metropolis_Hastings:
         self.chains[:, :, 0] = self.x0
         self.logprop[:,0] = self.logprop_fcn(self.x0)
         self.n_of_accept = np.zeros((self.Nchain, 1))
+
+
     def MH_non_vectorized_sampling(self):
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-        for iter in range(1, self.iterations):
-            for ch in tqdm(range(self.Nchain)):
+        for iter in tqdm(range(1, self.iterations)):
+            for ch in (range(self.Nchain)):
                 # generating the sample for each chain
                 self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed)
-
+                # calculating the hasting ratio
                 hastings = np.exp(Ln_prop - self.logprop[ch,iter-1])
                 criteria = np.random.uniform(low=0.0, high=1.0) < hastings
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
-
                     self.logprop[ch, iter] = Ln_prop
                     self.n_of_accept += 1
                     self.accept_rate[ch,iter] = self.n_of_accept / iter
@@ -52,8 +56,8 @@ class Metropolis_Hastings:
         T
     #
     #
-    # def MH_vectorized_sampling(self):
-    #     return 1
+    def MH_vectorized_sampling(self):
+        return 1
 
 
 
