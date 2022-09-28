@@ -6,18 +6,22 @@ import matplotlib.pyplot as plt
 # from emcee import EnsembleSampler
 
 
-def Gaussian_liklihood(parameter) -> np.ndarray:
+def Gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray) -> np.ndarray:
     x = parameter[0:1,0]
-    # x = parameter[1:,0]
     mean = 0
     sigma = 2
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
 
 
+def Gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
+
+    return
+
+
 
 class Metropolis_Hastings:
-    def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1):
+    def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1, progress_bar:bool = True):
 
         # checking the correctness of log probablity function
         if isinstance(logprop_fcn,function):
@@ -43,6 +47,7 @@ class Metropolis_Hastings:
                 f'------------------------------------------------------------------------------------------------------------------\n '
                 f'The number of chains is not an integer value. The default value of {self.Nchain} is selectd as the number of chains\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
+
         # checking the correctness of the vectorized simulation
         if isinstance(vectorized, bool):
             self.vectorized = vectorized
@@ -58,6 +63,19 @@ class Metropolis_Hastings:
                 f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
 
+        # checking the corectness of the progressbar
+
+        if isinstance(progress_bar, bool):
+            self.progress_bar = not progress_bar
+        else:
+            self.progress_bar = False
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
+
+
+
         # checking the correctness of initial condition
         if isinstance(x0, np.ndarray):
             dim1, dim2 = x0.shape
@@ -65,33 +83,21 @@ class Metropolis_Hastings:
                 raise Exception('The initial condition is not consistent with the number of chains!')
             else:
                 self.Ndim = self.x0.shape[0]
-
+                self.x0 = x0
         else:
             raise Exception('The initial condition is not selected properly!')
 
-        #
-
-        self.x0 = x0
-
-
-
-
-
-
-
-
+        # initializing all values
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
-
         self.logprop = np.zeros((self.Nchain, self.iterations))
         self.accept_rate = np.zeros((self.Nchain, self.iterations))
-        self.chains[:, :, 0] = self.x0
         self.logprop[:,0] = self.logprop_fcn(self.x0)
         self.n_of_accept = np.zeros((self.Nchain, 1))
 
 
     def MH_non_vectorized_sampling(self):
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-        for iter in tqdm(range(1, self.iterations)):
+        for iter in tqdm(range(1, self.iterations), disable = True):
             for ch in (range(self.Nchain)):
                 # generating the sample for each chain
                 self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
