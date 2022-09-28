@@ -96,7 +96,8 @@ class Metropolis_Hastings:
     def MH_non_vectorized_sampling(self):
         """
         non-vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
-        :return:
+        :returns: chains: The chains of samples drawn from the posteriori distribution
+                  acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
 
         # sampling from a uniform distribution
