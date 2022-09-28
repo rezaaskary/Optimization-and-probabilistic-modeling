@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # from emcee import EnsembleSampler
 
 
-def Gaussian_liklihood(parameter):
+def Gaussian_liklihood(parameter) -> np.ndarray:
     x = parameter[0:1,0]
     # x = parameter[1:,0]
     mean = 0
@@ -18,6 +18,9 @@ def Gaussian_liklihood(parameter):
 
 class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1):
+        # checking the correctness of log probablity function
+
+
         # checking the correctness of the iteration
         if isinstance(iterations, int):
             self.iterations = iterations
@@ -45,10 +48,12 @@ class Metropolis_Hastings:
                 self.run = self.MH_non_vectorized_sampling
         else:
             self.vectorized = False
+            self.run = self.MH_non_vectorized_sampling
             print(
                 f'------------------------------------------------------------------------------------------------------------------\n '
                 f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
+        # checking the correctness of the vectorized simulation
 
 
 
