@@ -53,13 +53,14 @@ class Continuous_Uniform:
 # =============================================================================
 class Continuous_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0):
-        self.mu = mu
-        self.std = std
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
         :param std: the standard deviation of gaussian distribution
         """
+        self.mu = mu
+        self.std = std
+
     def Prob(self, x: float = 0.5):
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
