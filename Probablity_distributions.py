@@ -6,9 +6,13 @@ from matplotlib.pyplot import plot, show
 # =============================================================================
 class Continuous_Uniform:
     def __init__(self, lb: float = 0.0, ub: float = 1.0):
+        """
+        The continuous uniform distribution
+        :param lb: the lower bound of the uniform distribution
+        :param ub: the upper bound of the uniform distribution
+        """
         self.lb = lb
         self.ub = ub
-
     def Prob(self, x: float = 0.5):
         if x <= self.lb or x >= self.ub:
             return 0
