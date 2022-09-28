@@ -38,14 +38,17 @@ class Metropolis_Hastings:
                 criteria = uniform_random_number[ch,iter] < min_ratio
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
+
                     self.logprop[:, iter] = Ln_prop
                     self.n_of_accept += 1
                     self.accept_rate[ch,iter] = self.n_of_accept / iter
                 else:
-                    self.chains[:, ch, iter] = self.chains[:, ch, iter - 1]
+                    self.chains[:, ch, iter:iter+1] = self.chains[:, ch, iter - 1 : iter]
                     self.logprop[:, iter] = self.logprop[:, iter - 1]
-        T = self.chains
-        plt.plot(T.ravel())
+        T1 = self.chains[0,0,:]
+        T2 = self.chains[1, 0, :]
+        plt.plot(T1)
+        plt.plot(T2)
         plt.show()
         T
     #
