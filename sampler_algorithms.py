@@ -19,25 +19,17 @@ class Metropolis_Hastings:
         self.accept_rate = np.zeros((self.Nchain, self.iterations))
         self.chains[:, :, 0] = self.x0
         self.logprop[:,0] = self.logprop_fcn(self.x0)
-
+        self.n_of_accept = np.zeros((self.Nchain, 1))
     def MH_non_vectorized_sampling(self):
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-        for ch in tqdm(range(self.Nchain)):
-            self.n_of_accept = 0
-            for iter in range(1,self.iterations):
+        for iter in range(1, self.iterations):
+            for ch in tqdm(range(self.Nchain)):
+                # generating the sample for each chain
                 self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
-
-
+                # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed)
 
                 hastings = np.exp(Ln_prop - self.logprop[ch,iter-1])
-
-                # min_ratio = hastings
-                # Index_min = hastings < 1
-                # min_ratio[Index_min] = hastings[Index_min]
-                # min_ratio[~Index_min] = 1
-                # criteria = uniform_random_number[ch,iter] < min_ratio
-                # criteria = uniform_random_number[ch,iter] < hastings
                 criteria = np.random.uniform(low=0.0, high=1.0) < hastings
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
@@ -48,7 +40,7 @@ class Metropolis_Hastings:
                 else:
                     self.chains[:, ch, iter:iter+1] = self.chains[:, ch, iter - 1 : iter]
                     self.logprop[ch, iter] = self.logprop[ch, iter - 1]
-                    self.accept_rate[ch, iter] = self.n_of_accept / iter
+                    self.accept_rate[ch, iter] = self.n_of_accept[ch] / iter
         T1 = self.chains[0,0,:]
         # T2 = self.chains[1, 0, :]
         plt.plot(T1)
