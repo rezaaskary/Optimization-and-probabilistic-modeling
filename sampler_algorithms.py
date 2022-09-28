@@ -11,7 +11,7 @@ class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = 1000, x0:np.ndarray = np.ones((1,1)), vectorized:bool = False, chains:int = 1):
         self.iterations = iterations
         self.x0 = x0
-        self.Ndim = len(self.x0)
+        self.Ndim = self.x0.shape[0]
         self.Nchain = chains
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
         self.logprop_fcn = logprop_fcn
@@ -25,7 +25,7 @@ class Metropolis_Hastings:
         for ch in tqdm(range(self.Nchain)):
             self.n_of_accept = 0
             for iter in range(1,self.iterations):
-                self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1],sigma = 0.05)
+                self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1], sigma = 0.05)
 
 
                 Ln_prop = self.logprop_fcn(self.proposed)
@@ -37,7 +37,7 @@ class Metropolis_Hastings:
                 min_ratio[~Index_min] = 1
                 criteria = uniform_random_number[ch,iter] < min_ratio
                 if criteria:
-                    self.chains[:, ch, iter] = self.proposed
+                    self.chains[:, ch, iter:iter+1] = self.proposed
                     self.logprop[:, iter] = Ln_prop
                     self.n_of_accept += 1
                     self.accept_rate[ch,iter] = self.n_of_accept / iter
@@ -54,22 +54,26 @@ class Metropolis_Hastings:
     #     return 1
 
 
+
     def gaussian_proposal(self, x_old, sigma:float = 0.01):
-        x_new = x_old + np.random.randn(self.Ndim) * sigma
-        return x_new
+        x_old += np.random.randn(self.Ndim, 1) * sigma
+        return x_old
 
 
-
-def Gaussian_liklihood(x):
-    sigma = 15
+def Gaussian_liklihood(parameter):
+    sigma = parameter[0:1,0]
+    x = parameter[1:,0]
     mean = 0
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
+
 
  # logprop_fcn,
 # logprop_fcn = Gaussian_liklihood,
 
 
 if __name__=='__main__':
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=100000, x0 = 100 * np.ones((1,1)), vectorized=False,chains=1)
+    x0 = 25 * np.ones((2, 1))
+    x0[1,0] = 2
+    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=100000, x0 = x0, vectorized=False,chains=1)
     G.MH_non_vectorized_sampling()
