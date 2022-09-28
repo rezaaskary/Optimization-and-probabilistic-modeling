@@ -63,10 +63,8 @@ class Metropolis_Hastings:
             dim1, dim2 = x0.shape
             if dim2 != self.Nchain:
                 raise Exception('The initial condition is not consistent with the number of chains!')
-
-
-
-            self.Ndim = self.x0.shape[0]
+            else:
+                self.Ndim = self.x0.shape[0]
 
         else:
             raise Exception('The initial condition is not selected properly!')
