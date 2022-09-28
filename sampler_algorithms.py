@@ -17,13 +17,34 @@ def Gaussian_liklihood(parameter):
 
 
 class Metropolis_Hastings:
-    def __init__(self,logprop_fcn, iterations:int = 1000, x0:np.ndarray = np.ones((1,1)), vectorized:bool = False, chains:int = 1):
+    def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1):
         # checking the correctness of the iteration
-        if isinstance(iterations,int):
+        if isinstance(iterations, int):
             self.iterations = iterations
         else:
             self.iterations = 1000
-            print(r'The iteration is not a integer value. The default value of {self.iterations} is selectd as the number of iterations')
+            print(f'------------------------------------------------------------------------------------------------------------------\n '
+                  f'The iteration is not an integer value. The default value of {self.iterations} is selectd as the number of iterations\n'
+                  f'---------------------------------------------------------------------------------------------------------------------')
+
+        # checking the correctness of the iteration
+        if isinstance(chains, int):
+            self.Nchain = chains
+        else:
+            self.Nchain = 1
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The number of chains is not an integer value. The default value of {self.Nchain} is selectd as the number of chains\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
+        if
+
+
+
+        # checking the correctness of the iteration
+        if isinstance(x0, np.ndarray):
+            dim1, dim2 = x0.shape
+            self.x0 = x0
+            self.Ndim = self.x0.shape[0]
 
 
 
@@ -35,9 +56,7 @@ class Metropolis_Hastings:
 
 
 
-        self.x0 = x0
-        self.Ndim = self.x0.shape[0]
-        self.Nchain = chains
+
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
         self.logprop_fcn = logprop_fcn
         self.logprop = np.zeros((self.Nchain, self.iterations))
