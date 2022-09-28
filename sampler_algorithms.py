@@ -18,8 +18,12 @@ def Gaussian_liklihood(parameter) -> np.ndarray:
 
 class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1):
-        # checking the correctness of log probablity function
 
+        # checking the correctness of log probablity function
+        if isinstance(logprop_fcn,function):
+            self.logprop_fcn = logprop_fcn
+        else:
+            raise  Exception('The log(probablity) function is not defined probperly!')
 
         # checking the correctness of the iteration
         if isinstance(iterations, int):
@@ -78,7 +82,7 @@ class Metropolis_Hastings:
 
 
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
-        self.logprop_fcn = logprop_fcn
+
         self.logprop = np.zeros((self.Nchain, self.iterations))
         self.accept_rate = np.zeros((self.Nchain, self.iterations))
         self.chains[:, :, 0] = self.x0
