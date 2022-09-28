@@ -99,7 +99,6 @@ class Metropolis_Hastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-
         # sampling from a uniform distribution
         uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size=(self.Nchain, self.iterations))
 
@@ -133,6 +132,37 @@ class Metropolis_Hastings:
         return self.chains, self.accept_rate
 
     def MH_vectorized_sampling(self):
+        """
+        vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
+        :returns: chains: The chains of samples drawn from the posteriori distribution
+                  acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
+        """
+
+        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
+        for iter in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
+            for ch in (range(self.Nchain)):  # sampling from each cahin
+
+                # generating the sample for each chain
+                self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter - 1:iter].copy(), sigma=0.1)
+                # calculating the log of the posteriori function
+                Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
+                # calculating the hasting ratio
+                hastings = np.exp(Ln_prop - self.logprop[ch, iter - 1])
+                criteria = uniform_random_number[ch, iter] < hastings
+                if criteria:
+                    self.chains[:, ch, iter:iter + 1] = self.proposed
+                    self.logprop[ch, iter] = Ln_prop
+                    self.n_of_accept[ch, 0] += 1
+                    self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
+                else:
+                    self.chains[:, ch, iter:iter + 1] = self.chains[:, ch, iter - 1: iter]
+                    self.logprop[ch, iter] = self.logprop[ch, iter - 1]
+                    self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
+
+
+
+
+
         return 1
 
 
