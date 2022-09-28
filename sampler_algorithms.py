@@ -7,17 +7,17 @@ from Probablity_distributions import *
 # from emcee import EnsembleSampler
 
 
-def gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray) -> np.ndarray:
+def gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
     x = parameter[0:1,0]
     mean = 0
-    sigma = 2
+    sigma = Covariance
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
 
 
 def gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
 
-    return
+    return 1
 
 
 
@@ -65,7 +65,6 @@ class Metropolis_Hastings:
                 f'---------------------------------------------------------------------------------------------------------------------')
 
         # checking the corectness of the progressbar
-
         if isinstance(progress_bar, bool):
             self.progress_bar = not progress_bar
         else:
@@ -90,7 +89,7 @@ class Metropolis_Hastings:
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
         self.logprop = np.zeros((self.Nchain, self.iterations))
         self.accept_rate = np.zeros((self.Nchain, self.iterations))
-        self.logprop[:, 0] = self.logprop_fcn(self.x0)
+        self.logprop[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
         self.n_of_accept = np.zeros((self.Nchain, 1))
 
 
@@ -99,7 +98,6 @@ class Metropolis_Hastings:
         non-vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
         :return:
         """
-
 
         # sampling from a uniform distribution
         uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size=(self.Nchain, self.iterations))
@@ -110,30 +108,29 @@ class Metropolis_Hastings:
                 # generating the sample for each chain
                 self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
                 # calculating the log of the posteriori function
-                Ln_prop = self.logprop_fcn(self.proposed)
+                Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
                 # calculating the hasting ratio
                 hastings = np.exp(Ln_prop - self.logprop[ch,iter-1])
                 criteria = uniform_random_number[ch,iter]< hastings
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
                     self.logprop[ch, iter] = Ln_prop
-                    self.n_of_accept += 1
-                    self.accept_rate[ch,iter] = self.n_of_accept / iter
+                    self.n_of_accept[ch,0] += 1
+                    self.accept_rate[ch,iter] = self.n_of_accept[ch,0] / iter
                 else:
                     self.chains[:, ch, iter:iter+1] = self.chains[:, ch, iter - 1 : iter]
                     self.logprop[ch, iter] = self.logprop[ch, iter - 1]
-                    self.accept_rate[ch, iter] = self.n_of_accept[ch] / iter
-        T1 = self.chains[0,0,:]
-        # T2 = self.chains[1, 0, :]
-        plt.plot(T1)
-        # plt.plot(T2)
-        plt.show()
-        plt.figure()
-        plt.plot( self.accept_rate.ravel())
-        plt.show()
-        T
-    #
-    #
+                    self.accept_rate[ch, iter] = self.n_of_accept[ch,0] / iter
+
+        # T1 = self.chains[0, 0, :]
+        # plt.plot(T1)
+        # plt.show()
+        # plt.figure()
+        # plt.plot(self.accept_rate.ravel())
+        # plt.show()
+        # T
+        return self.chains, self.accept_rate
+
     def MH_vectorized_sampling(self):
         return 1
 
@@ -159,9 +156,10 @@ def Gaussian_liklihood(parameter):
 
 if __name__=='__main__':
     x0 = 15 * np.ones((1, 1))
+    x0 = np.tile(x0,(1,5))
     priori_distribution = dict()
     # priori_distribution.update({'parameter1':})
 
-    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood,iterations=500.1,
-                            x0 = x0, vectorized=False, chains=1, progress_bar=True)
-    G.MH_non_vectorized_sampling()
+    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood,iterations=10000,
+                            x0 = x0, vectorized = False, chains=5, progress_bar=True)
+    G.run()
