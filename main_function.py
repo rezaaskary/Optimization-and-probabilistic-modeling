@@ -326,7 +326,7 @@ class Linear_quadratic_programming:
         if n!=1:
             raise Exception('Select a correct array b!')
         else:
-            self.n = n1
+            self.n = n
 
 
         if self.m > self.n:
