@@ -13,7 +13,7 @@ class Continuous_Uniform:
         """
         self.lb = lb
         self.ub = ub
-    def Prob(self, x: float = 0.5):
+    def Prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
@@ -23,7 +23,7 @@ class Continuous_Uniform:
         else:
             return 1 / (self.ub - self.lb)
 
-    def Log_prob(self, x: float = 0.5):
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable
@@ -33,7 +33,7 @@ class Continuous_Uniform:
         else:
             return -np.log(self.ub - self.lb)
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
         the module used to visualize the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
@@ -61,21 +61,21 @@ class Continuous_Gaussian:
         self.mu = mu
         self.std = std
 
-    def Prob(self, x: float = 0.5):
+    def Prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
         return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
 
-    def Log_prob(self, x: float = 0.5):
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable
         """
         return -np.log(self.std * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.std ** 2)
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
          the module used to visualize the probablity distribution
          :param lower_lim: the lower limit used in ploting the probablity distribution
@@ -106,7 +106,7 @@ class Continuous_Truncated_Gaussian:
         self.lb = lb
         self.ub = ub
 
-    def Erf(self, z):
+    def Erf(self, z)->np.ndarray:
         """
         The error function used to calculate the truncated gaussian distribution
         :param z: normalized input variable
@@ -114,7 +114,7 @@ class Continuous_Truncated_Gaussian:
         """
         return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
 
-    def Prob(self, x):
+    def Prob(self, x)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
@@ -130,7 +130,7 @@ class Continuous_Truncated_Gaussian:
             fi = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * L ** 2)
         return (1 / self.std) * (fi / (Fi_1 - Fi_2))
 
-    def Log_prob(self, x: float = 0.5):
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable
@@ -170,7 +170,7 @@ class Continuous_Half_Gaussian:
         """
         self.std = std
 
-    def Prob(self, x: float = 0.5):
+    def Prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
@@ -180,7 +180,7 @@ class Continuous_Half_Gaussian:
         else:
             return (np.sqrt(2) / (self.std * np.sqrt(np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
 
-    def Log_prob(self, x: float = 0.5):
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable

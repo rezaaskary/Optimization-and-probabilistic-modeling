@@ -160,9 +160,7 @@ def Gaussian_liklihood(parameter):
 if __name__=='__main__':
     x0 = 15 * np.ones((1, 1))
     priori_distribution = dict()
-    priori_distribution.update({'parameter1':})
-
-
+    # priori_distribution.update({'parameter1':})
 
     G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood,iterations=500.1,
                             x0 = x0, vectorized=False, chains=1, progress_bar=True)
