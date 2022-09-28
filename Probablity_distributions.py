@@ -14,18 +14,32 @@ class Continuous_Uniform:
         self.lb = lb
         self.ub = ub
     def Prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
         if x <= self.lb or x >= self.ub:
             return 0
         else:
             return 1 / (self.ub - self.lb)
 
     def Log_prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
         if x <= self.lb or x >= self.ub:
             return -np.inf
         else:
             return -np.log(self.ub - self.lb)
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
         for i in range(len(X)):
@@ -49,6 +63,12 @@ class Continuous_Gaussian:
         return -np.log(self.std * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.std ** 2)
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+         the module used to visualize the probablity distribution
+         :param lower_lim: the lower limit used in ploting the probablity distribution
+         :param upper_lim: the uppwer limit used in ploting the probablity distribution
+         :return:
+         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
         for i in range(len(X)):
@@ -93,6 +113,12 @@ class Continuous_Truncated_Gaussian:
             return -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
         for i in range(len(X)):
@@ -120,6 +146,12 @@ class Continuous_Half_Gaussian:
             return np.log(np.sqrt(2) / (self.std * np.sqrt(np.pi))) - (x ** 2) / (2 * self.std ** 2)
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
         for i in range(len(X)):
