@@ -71,10 +71,8 @@ class Metropolis_Hastings:
             self.progress_bar = False
             print(
                 f'------------------------------------------------------------------------------------------------------------------\n '
-                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
+                f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
-
-
 
         # checking the correctness of initial condition
         if isinstance(x0, np.ndarray):
@@ -91,13 +89,21 @@ class Metropolis_Hastings:
         self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
         self.logprop = np.zeros((self.Nchain, self.iterations))
         self.accept_rate = np.zeros((self.Nchain, self.iterations))
-        self.logprop[:,0] = self.logprop_fcn(self.x0)
+        self.logprop[:, 0] = self.logprop_fcn(self.x0)
         self.n_of_accept = np.zeros((self.Nchain, 1))
 
 
     def MH_non_vectorized_sampling(self):
-        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-        for iter in tqdm(range(1, self.iterations), disable = True):
+        """
+        non-vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
+        :return:
+        """
+
+
+        # sampling from a uniform distribution
+        uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size=(self.Nchain, self.iterations))
+
+        for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):
             for ch in (range(self.Nchain)):
                 # generating the sample for each chain
                 self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
