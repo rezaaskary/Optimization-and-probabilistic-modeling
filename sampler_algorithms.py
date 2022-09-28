@@ -36,7 +36,22 @@ class Metropolis_Hastings:
                 f'------------------------------------------------------------------------------------------------------------------\n '
                 f'The number of chains is not an integer value. The default value of {self.Nchain} is selectd as the number of chains\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
-        if
+        # checking the correctness of the vectorized simulation
+        if isinstance(vectorized, bool):
+            self.vectorized = vectorized
+            if self.vectorized:
+                self.run = self.MH_vectorized_sampling
+            else:
+                self.run = self.MH_non_vectorized_sampling
+        else:
+            self.vectorized = False
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
+
+
+
 
 
 
