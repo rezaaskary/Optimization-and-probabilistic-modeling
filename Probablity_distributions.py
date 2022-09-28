@@ -55,11 +55,23 @@ class Continuous_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0):
         self.mu = mu
         self.std = std
-
+        """
+        The continuous gaussian distribution function
+        :param mu: the center of the gaussian distribution
+        :param std: the standard deviation of gaussian distribution
+        """
     def Prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
         return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
 
     def Log_prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
         return -np.log(self.std * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.std ** 2)
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
@@ -81,15 +93,31 @@ class Continuous_Gaussian:
 # =============================================================================
 class Continuous_Truncated_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0, lb: float = -1, ub: float = 1):
+        """
+       The continuous uniform distribution
+       :param mu: the center bound of the truncated normal distribution
+       :param std: the standard deviation bound of the truncated normal distribution
+       :param lb: the lower bound of the truncated normal distribution
+       :param ub: the upper bound of the truncated normal distribution
+       """
         self.mu = mu
         self.std = std
         self.lb = lb
         self.ub = ub
 
     def Erf(self, z):
+        """
+        The error function used to calculate the truncated gaussian distribution
+        :param z: normalized input variable
+        :return: the value of the error function
+        """
         return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
 
     def Prob(self, x):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
         if x <= self.lb or x >= self.ub:
             return 0
         else:
@@ -102,6 +130,10 @@ class Continuous_Truncated_Gaussian:
         return (1 / self.std) * (fi / (Fi_1 - Fi_2))
 
     def Log_prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
         if x <= self.lb or x >= self.ub:
             return -np.inf
         else:
@@ -134,12 +166,20 @@ class Continuous_Half_Gaussian:
         self.std = std
 
     def Prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
         if x <= 0:
             return 0
         else:
             return (np.sqrt(2) / (self.std * np.sqrt(np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
 
     def Log_prob(self, x: float = 0.5):
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
         if x <= 0:
             return -np.inf
         else:
