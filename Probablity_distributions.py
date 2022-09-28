@@ -1,12 +1,10 @@
 import numpy as np
-import scipy as sc
 from matplotlib.pyplot import plot, show
-
 
 # =============================================================================
 #
 # =============================================================================
-class Continuous_Uniform():
+class Continuous_Uniform:
     def __init__(self, lb: float = 0.0, ub: float = 1.0):
         self.lb = lb
         self.ub = ub
@@ -35,7 +33,7 @@ class Continuous_Uniform():
 # =============================================================================
 #
 # =============================================================================
-class Continuous_Gaussian():
+class Continuous_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0):
         self.mu = mu
         self.std = std
@@ -57,7 +55,7 @@ class Continuous_Gaussian():
 # =============================================================================
 #
 # =============================================================================
-class Continuous_Truncated_Gaussian():
+class Continuous_Truncated_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0, lb: float = -1, ub: float = 1):
         self.mu = mu
         self.std = std
@@ -101,7 +99,7 @@ class Continuous_Truncated_Gaussian():
 # =============================================================================
 #
 # =============================================================================
-class Continuous_Half_Gaussian():
+class Continuous_Half_Gaussian:
     def __init__(self, std: float = 1.0):
         self.std = std
 

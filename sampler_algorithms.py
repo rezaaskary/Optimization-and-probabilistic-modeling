@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # from emcee import EnsembleSampler
 
 
-def Gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray) -> np.ndarray:
+def gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray) -> np.ndarray:
     x = parameter[0:1,0]
     mean = 0
     sigma = 2
@@ -14,7 +14,7 @@ def Gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray) -> np.ndar
     return log_gauss
 
 
-def Gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
+def gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
 
     return
 
@@ -24,7 +24,7 @@ class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1, progress_bar:bool = True):
 
         # checking the correctness of log probablity function
-        if isinstance(logprop_fcn,function):
+        if hasattr(logprop_fcn,"__call__"):
             self.logprop_fcn = logprop_fcn
         else:
             raise  Exception('The log(probablity) function is not defined probperly!')
@@ -80,7 +80,7 @@ class Metropolis_Hastings:
             if dim2 != self.Nchain:
                 raise Exception('The initial condition is not consistent with the number of chains!')
             else:
-                self.Ndim = self.x0.shape[0]
+                self.Ndim = dim1
                 self.x0 = x0
         else:
             raise Exception('The initial condition is not selected properly!')
@@ -103,10 +103,11 @@ class Metropolis_Hastings:
         # sampling from a uniform distribution
         uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size=(self.Nchain, self.iterations))
 
-        for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):
-            for ch in (range(self.Nchain)):
+        for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):       # sampling from the distribution
+            for ch in (range(self.Nchain)):                                             # sampling from each cahin
+
                 # generating the sample for each chain
-                self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
+                self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed)
                 # calculating the hasting ratio
@@ -137,7 +138,7 @@ class Metropolis_Hastings:
 
 
 
-    def gaussian_proposal(self, x_old, sigma:float = 0.01):
+    def gaussian_proposed_distribution(self, x_old, sigma:float = 0.01):
         x_old += np.random.randn(self.Ndim, 1) * sigma
         return x_old
 
@@ -157,5 +158,6 @@ def Gaussian_liklihood(parameter):
 
 if __name__=='__main__':
     x0 = 15 * np.ones((1, 1))
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=500.1, x0 = x0, vectorized=False,chains=1)
+    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood,iterations=500.1,
+                            x0 = x0, vectorized=False, chains=1, progress_bar=True)
     G.MH_non_vectorized_sampling()
