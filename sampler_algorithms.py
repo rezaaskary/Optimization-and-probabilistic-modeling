@@ -61,14 +61,19 @@ class Metropolis_Hastings:
         # checking the correctness of initial condition
         if isinstance(x0, np.ndarray):
             dim1, dim2 = x0.shape
-            self.x0 = x0
+            if dim2 != self.Nchain:
+                raise Exception('The initial condition is not consistent with the number of chains!')
+
+
+
             self.Ndim = self.x0.shape[0]
+
         else:
             raise Exception('The initial condition is not selected properly!')
 
+        #
 
-
-
+        self.x0 = x0
 
 
 
