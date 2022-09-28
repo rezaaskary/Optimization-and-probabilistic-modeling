@@ -6,13 +6,35 @@ import matplotlib.pyplot as plt
 # from emcee import EnsembleSampler
 
 
+def Gaussian_liklihood(parameter):
+    x = parameter[0:1,0]
+    # x = parameter[1:,0]
+    mean = 0
+    sigma = 2
+    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
+    return log_gauss
+
+
 
 class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = 1000, x0:np.ndarray = np.ones((1,1)), vectorized:bool = False, chains:int = 1):
+        # checking the correctness of the iteration
         if isinstance(iterations,int):
             self.iterations = iterations
         else:
             self.iterations = 1000
+            print(r'The iteration is not a integer value. The default value of {self.iterations} is selectd as the number of iterations')
+
+
+
+
+
+
+
+
+
+
+
         self.x0 = x0
         self.Ndim = self.x0.shape[0]
         self.Nchain = chains
@@ -35,7 +57,7 @@ class Metropolis_Hastings:
                 Ln_prop = self.logprop_fcn(self.proposed)
                 # calculating the hasting ratio
                 hastings = np.exp(Ln_prop - self.logprop[ch,iter-1])
-                criteria = np.random.uniform(low=0.0, high=1.0) < hastings
+                criteria = uniform_random_number[ch,iter]< hastings
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
                     self.logprop[ch, iter] = Ln_prop
@@ -81,5 +103,5 @@ def Gaussian_liklihood(parameter):
 
 if __name__=='__main__':
     x0 = 15 * np.ones((1, 1))
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=500000, x0 = x0, vectorized=False,chains=1)
+    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=500.1, x0 = x0, vectorized=False,chains=1)
     G.MH_non_vectorized_sampling()
