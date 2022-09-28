@@ -57,18 +57,14 @@ class Metropolis_Hastings:
                 f'------------------------------------------------------------------------------------------------------------------\n '
                 f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
-        # checking the correctness of the vectorized simulation
 
-
-
-
-
-
-        # checking the correctness of the iteration
+        # checking the correctness of initial condition
         if isinstance(x0, np.ndarray):
             dim1, dim2 = x0.shape
             self.x0 = x0
             self.Ndim = self.x0.shape[0]
+        else:
+            raise Exception('The initial condition is not selected properly!')
 
 
 
