@@ -25,33 +25,37 @@ class Metropolis_Hastings:
         for ch in tqdm(range(self.Nchain)):
             self.n_of_accept = 0
             for iter in range(1,self.iterations):
-                self.proposed = self.gaussian_proposal(self.chains[:, :, iter-1], sigma = 2)
+                self.proposed = self.gaussian_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
 
 
                 Ln_prop = self.logprop_fcn(self.proposed)
 
-                hastings = np.exp(Ln_prop - self.logprop[:,iter-1])
+                hastings = np.exp(Ln_prop - self.logprop[ch,iter-1])
 
                 # min_ratio = hastings
                 # Index_min = hastings < 1
                 # min_ratio[Index_min] = hastings[Index_min]
                 # min_ratio[~Index_min] = 1
                 # criteria = uniform_random_number[ch,iter] < min_ratio
-                criteria = uniform_random_number[ch,iter] < hastings
+                # criteria = uniform_random_number[ch,iter] < hastings
                 criteria = np.random.uniform(low=0.0, high=1.0) < hastings
                 if criteria:
                     self.chains[:, ch, iter:iter+1] = self.proposed
 
-                    self.logprop[:, iter] = Ln_prop
+                    self.logprop[ch, iter] = Ln_prop
                     self.n_of_accept += 1
                     self.accept_rate[ch,iter] = self.n_of_accept / iter
                 else:
                     self.chains[:, ch, iter:iter+1] = self.chains[:, ch, iter - 1 : iter]
-                    self.logprop[:, iter] = self.logprop[:, iter - 1]
+                    self.logprop[ch, iter] = self.logprop[ch, iter - 1]
+                    self.accept_rate[ch, iter] = self.n_of_accept / iter
         T1 = self.chains[0,0,:]
         # T2 = self.chains[1, 0, :]
         plt.plot(T1)
         # plt.plot(T2)
+        plt.show()
+        plt.figure()
+        plt.plot( self.accept_rate.ravel())
         plt.show()
         T
     #
@@ -70,7 +74,7 @@ def Gaussian_liklihood(parameter):
     x = parameter[0:1,0]
     # x = parameter[1:,0]
     mean = 0
-    sigma = 10.5
+    sigma = 2
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
 
@@ -80,6 +84,6 @@ def Gaussian_liklihood(parameter):
 
 
 if __name__=='__main__':
-    x0 = 25 * np.ones((1, 1))
-    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=10000, x0 = x0, vectorized=False,chains=1)
+    x0 = 15 * np.ones((1, 1))
+    G = Metropolis_Hastings(logprop_fcn = Gaussian_liklihood,iterations=500000, x0 = x0, vectorized=False,chains=1)
     G.MH_non_vectorized_sampling()
