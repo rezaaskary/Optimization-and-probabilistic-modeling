@@ -53,7 +53,8 @@ def gaussian_liklihood_multivariable(measured:np.ndarray, estimated:np.ndarray, 
     return log_liklihood_gaussian
 
 
-def gaussian_liklihood_vectorized(parameter: np.ndarray, Covariance: np.ndarray = np.eye(1))->np.ndarray:
+def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int)->np.ndarray:
+
     return
 
 
