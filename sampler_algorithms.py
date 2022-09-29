@@ -7,11 +7,9 @@ from Probablity_distributions import *
 # from emcee import EnsembleSampler
 
 
-def gaussian_liklihood_single_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
-    x = parameter[0:1,0]
-    mean = 0
-    sigma = Covariance
-    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
+def gaussian_liklihood_single_variable(measured:np.ndarray = np.eye(1), estimated: np.ndarray = np.eye(1), N:int = 1, sigma: np.ndarray = 1) -> np.ndarray:
+
+    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((measured - estimated) ** 2) / (2 * sigma ** 2)
     return log_gauss
 
 def gaussian_liklihood_multi_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
