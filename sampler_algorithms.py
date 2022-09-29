@@ -7,12 +7,23 @@ from Probablity_distributions import *
 # from emcee import EnsembleSampler
 
 
-def gaussian_liklihood(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
+def gaussian_liklihood_single_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
     x = parameter[0:1,0]
     mean = 0
     sigma = Covariance
     log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
     return log_gauss
+
+def gaussian_liklihood_multi_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
+    x = parameter[0:1,0]
+    mean = 0
+    sigma = Covariance
+    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
+    return log_gauss
+
+
+def gaussian_liklihood_vectorized(parameter: np.ndarray, Covariance: np.ndarray = np.eye(1))->np.ndarray:
+    return
 
 
 def gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
@@ -137,27 +148,27 @@ class Metropolis_Hastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-
+        # generating the uniform distribution to accept/or reject
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-        for iter in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-            for ch in (range(self.Nchain)):  # sampling from each cahin
 
-                # generating the sample for each chain
-                self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter - 1:iter].copy(), sigma=0.1)
-                # calculating the log of the posteriori function
-                Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
-                # calculating the hasting ratio
-                hastings = np.exp(Ln_prop - self.logprop[ch, iter - 1])
-                criteria = uniform_random_number[ch, iter] < hastings
-                if criteria:
-                    self.chains[:, ch, iter:iter + 1] = self.proposed
-                    self.logprop[ch, iter] = Ln_prop
-                    self.n_of_accept[ch, 0] += 1
-                    self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
-                else:
-                    self.chains[:, ch, iter:iter + 1] = self.chains[:, ch, iter - 1: iter]
-                    self.logprop[ch, iter] = self.logprop[ch, iter - 1]
-                    self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
+        for iter in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
+
+            # generating the sample for each chain
+            self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter - 1:iter].copy(), sigma=0.1)
+            # calculating the log of the posteriori function
+            Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
+            # calculating the hasting ratio
+            hastings = np.exp(Ln_prop - self.logprop[ch, iter - 1])
+            criteria = uniform_random_number[ch, iter] < hastings
+            if criteria:
+                self.chains[:, ch, iter:iter + 1] = self.proposed
+                self.logprop[ch, iter] = Ln_prop
+                self.n_of_accept[ch, 0] += 1
+                self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
+            else:
+                self.chains[:, ch, iter:iter + 1] = self.chains[:, ch, iter - 1: iter]
+                self.logprop[ch, iter] = self.logprop[ch, iter - 1]
+                self.accept_rate[ch, iter] = self.n_of_accept[ch, 0] / iter
 
 
 
@@ -168,7 +179,7 @@ class Metropolis_Hastings:
 
 
     def gaussian_proposed_distribution(self, x_old, sigma:float = 0.01):
-        x_old += np.random.randn(self.Ndim, 1) * sigma
+        x_old += np.random.randn(self.Ndim, self.Nchain) * sigma
         return x_old
 
 
@@ -191,6 +202,6 @@ if __name__=='__main__':
     priori_distribution = dict()
     # priori_distribution.update({'parameter1':})
 
-    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood,iterations=10000,
+    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
                             x0 = x0, vectorized = False, chains=5, progress_bar=True)
     G.run()
