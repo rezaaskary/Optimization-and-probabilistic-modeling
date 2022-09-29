@@ -35,11 +35,6 @@ def gaussian_liklihood_single_variable_vectorized(measured: np.ndarray, estimate
     return log_gauss
     #====================================================================================
 
-
-
-
-
-
 def gaussian_liklihood_multivariable(measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int) -> np.ndarray:
     """
     The log liklihood of the Multivariable gaussian distribution used for multivariable fitting (multivariables objective function)
@@ -48,15 +43,14 @@ def gaussian_liklihood_multivariable(measured:np.ndarray, estimated:np.ndarray, 
     :param N: An integer indicating the number of measurements
     :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxK)
     :param K: The dimention of the multivariable gaussian distribution
-    :return: The log liklihood of the
+    :return: The log liklihood of
     """
 
-    inv_cov = np.linalg.inv(Covariance)
-    det_cov = np.linalg.det(Covariance)
-    Error = measured - estimated        # KxN error matrix
-
-    log_gauss = -N * np.log(np.sqrt(((2 * np.pi)**K) * det_cov)) - (0.5 * (np.diag(Error.T @ inv_cov @ Error)) ).sum()
-    return log_gauss
+    inv_cov = np.linalg.inv(Covariance)     # calcualting the inversion of the covariance matrix
+    det_cov = np.linalg.det(Covariance)     # calcualting the determinent of the covariance matrix
+    Error = measured - estimated            # KxN error matrix
+    log_liklihood_gaussian = -N * np.log(np.sqrt(((2 * np.pi)**K) * det_cov)) - (0.5 * (np.diag(Error.T @ inv_cov @ Error))).sum()  # the log_liklihood gaussian
+    return log_liklihood_gaussian
 
 
 def gaussian_liklihood_vectorized(parameter: np.ndarray, Covariance: np.ndarray = np.eye(1))->np.ndarray:
