@@ -53,7 +53,18 @@ def gaussian_liklihood_multivariable(measured:np.ndarray, estimated:np.ndarray, 
     return log_liklihood_gaussian
 
 
-def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int)->np.ndarray:
+def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int, C:int, Diagonal:True)->np.ndarray:
+    """
+    The log liklihood of the Multivariable gaussian distribution used for multivariable fitting (multivariables objective function)
+    :param measured: KxNxC measured parameters (K dimentional parameters and N sampling points and C chains)
+    :param estimated:KxNxC estimated parameters (K dimentional parameters and N sampling points and C chains)
+    :param N: An integer indicating the number of measurements
+    :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxKxC)
+    :param K: The dimention of the multivariable gaussian distribution
+    :return: The log liklihood of the multivariable gaussian distribution
+
+
+    """
 
     return
 
