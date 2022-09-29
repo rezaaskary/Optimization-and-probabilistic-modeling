@@ -20,11 +20,49 @@ def gaussian_liklihood_single_variable(measured:np.ndarray, estimated: np.ndarra
     return log_gauss
     #====================================================================================
 
-def gaussian_liklihood_multi_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
-    x = parameter[0:1,0]
-    mean = 0
-    sigma = Covariance
-    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((x - mean) ** 2) / (2 * sigma ** 2)
+def gaussian_liklihood_single_variable_vectorized(measured:np.ndarray, estimated: np.ndarray, N:int,C:int, sigma: np.ndarray) -> np.ndarray:
+    """
+    The single variable Gausian liklihood function
+    :param measured: The measured variable (NxC)
+    :param estimated: The estimated variable or calculated from a model (NxC)
+    :param N: An integer indicating the number of measured samples
+    :param C: An integer indicating the number of Chains
+    :param sigma: The standard deviation of the error estimation (1xC)
+    :return: A numpy array indicating the log_liklihood function (1xC)
+    """
+    log_gauss = -N*np.log(sigma * np.sqrt(2 * np.pi)) - (((measured - estimated) ** 2) / (2 * sigma ** 2)).sum()
+    return log_gauss
+    #====================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def gaussian_liklihood_multi_variable(measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int) -> np.ndarray:
+    """
+    The log liklihood of the Multivariable gaussian distribution used for multivariable fitting
+    :param measured: Kx1 measured parameters
+    :param estimated:
+    :param N: An integer indicating the number of measurements
+    :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxK)
+    :param K:
+    :return:
+    """
+
+    inv_cov = np.linalg.inv(Covariance)
+    det_cov = np.linalg.det(Covariance)
+    log_gauss = -N * np.log(np.sqrt(((2 * np.pi)**K) * det_cov)) - (0.5 * (measured - estimated).T @ inv_cov @ (measured - estimated)).sum()
     return log_gauss
 
 
