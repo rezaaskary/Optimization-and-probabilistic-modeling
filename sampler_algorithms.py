@@ -8,8 +8,15 @@ from Probablity_distributions import *
 
 
 def gaussian_liklihood_single_variable(measured:np.ndarray = np.eye(1), estimated: np.ndarray = np.eye(1), N:int = 1, sigma: np.ndarray = 1) -> np.ndarray:
-
-    log_gauss = -np.log(sigma * np.sqrt(2 * np.pi)) - ((measured - estimated) ** 2) / (2 * sigma ** 2)
+    """
+    The single variable Gausian liklihood function
+    :param measured: The measured variable
+    :param estimated: The estimated variable(or calculated from a model)
+    :param N: The number of measured samples
+    :param sigma: The standard deviation of the error estimation
+    :return: the log_liklihood function
+    """
+    log_gauss = -N*np.log(sigma * np.sqrt(2 * np.pi)) - (((measured - estimated) ** 2) / (2 * sigma ** 2)).sum()
     return log_gauss
 
 def gaussian_liklihood_multi_variable(parameter: np.ndarray, Covariance: np.ndarray = 1) -> np.ndarray:
