@@ -45,7 +45,6 @@ def gaussian_liklihood_multivariable(measured:np.ndarray, estimated:np.ndarray, 
     :param K: The dimention of the multivariable gaussian distribution
     :return: The log liklihood of
     """
-
     inv_cov = np.linalg.inv(Covariance)     # calcualting the inversion of the covariance matrix
     det_cov = np.linalg.det(Covariance)     # calcualting the determinent of the covariance matrix
     Error = measured - estimated            # KxN error matrix
@@ -86,10 +85,15 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
             inv_cov[:, :, c:c+1] = np.linalg.inv(Covariance[:, :, c])
 
         vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis=1))[:, :, None] * T).sum(axis=1)  # NxNxC
-
+        mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples, :].sum(axis=0)
+        log_liklihood = -N * np.log(np.sqrt(((2 * np.pi) ** K) * det_cov)) - 0.5 * mahalanobis_distance
+        return log_liklihood
     else:
         raise Exception('The type of calculating the liklihood function is not correctly specified!')
     return log_liklihood
+
+
+
 
 
 def gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
