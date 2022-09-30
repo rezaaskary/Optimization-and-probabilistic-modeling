@@ -195,9 +195,29 @@ class Continuous_Half_Gaussian:
 #=========================================================================================================
 
 class Liklihood_Functions:
-    def __int__(self,function:str, vectorized:bool):
+    def __int__(self,function:str, vectorized:bool, Covariance: np.ndarray, K:int, measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
+        """
+
+        :param function: A string variable indicating the type of liklihood function
+        :param vectorized:
+        :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxK)
+        :param K: The dimention of the multivariable gaussian distribution
+        :param measured: The measured variable
+        :param estimated: The estimated variable(or calculated from a model)
+        :param C: An integer indicating the number of Chains
+        :param diagonal_covariance:
+        :return: the liklihood value(s)
+        """
+
         self.function = function
         self.vectorized = vectorized
+        self.C = C
+        self.K = K
+        self.N = N
+        self.diagonal_covariance = diagonal_covariance
+
+
+
 
         if self.function is 'gaussian_single_variable' and not self.vectorized:
             self.liklihood = self.gaussian_liklihood_single_variable
@@ -206,7 +226,11 @@ class Liklihood_Functions:
             self.liklihood = gaussian_liklihood_single_variable_vectorized
 
         elif self.function is 'multivariable_gaussian' and not self.vectorized:
-            self.liklihood =
+            self.liklihood = gaussian_liklihood_multivariable
+
+        elif self.function is 'multivariable_gaussian' and self.vectorized:
+            self.liklihood = gaussian_liklihood_multivariable_vectorized
+
 
 
     def gaussian_liklihood_single_variable(self, measured:np.ndarray, estimated: np.ndarray, N:int, sigma: np.ndarray) -> np.ndarray:
