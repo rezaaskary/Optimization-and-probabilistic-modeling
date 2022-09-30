@@ -236,7 +236,7 @@ class Liklihood_Functions:
 
 
 
-    def gaussian_liklihood_single_variable(self, measured:np.ndarray, estimated: np.ndarray, N:int, sigma: np.ndarray) -> np.ndarray:
+    def gaussian_liklihood_single_variable(self) -> np.ndarray:
         """
         The single variable Gausian liklihood function
         :param measured: The measured variable
@@ -245,7 +245,8 @@ class Liklihood_Functions:
         :param sigma: The standard deviation of the error estimation
         :return: the log_liklihood function
         """
-        log_gauss = -self.N*np.log(self.sigma * np.sqrt(2 * np.pi)) - (((measured - estimated) ** 2) / (2 * self.sigma ** 2)).sum()
+
+        log_gauss = -self.N*np.log(self.sigma * np.sqrt(2 * np.pi)) - (((self.measured - self.estimated) ** 2) / (2 * self.sigma ** 2)).sum()
         return log_gauss
         #====================================================================================
 
