@@ -62,9 +62,13 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
     :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxKxC)
     :param K: The dimention of the multivariable gaussian distribution
     :return: The log liklihood of the multivariable gaussian distribution
-
-
     """
+
+    diagonal_indexes = np.arange(K,dtype=int)
+    inv_cov =    Covariance    # calcualting the inversion of the covariance matrix
+    inv_cov[diagonal_indexes, diagonal_indexes,:] = 1/inv_cov[diagonal_indexes, diagonal_indexes,:]
+
+
 
     return
 
