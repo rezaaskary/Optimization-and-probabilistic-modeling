@@ -195,9 +195,8 @@ class Continuous_Half_Gaussian:
 #=========================================================================================================
 
 class Liklihood_Functions:
-    def __int__(self,function:str, vectorized:bool, Covariance: np.ndarray, K:int, measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
+    def __int__(self,function:str, vectorized:bool, sigma:np.ndarray, Covariance: np.ndarray, K:int, measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
         """
-
         :param function: A string variable indicating the type of liklihood function
         :param vectorized:
         :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxK)
@@ -206,7 +205,9 @@ class Liklihood_Functions:
         :param estimated: The estimated variable(or calculated from a model)
         :param C: An integer indicating the number of Chains
         :param diagonal_covariance:
+        :param sigma: The standard deviation of the error estimation
         :return: the liklihood value(s)
+
         """
 
         self.function = function
@@ -215,7 +216,8 @@ class Liklihood_Functions:
         self.K = K
         self.N = N
         self.diagonal_covariance = diagonal_covariance
-
+        self.Covariance = Covariance
+        self.Diagonal = diagonal_covariance
 
 
 
