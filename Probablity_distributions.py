@@ -250,7 +250,7 @@ class Liklihood_Functions:
         return log_gauss
         #====================================================================================
 
-    def gaussian_liklihood_single_variable_vectorized(self, measured: np.ndarray, estimated: np.ndarray, N: int,C: int, sigma: np.ndarray) -> np.ndarray:
+    def gaussian_liklihood_single_variable_vectorized(self) -> np.ndarray:
         """
         The single variable Gausian liklihood function
         :param measured: The measured variable (NxC)
@@ -260,8 +260,9 @@ class Liklihood_Functions:
         :param sigma: The standard deviation of the error estimation (1xC)
         :return: A numpy array indicating the log_liklihood function (1xC)
         """
-        vectorized_error = ((measured - estimated)**2).sum(axis=0)
-        log_gauss = -N*np.log(sigma * np.sqrt(2 * np.pi)) - (vectorized_error / (2 * sigma ** 2))
+
+        vectorized_error = ((self.measured - self.estimated)**2).sum(axis = 0)
+        log_gauss = - self.N*np.log(self.sigma * np.sqrt(2 * np.pi)) - (vectorized_error / (2 * self.sigma ** 2))
         return log_gauss
         #====================================================================================
 
