@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 from Probablity_distributions import *
 
 
-
-
 class Metropolis_Hastings:
     def __init__(self,logprop_fcn, iterations:int = None, x0:np.ndarray = None, vectorized:bool = False, chains:int = 1, progress_bar:bool = True):
 
@@ -78,6 +76,14 @@ class Metropolis_Hastings:
         self.logprop[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
         self.n_of_accept = np.zeros((self.Nchain, 1))
 
+    def gaussian_proposed_distribution(self, x_old, sigma: float = 0.01):
+        """
+        :param x_old: the past values of adjustable parameters
+        :param sigma:
+        :return:
+        """
+        x_old += np.random.randn(self.Ndim, self.Nchain) * sigma
+        return x_old
 
     def MH_non_vectorized_sampling(self):
         """
@@ -123,10 +129,11 @@ class Metropolis_Hastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-        # generating the uniform distribution to accept/or reject
-        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
 
-        for iter in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
+        # generating the uniform distribution to accept/or reject
+        uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size = (self.Nchain, self.iterations))
+
+        for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):  # sampling from the distribution
 
             # generating the sample for each chain
             self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter - 1:iter].copy(), sigma=0.1)
@@ -153,9 +160,7 @@ class Metropolis_Hastings:
 
 
 
-    def gaussian_proposed_distribution(self, x_old, sigma:float = 0.01):
-        x_old += np.random.randn(self.Ndim, self.Nchain) * sigma
-        return x_old
+
 
 
 def Gaussian_liklihood(parameter):
