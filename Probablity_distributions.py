@@ -193,9 +193,11 @@ class Continuous_Half_Gaussian:
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
 #=========================================================================================================
-
+#=========================================================================================================
+#=========================================================================================================
 class Liklihood_Functions:
-    def __int__(self,function:str, vectorized:bool, sigma:np.ndarray, Covariance: np.ndarray, K:int, measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
+    def __int__(self,function:str, vectorized:bool, sigma:np.ndarray, Covariance: np.ndarray, K:int,
+                measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
         """
         :param function: A string variable indicating the type of liklihood function
         :param vectorized:
@@ -207,7 +209,6 @@ class Liklihood_Functions:
         :param diagonal_covariance:
         :param sigma: The standard deviation of the error estimation
         :return: the liklihood value(s)
-
         """
 
         self.function = function
@@ -266,7 +267,7 @@ class Liklihood_Functions:
         return log_gauss
         #====================================================================================
 
-    def gaussian_liklihood_multivariable(self, measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int) -> np.ndarray:
+    def gaussian_liklihood_multivariable(self) -> np.ndarray:
         """
         The log liklihood of the Multivariable gaussian distribution used for multivariable fitting (multivariables objective function)
         :param measured: KxN measured parameters (K dimentional parameters and N sampling points)
@@ -276,6 +277,7 @@ class Liklihood_Functions:
         :param K: The dimention of the multivariable gaussian distribution
         :return: The log liklihood of
         """
+
         if self.Diagonal:
             indexes = np.arange(self.K, dtype = int)
             inv_cov = self.Covariance.copy()
@@ -285,12 +287,12 @@ class Liklihood_Functions:
             inv_cov = np.linalg.inv(self.Covariance)     # calcualting the inversion of the covariance matrix
             det_cov = np.linalg.det(self.Covariance)     # calcualting the determinent of the covariance matrix
 
-        Error = measured - estimated                 # KxN error matrix
+        Error = self.measured - self.estimated                 # KxN error matrix
         log_liklihood_gaussian = -self.N * np.log(np.sqrt(((2 * np.pi)**self.K) * det_cov)) - (0.5 * (np.diag(Error.T @ inv_cov @ Error))).sum()  # the log_liklihood gaussian
         return log_liklihood_gaussian
 
 
-    def gaussian_liklihood_multivariable_vectorized(self, measured:np.ndarray, estimated:np.ndarray, N:int, Covariance: np.ndarray, K:int, C:int, Diagonal:True)->np.ndarray:
+    def gaussian_liklihood_multivariable_vectorized(self)->np.ndarray:
         """
         The log liklihood of the Multivariable gaussian distribution used for multivariable fitting (multivariables objective function)
         :param measured: KxNxC measured parameters (K dimentional parameters and N sampling points and C chains)
@@ -300,31 +302,31 @@ class Liklihood_Functions:
         :param K: The dimention of the multivariable gaussian distribution
         :return: The log liklihood of the multivariable gaussian distribution
         """
-        diagonal_indexes = np.arange(K, dtype=int)
-        diagonal_indexes_samples = np.arange(N, dtype=int)
-        inv_cov = Covariance.copy()   # predefining the inversion matrices
-        Error = measured - estimated  # KxNxC error matrix
-        Error_T = np.transpose(Error, axes=(1, 0, 2))  # NxKxC error matrix
+        diagonal_indexes = np.arange(self.K, dtype=int)
+        diagonal_indexes_samples = np.arange(self.N, dtype=int)
+        inv_cov = self.Covariance.copy()   # predefining the inversion matrices
+        Error = self.measured - self.estimated  # KxNxC error matrix
+        Error_T = np.transpose(Error, axes = (1, 0, 2))  # NxKxC error matrix
 
-        if Diagonal:
+        if self.Diagonal:
                 # calcualting the inversion of the covariance matrix
             inv_cov[diagonal_indexes, diagonal_indexes, :] = 1 / inv_cov[diagonal_indexes, diagonal_indexes,:]  #KxKxX tensor
-            det_cov = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)      # 1xC array
+            det_cov = np.prod(self.Covariance[diagonal_indexes, Covariance,:], axis = 0)      # 1xC array
 
             vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis = 1))[:, :, None] * T).sum(axis = 1) # NxNxC
             mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples, :].sum(axis = 0)
-            log_liklihood = -N * np.log(np.sqrt(((2 * np.pi) ** K) * det_cov)) - 0.5 * mahalanobis_distance
+            log_liklihood = -self.N * np.log(np.sqrt(((2 * np.pi) ** self.K) * det_cov)) - 0.5 * mahalanobis_distance
             return log_liklihood
 
         elif not Diagonal:
             det_cov = np.zeros((1,C))
             for c in range(C):
-                det_cov[0, c] = np.linalg.det(Covariance[:, :, c])
-                inv_cov[:, :, c:c+1] = np.linalg.inv(Covariance[:, :, c])
+                det_cov[0, c] = np.linalg.det(self.Covariance[:, :, c])
+                inv_cov[:, :, c:c+1] = np.linalg.inv(self.Covariance[:, :, c])
 
-            vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis=1))[:, :, None] * T).sum(axis=1)  # NxNxC
-            mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples, :].sum(axis=0)
-            log_liklihood = -N * np.log(np.sqrt(((2 * np.pi) ** K) * det_cov)) - 0.5 * mahalanobis_distance
+            vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis=1))[:, :, None] * T).sum(axis = 1)  # NxNxC
+            mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples, :].sum(axis = 0)
+            log_liklihood = -self.N * np.log(np.sqrt(((2 * np.pi) ** self.K) * det_cov)) - 0.5 * mahalanobis_distance
             return log_liklihood
         else:
             raise Exception('The type of calculating the liklihood function is not correctly specified!')
