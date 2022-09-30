@@ -65,12 +65,19 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
     """
     if Diagonal:
         diagonal_indexes = np.arange(K,dtype=int)
+        diagonal_indexes_samples = np.arange(N,dtype=int)
         inv_cov = Covariance    # calcualting the inversion of the covariance matrix
         inv_cov[diagonal_indexes, diagonal_indexes, :] = 1 / inv_cov[diagonal_indexes, diagonal_indexes,:]  #KxKxX tensor
-        determintnt = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)      # 1xC array
+        det_cov = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)      # 1xC array
         Error = measured - estimated  # KxNxC error matrix
         Error_T = np.transpose(Error,axes=(1,0,2))  # NxKxC error matrix
-        vectorized_mahalanobis_distance = (((Error_T[:,:,None] * inv_cov).sum(axis=1))[:,:,None]*T).sum(axis=1) # NxNxC
+        vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis = 1))[:, :, None] * T).sum(axis = 1) # NxNxC
+        mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples, :].sum(axis = 0)
+
+        log_liklihood = -N * np.log(np.sqrt(((2 * np.pi) ** K) * det_cov))
+
+        log_liklihood_gaussian = -N * np.log(np.sqrt(((2 * np.pi) ** K) * det_cov)) - (
+                    0.5 * (np.diag(Error.T @ inv_cov @ Error))).sum()
 
 
     return
