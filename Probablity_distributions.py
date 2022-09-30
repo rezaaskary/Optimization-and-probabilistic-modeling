@@ -276,10 +276,17 @@ class Liklihood_Functions:
         :param K: The dimention of the multivariable gaussian distribution
         :return: The log liklihood of
         """
-        inv_cov = np.linalg.inv(Covariance)     # calcualting the inversion of the covariance matrix
-        det_cov = np.linalg.det(Covariance)     # calcualting the determinent of the covariance matrix
-        Error = measured - estimated            # KxN error matrix
-        log_liklihood_gaussian = -N * np.log(np.sqrt(((2 * np.pi)**K) * det_cov)) - (0.5 * (np.diag(Error.T @ inv_cov @ Error))).sum()  # the log_liklihood gaussian
+        if self.Diagonal:
+            indexes = np.arange(self.K, dtype = int)
+            inv_cov = self.Covariance.copy()
+            inv_cov[indexes, indexes] = 1 / inv_cov[indexes, indexes]
+            det_cov = self.Covariance.diagonal().prod()
+        else:
+            inv_cov = np.linalg.inv(self.Covariance)     # calcualting the inversion of the covariance matrix
+            det_cov = np.linalg.det(self.Covariance)     # calcualting the determinent of the covariance matrix
+
+        Error = measured - estimated                 # KxN error matrix
+        log_liklihood_gaussian = -self.N * np.log(np.sqrt(((2 * np.pi)**self.K) * det_cov)) - (0.5 * (np.diag(Error.T @ inv_cov @ Error))).sum()  # the log_liklihood gaussian
         return log_liklihood_gaussian
 
 
