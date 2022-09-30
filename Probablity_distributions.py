@@ -218,8 +218,9 @@ class Liklihood_Functions:
         self.diagonal_covariance = diagonal_covariance
         self.Covariance = Covariance
         self.Diagonal = diagonal_covariance
-
-
+        self.sigma = sigma
+        self.measured = measured
+        self.estimated = estimated
 
         if self.function is 'gaussian_single_variable' and not self.vectorized:
             self.liklihood = self.gaussian_liklihood_single_variable
@@ -244,7 +245,7 @@ class Liklihood_Functions:
         :param sigma: The standard deviation of the error estimation
         :return: the log_liklihood function
         """
-        log_gauss = -N*np.log(sigma * np.sqrt(2 * np.pi)) - (((measured - estimated) ** 2) / (2 * sigma ** 2)).sum()
+        log_gauss = -self.N*np.log(self.sigma * np.sqrt(2 * np.pi)) - (((measured - estimated) ** 2) / (2 * self.sigma ** 2)).sum()
         return log_gauss
         #====================================================================================
 
