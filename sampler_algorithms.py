@@ -3,8 +3,7 @@ import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from Probablity_distributions import *
-# import emcee
-# from emcee import EnsembleSampler
+
 
 
 def gaussian_liklihood_single_variable(measured:np.ndarray, estimated: np.ndarray, N:int, sigma: np.ndarray) -> np.ndarray:
@@ -90,15 +89,7 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
         return log_liklihood
     else:
         raise Exception('The type of calculating the liklihood function is not correctly specified!')
-    return log_liklihood
 
-
-
-
-
-def gaussian_lihlihood_vectorized(parameter, n:int = 1) -> np.ndarray:
-
-    return 1
 
 
 
