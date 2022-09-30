@@ -76,11 +76,11 @@ class Metropolis_Hastings:
         self.logprop[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
         self.n_of_accept = np.zeros((self.Nchain, 1))
 
-    def gaussian_proposed_distribution(self, x_old, sigma: float = 0.01):
+    def random_walk_parameter_proposal(self, x_old, sigma: float = 0.01):
         """
         :param x_old: the past values of adjustable parameters
-        :param sigma:
-        :return:
+        :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
+        :return: new set of parameters (N)
         """
         x_old += np.random.randn(self.Ndim, self.Nchain) * sigma
         return x_old
@@ -98,7 +98,7 @@ class Metropolis_Hastings:
             for ch in (range(self.Nchain)):                                             # sampling from each cahin
 
                 # generating the sample for each chain
-                self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
+                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iter-1:iter].copy(), sigma = 0.1)
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
                 # calculating the hasting ratio
@@ -136,11 +136,12 @@ class Metropolis_Hastings:
         for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):  # sampling from the distribution
 
             # generating the sample for each chain
-            self.proposed = self.gaussian_proposed_distribution(self.chains[:, ch, iter - 1:iter].copy(), sigma=0.1)
+            self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iter - 1:iter].copy(), sigma = 0.1)
+
             # calculating the log of the posteriori function
             Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
             # calculating the hasting ratio
-            hastings = np.exp(Ln_prop - self.logprop[ch, iter - 1])
+            hastings = np.exp(Ln_prop - self.logprop[:, iter - 1])
             criteria = uniform_random_number[ch, iter] < hastings
             if criteria:
                 self.chains[:, ch, iter:iter + 1] = self.proposed

@@ -196,8 +196,8 @@ class Continuous_Half_Gaussian:
 #=========================================================================================================
 #=========================================================================================================
 class Liklihood_Functions:
-    def __int__(self,function:str, vectorized:bool, sigma:np.ndarray, Covariance: np.ndarray, K:int,
-                measured: np.ndarray, estimated: np.ndarray, C: int, diagonal_covariance:bool):
+    def __int__(self,function:str = 'gaussian_single_variable', vectorized:bool = False, sigma:np.ndarray = None, Covariance: np.ndarray = None,\
+                K:int = 1, measured: np.ndarray = None, estimated: np.ndarray = None, C: int = 1, diagonal_covariance:bool = True):
         """
         :param function: A string variable indicating the type of liklihood function
         :param vectorized:
