@@ -66,8 +66,12 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
     if Diagonal:
         diagonal_indexes = np.arange(K,dtype=int)
         inv_cov = Covariance    # calcualting the inversion of the covariance matrix
-        inv_cov[diagonal_indexes, diagonal_indexes, :] = 1/inv_cov[diagonal_indexes, diagonal_indexes,:]
-        determintnt = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)
+        inv_cov[diagonal_indexes, diagonal_indexes, :] = 1 / inv_cov[diagonal_indexes, diagonal_indexes,:]  #KxKxX tensor
+        determintnt = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)      # 1xC array
+        Error = measured - estimated  # KxNxC error matrix
+        Error_T = np.transpose(Error,axes=(1,0,2))  # NxKxC error matrix
+        vectorized_mahalanobis_distance = (((Error_T[:,:,None] * inv_cov).sum(axis=1))[:,:,None]*T).sum(axis=1) # NxNxC
+
 
     return
 
