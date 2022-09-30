@@ -63,12 +63,11 @@ def gaussian_liklihood_multivariable_vectorized(measured:np.ndarray, estimated:n
     :param K: The dimention of the multivariable gaussian distribution
     :return: The log liklihood of the multivariable gaussian distribution
     """
-
-    diagonal_indexes = np.arange(K,dtype=int)
-    inv_cov =    Covariance    # calcualting the inversion of the covariance matrix
-    inv_cov[diagonal_indexes, diagonal_indexes,:] = 1/inv_cov[diagonal_indexes, diagonal_indexes,:]
-
-
+    if Diagonal:
+        diagonal_indexes = np.arange(K,dtype=int)
+        inv_cov = Covariance    # calcualting the inversion of the covariance matrix
+        inv_cov[diagonal_indexes, diagonal_indexes, :] = 1/inv_cov[diagonal_indexes, diagonal_indexes,:]
+        determintnt = np.prod(Covariance[diagonal_indexes, Covariance,:],axis = 0)
 
     return
 
