@@ -260,6 +260,23 @@ class Liklihood_Functions:
 
 
 
+        if not isinstance(Covariance, np.ndarray):
+            raise Exception('The covariance matrix is not specified correctly!')
+        else:
+            self.Covariance = Covariance
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
