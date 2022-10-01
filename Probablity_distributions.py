@@ -214,7 +214,7 @@ class Liklihood_Functions:
         self.function = function
 
 
-        self.diagonal_covariance = diagonal_covariance
+
         self.Covariance = Covariance
         self.Diagonal = diagonal_covariance
         self.sigma = sigma
@@ -223,6 +223,11 @@ class Liklihood_Functions:
 
         if not isinstance(vectorized, bool):
             self.vectorized = False
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The default value of {} is selectd for vectorizing simulations\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
+
         else:
             self.vectorized = vectorized
 
@@ -236,21 +241,35 @@ class Liklihood_Functions:
         else:
             self.K = K
 
-        if not isinstance(N,int):
+        if not isinstance(N, int):
             raise Exception('The size of the data is not specified correctly!')
         else:
             self.N = N
 
 
 
-        if
-        if self.function is 'gaussian_single_variable' and not self.vectorized:
+        if not isinstance(diagonal_covariance, bool):
+
+            raise Exception('The type of calculation(vectorizing) is not specified correctly!')
+        else:
+
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
 
 
+            self.diagonal_covariance = diagonal_covariance
 
 
-
-            self.liklihood = self.gaussian_liklihood_single_variable
+        # if
+        # if self.function is 'gaussian_single_variable' and not self.vectorized:
+        #
+        #
+        #
+        #
+        #
+        # self.liklihood = self.gaussian_liklihood_single_variable
 
         elif self.function is 'gaussian_single_variable' and  self.vectorized:
             self.liklihood = gaussian_liklihood_single_variable_vectorized
