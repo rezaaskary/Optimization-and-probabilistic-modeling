@@ -206,8 +206,6 @@ class Skewed_Normal:
         """
         self.mu = mu
         self.std = std
-        self.lb = lb
-        self.ub = ub
         self.alpha = alpha
     def Erf(self, z)->np.ndarray:
         """
@@ -223,8 +221,7 @@ class Skewed_Normal:
         :return: the probablity of the occurance of the given variable
         """
         L1 = 0.5 * (1 + self.Erf(((x -self.mu)/self.std)*(self.alpha/np.sqrt(2.0))))
-        L2 = (1 / (2 * np.pi)) * np.exp(-0.5 * ((x -self.mu)/self.std)**2)
-
+        L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x -self.mu)/self.std)**2)
         return 2 * L1 * L2
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
@@ -232,15 +229,9 @@ class Skewed_Normal:
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable
         """
-        if x <= self.lb or x >= self.ub:
-            return -np.inf
-        else:
-            L1 = (self.ub - self.mu) / self.std
-            L2 = (self.lb - self.mu) / self.std
-            L = (x - self.mu) / self.std
-            Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
-            Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
-            return -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
+        return np.log(0.5 * (1 + self.Erf(((x -self.mu)/self.std)*(self.alpha/np.sqrt(2.0))))) - np.log((np.sqrt(2 * np.pi))) - 0.5 * ((x -self.mu)/self.std)**2
+
+
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
