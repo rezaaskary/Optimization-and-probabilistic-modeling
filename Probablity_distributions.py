@@ -223,7 +223,16 @@ class Liklihood_Functions:
         self.measured = measured
         self.estimated = estimated
 
+        if not isinstance(self.vectorized, bool):
+            self.vectorized = False
+
+        if
         if self.function is 'gaussian_single_variable' and not self.vectorized:
+
+
+
+
+
             self.liklihood = self.gaussian_liklihood_single_variable
 
         elif self.function is 'gaussian_single_variable' and  self.vectorized:
