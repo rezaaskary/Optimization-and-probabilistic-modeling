@@ -196,8 +196,11 @@ class Continuous_Half_Gaussian:
 #=========================================================================================================
 #=========================================================================================================
 class Liklihood_Functions:
-    def __int__(self,function:str = 'gaussian_single_variable', vectorized:bool = False, sigma:np.ndarray = None, Covariance: np.ndarray = None,\
-                K:int = 1, measured: np.ndarray = None, estimated: np.ndarray = None, C: int = 1, diagonal_covariance:bool = True):
+    def __int__(self,function:str = 'gaussian_single_variable', vectorized:bool = False,\
+                sigma:np.ndarray = np.ones((1,1)), Covariance: np.ndarray = np.ones((1,1)),\
+                K:int = None, measured: np.ndarray = None, estimated: np.ndarray = None,
+                C: int = None, diagonal_covariance:bool = None):
+
         """
         :param function: A string variable indicating the type of liklihood function
         :param vectorized:
@@ -212,14 +215,6 @@ class Liklihood_Functions:
         """
 
         self.function = function
-
-
-
-        self.Covariance = Covariance
-
-        self.sigma = sigma
-        self.measured = measured
-        self.estimated = estimated
 
         if not isinstance(vectorized, bool):
             self.vectorized = False
@@ -259,7 +254,6 @@ class Liklihood_Functions:
             self.Diagonal = diagonal_covariance
 
 
-
         if not isinstance(Covariance, np.ndarray):
             raise Exception('The covariance matrix is not specified correctly!')
         else:
@@ -267,10 +261,26 @@ class Liklihood_Functions:
 
 
 
+        if not isinstance(sigma, (int, float)):
+            raise Exception('The standard deviation is not specified correctly!')
+        else:
+            self.sigma = sigma
+
+            if not isinstance(sigma, (int, float)):
+                raise Exception('The standard deviation is not specified correctly!')
+            else:
+                self.sigma = sigma
 
 
+        if not isinstance(measured, (int, np.ndarray)):
+            raise Exception('the measured data is not entered correctly!')
+        else:
+            self.measured = measured
 
-
+        if not isinstance(estimated, (int, np.ndarray)):
+            raise Exception('the measured data is not entered correctly!')
+        else:
+            self.estimated = estimated
 
 
 
