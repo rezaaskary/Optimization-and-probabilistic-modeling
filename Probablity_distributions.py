@@ -225,21 +225,27 @@ class Liklihood_Functions:
             self.vectorized = False
             print(
                 f'------------------------------------------------------------------------------------------------------------------\n '
-                f'The default value of {} is selectd for vectorizing simulations\n'
+                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
                 f'---------------------------------------------------------------------------------------------------------------------')
-
         else:
             self.vectorized = vectorized
 
+
         if not isinstance(C, int):
             self.C = 1
+            print(
+                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'The default value of {self.C} is selectd for the number of chains\n'
+                f'---------------------------------------------------------------------------------------------------------------------')
         else:
             self.C = C
+
 
         if not isinstance(K, int):
             raise Exception('The dimention of the problem is not specified correctly!')
         else:
             self.K = K
+
 
         if not isinstance(N, int):
             raise Exception('The size of the data is not specified correctly!')
