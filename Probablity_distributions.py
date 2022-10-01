@@ -214,7 +214,7 @@ class Liklihood_Functions:
         :return: the liklihood value(s)
         """
 
-        self.function = function
+
 
         if not isinstance(vectorized, bool):
             self.vectorized = False
@@ -260,7 +260,6 @@ class Liklihood_Functions:
             self.Covariance = Covariance
 
 
-
         if not isinstance(sigma, (int, float)):
             raise Exception('The standard deviation is not specified correctly!')
         else:
@@ -270,7 +269,6 @@ class Liklihood_Functions:
                 raise Exception('The standard deviation is not specified correctly!')
             else:
                 self.sigma = sigma
-
 
         if not isinstance(measured, (int, np.ndarray)):
             raise Exception('the measured data is not entered correctly!')
@@ -284,36 +282,23 @@ class Liklihood_Functions:
 
 
 
+        # if hasattr(logprop_fcn, "__call__"):
 
 
-
-
-
-
-
-
-
-
-
-            print(
-                f'------------------------------------------------------------------------------------------------------------------\n '
-                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
-                f'---------------------------------------------------------------------------------------------------------------------')
-
-
-            self.diagonal_covariance = diagonal_covariance
-
-
+        # self.function = function
+        #
         # if
-        # if self.function is 'gaussian_single_variable' and not self.vectorized:
-        #
-        #
-        #
-        #
-        #
-        # self.liklihood = self.gaussian_liklihood_single_variable
+
+        if isinstance(function, str):
+            raise Exception('the type of liklihood function is not specified correctly!')
+        else:
+            self.function = function
+
+        if self.function is 'gaussian_single_variable' and not self.vectorized:
+            self.liklihood = gaussian_liklihood_single_variable
 
         elif self.function is 'gaussian_single_variable' and  self.vectorized:
+
             self.liklihood = gaussian_liklihood_single_variable_vectorized
 
         elif self.function is 'multivariable_gaussian' and not self.vectorized:
@@ -322,6 +307,8 @@ class Liklihood_Functions:
         elif self.function is 'multivariable_gaussian' and self.vectorized:
             self.liklihood = gaussian_liklihood_multivariable_vectorized
 
+        else:
+            raise Exception('The type of entered lklihood function is not implemented!')
 
 
     def gaussian_liklihood_single_variable(self) -> np.ndarray:
