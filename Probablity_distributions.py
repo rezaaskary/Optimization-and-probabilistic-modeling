@@ -214,8 +214,6 @@ class Liklihood_Functions:
         self.function = function
 
 
-        self.K = K
-        self.N = N
         self.diagonal_covariance = diagonal_covariance
         self.Covariance = Covariance
         self.Diagonal = diagonal_covariance
@@ -233,10 +231,16 @@ class Liklihood_Functions:
         else:
             self.C = C
 
-        if not isinstance(C, int):
-            self.C = 1
+        if not isinstance(K, int):
+            raise Exception('The dimention of the problem is not specified correctly!')
         else:
-            self.C = C
+            self.K = K
+
+        if not isinstance(N,int):
+            raise Exception('The size of the data is not specified correctly!')
+        else:
+            self.N = N
+
 
 
         if
