@@ -212,8 +212,8 @@ class Liklihood_Functions:
         """
 
         self.function = function
-        self.vectorized = vectorized
-        self.C = C
+
+
         self.K = K
         self.N = N
         self.diagonal_covariance = diagonal_covariance
@@ -223,8 +223,21 @@ class Liklihood_Functions:
         self.measured = measured
         self.estimated = estimated
 
-        if not isinstance(self.vectorized, bool):
+        if not isinstance(vectorized, bool):
             self.vectorized = False
+        else:
+            self.vectorized = vectorized
+
+        if not isinstance(C, int):
+            self.C = 1
+        else:
+            self.C = C
+
+        if not isinstance(C, int):
+            self.C = 1
+        else:
+            self.C = C
+
 
         if
         if self.function is 'gaussian_single_variable' and not self.vectorized:
