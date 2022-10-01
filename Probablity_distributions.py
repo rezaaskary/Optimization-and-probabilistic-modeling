@@ -262,6 +262,12 @@ class Liklihood_Functions:
 
 
 
+
+
+
+
+
+
             print(
                 f'------------------------------------------------------------------------------------------------------------------\n '
                 f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
