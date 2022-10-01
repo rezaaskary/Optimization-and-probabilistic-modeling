@@ -216,7 +216,7 @@ class Liklihood_Functions:
 
 
         self.Covariance = Covariance
-        self.Diagonal = diagonal_covariance
+
         self.sigma = sigma
         self.measured = measured
         self.estimated = estimated
@@ -253,11 +253,14 @@ class Liklihood_Functions:
             self.N = N
 
 
-
         if not isinstance(diagonal_covariance, bool):
-
             raise Exception('The type of calculation(vectorizing) is not specified correctly!')
         else:
+            self.Diagonal = diagonal_covariance
+
+
+
+
 
             print(
                 f'------------------------------------------------------------------------------------------------------------------\n '
