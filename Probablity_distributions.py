@@ -85,6 +85,9 @@ class Uniform(Continuous_Distributions):
             self.lb *= np.ones((self.C, 1))
             self.ub *= np.ones((self.C, 1))
             self.pdf = self.Prob
+            self.logpdf = self.Log_prob
+
+
 
     def Prob(self, x: float = 0.5)->np.ndarray:
         """
@@ -95,6 +98,19 @@ class Uniform(Continuous_Distributions):
             return 0
         else:
             return 1 / (self.ub - self.lb)
+
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
+        if x <= self.lb or x >= self.ub:
+            return -np.inf
+        else:
+            return -np.log(self.ub - self.lb)
+
+
+
 
 
 
@@ -126,15 +142,7 @@ class Continuous_Uniform:
         else:
             return 1 / (self.ub - self.lb)
 
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
-        """
-        if x <= self.lb or x >= self.ub:
-            return -np.inf
-        else:
-            return -np.log(self.ub - self.lb)
+
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
