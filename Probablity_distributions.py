@@ -6,7 +6,7 @@ class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
                  mu: float = None, alpha: float = None,\
                  lb: float = None, ub: float = None, vectorized: bool = False,\
-                 C: int = 1):
+                 C: int = 1)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -70,6 +70,33 @@ class Continuous_Distributions:
             self.alpha = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
+
+class Uniform(Continuous_Distributions):
+    def __init__(self, lb: float = None, ub: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super().__init__(lb, ub, vectorized, C)
+        """
+        The continuous uniform distribution
+        :param lb: the lower bound of the uniform distribution
+        :param ub: the upper bound of the uniform distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param C: Number of chains
+        """
+        if self.vectorized:
+            self.lb *= np.ones((self.C, 1))
+            self.ub *= np.ones((self.C, 1))
+            self.pdf = self.Prob
+
+    def Prob(self, x: float = 0.5)->np.ndarray:
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        if x <= self.lb or x >= self.ub:
+            return 0
+        else:
+            return 1 / (self.ub - self.lb)
+
+
 
 
 
