@@ -3,14 +3,21 @@ from matplotlib.pyplot import plot, show
 
 #=========================================================================================================
 class Continuous_Uniform:
-    def __init__(self, lb: float = 0.0, ub: float = 1.0):
+    def __init__(self, lb: float = 0.0, ub: float = 1.0, vectorized: bool = False):
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
         :param ub: the upper bound of the uniform distribution
+        param ub: the upper bound of the uniform distribution
         """
         self.lb = lb
         self.ub = ub
+        if isinstance(vectorized, bool):
+            self.vectorized = vectorized
+        else:
+            raise Exception('The type of calculation (vectorization) is not selected properly!')
+
+
     def Prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
@@ -198,7 +205,6 @@ class Continuous_Half_Gaussian:
 class Skewed_Normal:
     def __init__(self, mu: float = 0.0, std: float = 1.0, alpha: float = 1):
         """
-
        The continuous skewed Normal distribution
        :param mu: the center bound of the truncated normal distribution
        :param std: the standard deviation bound of the truncated normal distribution
