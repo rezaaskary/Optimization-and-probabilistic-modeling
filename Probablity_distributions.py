@@ -2,13 +2,54 @@ import numpy as np
 from matplotlib.pyplot import plot, show
 
 #=========================================================================================================
+class Continuous_Distributions:
+    def __init__(self, sigma: float = None, variance: float = None,
+                 mu: float = None, alpha: float = None,\
+                 lb: float = None, ub: float = None, vectorized: bool = False,\
+                 Nchains: int = 1):
+
+        if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
+            raise Exception('Please Enter either variance or standard deviation!')
+
+        if isinstance(sigma, (float, int)) and not isinstance(variance, (float, int)):
+            if sigma > 0:
+                self.sigma = sigma
+                self.variance = sigma**2
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+
+        if not isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
+            if variance > 0:
+                self.sigma = np.sqrt(variance)
+                self.variance = variance
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+
+        if sigma is None and variance is None:
+            self.sigma = None
+            self.variance = None
+
+        if isinstance(lb, (float, int)):
+            self.lb = lb
+        elif lb is None:
+            self.lb = None
+        else:
+            raise Exception('The lower bound is not specified correctly!')
+
+
+
+
+
+
+
 class Continuous_Uniform:
-    def __init__(self, lb: float = 0.0, ub: float = 1.0, vectorized: bool = False):
+    def __init__(self, lb: float = 0.0, ub: float = 1.0, vectorized: bool = False, Nchains: int = 1):
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
         :param ub: the upper bound of the uniform distribution
-        param ub: the upper bound of the uniform distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param Nchains: Number of chains
         """
         self.lb = lb
         self.ub = ub
@@ -16,7 +57,6 @@ class Continuous_Uniform:
             self.vectorized = vectorized
         else:
             raise Exception('The type of calculation (vectorization) is not selected properly!')
-
 
     def Prob(self, x: float = 0.5)->np.ndarray:
         """
