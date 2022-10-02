@@ -1,12 +1,12 @@
 import numpy as np
 from matplotlib.pyplot import plot, show
-
+from IPython.display import display, Latex
 #=========================================================================================================
 class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
                  mu: float = None, alpha: float = None,\
                  lb: float = None, ub: float = None, vectorized: bool = False,\
-                 Nchains: int = 1):
+                 C: int = 1):
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -36,9 +36,40 @@ class Continuous_Distributions:
         else:
             raise Exception('The lower bound is not specified correctly!')
 
+        if isinstance(ub, (float, int)):
+            self.ub = ub
+        elif ub is None:
+            self.ub = None
+        else:
+            raise Exception('The upper bound is not specified correctly!')
 
+        if isinstance(vectorized, bool):
+            self.vectorized = vectorized
+        elif self.vectorized is None:
+            self.vectorized = False
+        else:
+            raise Exception('The type of calculation is not specified correctly!')
 
+        if isinstance(C, int):
+            self.C = C
+        elif C is None:
+            self.C = 1
+        else:
+            raise Exception(' The number of chains is not specified correctly!')
 
+        if isinstance(mu, (float, int)):
+            self.mu = mu
+        elif mu is None:
+            self.mu = None
+        else:
+            raise Exception('The value of mu is not specified correctly!')
+
+        if isinstance(alpha, (float, int)):
+            self.alpha = alpha
+        elif alpha is None:
+            self.alpha = None
+        else:
+            raise Exception('The value of alpha is not specified correctly!')
 
 
 
