@@ -87,6 +87,8 @@ class Uniform(Continuous_Distributions):
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
 
+        else:
+
 
 
     def Prob(self, x: float = 0.5)->np.ndarray:
@@ -98,6 +100,15 @@ class Uniform(Continuous_Distributions):
             return 0
         else:
             return 1 / (self.ub - self.lb)
+
+    def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
+
+        index_left = x<=self.lb
+        index_right = x>=self.right
+
+
+
+
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
