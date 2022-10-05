@@ -545,16 +545,22 @@ class Beta(Continuous_Distributions):
         :param z:
         :return:
         """
-        # if method is 'taylor':
-        def gamma_kernel(z,t):
-            fcn = np.exp(-t)*t**(z-1)
-            return fcn
+        if method is 'stirling':
+            gamma_value = np.sqrt(2*np.pi*z) * np.power(z,z-1) * np.exp(-z) * (1 + (1/(12*z)) + (1/(288*z**2)) - (1/(51480*z**3)))
+        elif method is 'numerical':
+            def gamma_kernel(z,t):
+                fcn = np.exp(-t)*t**(z-1)
+                return fcn
+            t = np.linspace(0, 100,10000)
+            f = gamma_kernel(z, t)
+            deltat = t[1]-t[0]
+            gamma_value = deltat * (t[1:-1]).sum() + 0.5 * deltat * (t[0] + t[-1])
+        else:
+            raise Exception('The method of calculating the Gamma function is not specified correctly!')
+        return gamma_value
 
 
-        t = np.linspace(0, 100,10000)
-        deltat = t[1]-t[0]
 
-        return
 
 
     def Prob(self, x:float)->float:
