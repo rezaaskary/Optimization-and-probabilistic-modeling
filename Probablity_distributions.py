@@ -155,7 +155,6 @@ class Uniform(Continuous_Distributions):
 class Gaussian(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(sigma, variance, mu, vectorized, C)
-
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
@@ -163,7 +162,6 @@ class Gaussian(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
-
         if self.vectorized:
             self.mu_v = self.mu * np.ones((self.C, 1))
             self.sigma_v = self.sigma * np.ones((self.C, 1))
@@ -205,37 +203,6 @@ class Gaussian(Continuous_Distributions):
         """
         return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
-
-
-
-
-
-
-
-class Continuous_Gaussian:
-    def __init__(self, mu: float = 0.0, std: float = 1.0):
-        """
-        The continuous gaussian distribution function
-        :param mu: the center of the gaussian distribution
-        :param std: the standard deviation of gaussian distribution
-        """
-        self.mu = mu
-        self.std = std
-
-    def Prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
-        """
-        return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
-
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
-        """
-        return -np.log(self.std * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.std ** 2)
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
          the module used to visualize the probablity distribution
@@ -248,7 +215,35 @@ class Continuous_Gaussian:
         for i in range(len(X)):
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
-#=========================================================================================================
+
+
+
+class Truncated_Gaussian(Continuous_Distributions):
+    def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super().__init__(lb, ub, sigma, variance, mu, vectorized, C)
+        """
+        The continuous truncated gaussian distribution function
+        :param mu: the center of the gaussian distribution
+        :param sigma: the standard deviation of gaussian distribution
+        :param variance: the variance of gaussian distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param C: Number of chains
+        """
+
+        if self.vectorized:
+            self.lb_v = self.lb * np.ones((self.C, 1))
+            self.ub_v = self.ub * np.ones((self.C, 1))
+            self.mu_v = self.mu * np.ones((self.C, 1))
+            self.sigma_v = self.sigma * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
+            self.pdf = self.Prob
+            self.logpdf = self.Log_prob
+
+
+
+
 
 
 class Continuous_Truncated_Gaussian:
