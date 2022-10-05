@@ -470,6 +470,34 @@ class Skewed_Normal(Continuous_Distributions):
         return log_prob
 
 
+    def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
+        """
+        calcualting the probablity of the skewed normal distribution given an array of input variable
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
+
+        L1 = 0.5 * (1 + self.Erf(((x - self.mu) / self.sigma) * (self.alpha / np.sqrt(2.0))))
+        L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+        return 2 * L1 * L2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
