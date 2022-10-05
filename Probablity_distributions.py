@@ -165,8 +165,6 @@ class Gaussian(Continuous_Distributions):
         """
 
         if self.vectorized:
-            self.lb_v = self.lb * np.ones((self.C, 1))
-            self.ub_v = self.ub * np.ones((self.C, 1))
             self.pdf = self.Prob_vectorized
             self.logpdf = self.Log_prob_vectorized
         else:
@@ -175,7 +173,16 @@ class Gaussian(Continuous_Distributions):
 
 
 
+    def Prob(self, x: float = 0.5)->np.ndarray:
+        """
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
+    def Log_prob(self, x: float = 0.5)->np.ndarray:
 
+    def Prob_vectorized(self, x: float = 0.5)->np.ndarray:
+    def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
 
 
 
