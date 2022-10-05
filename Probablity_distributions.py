@@ -198,8 +198,12 @@ class Gaussian(Continuous_Distributions):
        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
-
-
+        """
+        calculating the log probablity distribution of the array of variable x by using normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given array
+        """
+        return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
 
 
