@@ -102,17 +102,9 @@ class Uniform(Continuous_Distributions):
             return 1 / (self.ub - self.lb)
 
     def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
-
-        index_left = x<=self.lb
-        index_right = x>=self.right
-
-
-
-
-
-
-
-
+        in_range_index = x>self.lb & x< self.ub
+        prob = np.zeros((self.C,1))
+        prob[in_range_index, 0] = 1/(self.ub[in_range_index, 0]- self.lb[in_range_index,0])
 
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
