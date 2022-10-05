@@ -524,8 +524,10 @@ class Skewed_Normal(Continuous_Distributions):
             :return: None
             """
 
-
-
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
 
 
