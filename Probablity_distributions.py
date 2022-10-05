@@ -128,11 +128,10 @@ class Uniform(Continuous_Distributions):
         :param x: an array determining the variable we are calculating its probability distribution
         :return: The log of the probability distribution of the given variable
         """
+        in_range_index = x > self.lb_v & x < self.ub_v
         logprob = np.ones((self.C, 1))
-
-
-
-        return
+        logprob[in_range_index, 0] = -np.log(self.ub_v[in_range_index, 0] - self.lb_v[in_range_index, 0])
+        return logprob
 
 
 
