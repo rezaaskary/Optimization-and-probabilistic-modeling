@@ -165,23 +165,38 @@ class Gaussian(Continuous_Distributions):
         """
 
         if self.vectorized:
+            self.mu_v = self.mu * np.ones((self.C, 1))
+            self.sigma_v = self.sigma * np.ones((self.C, 1))
             self.pdf = self.Prob_vectorized
             self.logpdf = self.Log_prob_vectorized
         else:
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
 
-
-
     def Prob(self, x: float = 0.5)->np.ndarray:
         """
+        calculating the probablity distribution of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
-        return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
+        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+
     def Log_prob(self, x: float = 0.5)->np.ndarray:
+        """
+        calculating the log probablity distribution of variable x by using normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def Prob_vectorized(self, x: float = 0.5)->np.ndarray:
+       """
+       calculating the probablity distribution of a chain variable x by using normal distribution
+       :param x: an integer value determining the variable we are calculating its probablity distribution
+       :return: the probablity of the occurance of the given variable
+       """
+       return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+
     def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
 
 
