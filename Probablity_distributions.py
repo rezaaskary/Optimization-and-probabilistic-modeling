@@ -244,10 +244,20 @@ class Truncated_Gaussian(Continuous_Distributions):
             self.logpdf = self.Log_prob
 
 
+    def Erf(self, z)->np.ndarray:
+        """
+        The error function used to calculate the truncated gaussian distribution
+        :param z: normalized input variable
+        :return: the value of the error function
+        """
+        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
+
 
     def Prob(self, x: float)->np.ndarray:
         return
 
+    def Prob(self, x: float)->np.ndarray:
+        return
 
 
 
