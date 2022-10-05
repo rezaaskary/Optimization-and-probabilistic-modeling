@@ -103,9 +103,9 @@ class Uniform(Continuous_Distributions):
 
     def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
         """
-        calculating the probablity of the input array x in vectorized format
-        :param x:
-        :return:
+        calculating the probability of the input array x in vectorized format
+        :param x: the array of the input variable (Cx1)
+        :return:  the probability of the input array (Cx1)
         """
         in_range_index = x>self.lb & x< self.ub
         prob = np.zeros((self.C,1))
@@ -114,8 +114,8 @@ class Uniform(Continuous_Distributions):
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
+        :param x: an integer value determining the variable we are calculating its probability distribution
+        :return: The log of the probability distribution of the given variable
         """
         if x <= self.lb or x >= self.ub:
             return -np.inf
@@ -123,6 +123,12 @@ class Uniform(Continuous_Distributions):
             return -np.log(self.ub - self.lb)
 
     def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
+        """
+        calculating the log probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution
+        :return: The log of the probability distribution of the given variable
+        """
+        logprob = np.ones((self.C, 1))
 
         return
 
