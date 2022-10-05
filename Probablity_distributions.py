@@ -271,11 +271,23 @@ class Truncated_Gaussian(Continuous_Distributions):
         return (1 / self.sigma) * (fi / (Fi_1 - Fi_2))
 
 
+    def Log_prob(self, x: float)->np.ndarray:
+        """
+        calculating the log probablity of the truncated normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
+        if x <= self.lb or x >= self.ub:
+            return -np.inf
+        else:
+            L1 = (self.ub - self.mu) / self.std
+            L2 = (self.lb - self.mu) / self.std
+            L = (x - self.mu) / self.std
+            Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
+            Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
+            return -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
 
 
-        return
-
-    def Prob(self, x: float)->np.ndarray:
         return
 
 
