@@ -155,13 +155,15 @@ class Uniform(Continuous_Distributions):
 class Gaussian(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(sigma, variance, mu, vectorized, C)
+
         """
-        The continuous uniform distribution
-        :param lb: the lower bound of the uniform distribution
-        :param ub: the upper bound of the uniform distribution
+        The continuous gaussian distribution function
+        :param mu: the center of the gaussian distribution
+        :param std: the standard deviation of gaussian distribution
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
+
         if self.vectorized:
             self.lb_v = self.lb * np.ones((self.C, 1))
             self.ub_v = self.ub * np.ones((self.C, 1))
