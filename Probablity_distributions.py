@@ -347,7 +347,50 @@ class Half_Gaussian(Continuous_Distributions):
         :param C: Number of chains
         """
 
+    if self.vectorized:
+        self.sigma_v = self.sigma * np.ones((self.C, 1))
+        self.pdf = self.Prob_vectorized
+        self.logpdf = self.Log_prob_vectorized
+    else:
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
 
+
+    def Prob(self, x: float)->np.ndarray:
+        """
+        Calculating the probablity of half normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        if x <= 0:
+            return 0
+        else:
+            return (np.sqrt(2) / (self.sigma * np.sqrt(np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+
+
+    def Log_prob(self, x: float)->np.ndarray:
+        """
+        Calcualting the log probablity of the half normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
+
+        if x <= 0:
+            return -np.inf
+        else:
+            return np.log(np.sqrt(2) / (self.std * np.sqrt(np.pi))) - (x ** 2) / (2 * self.std ** 2)
+
+    def Prob_vectorized(self, x: float)->np.ndarray:
+        """
+        vectorized based calculation of the probablity of half normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+
+        in_range_index = x > 0
+        prob = np.zeros((self.C, 1))
+        prob[in_range_index, 0] = (np.sqrt(2) / (self.sigma[in_range_index, 0] * np.sqrt(np.pi))) * np.exp(-((x - self.mu[in_range_index, 0]) ** 2) / (2 * self.sigma[in_range_index, 0] ** 2))
+        return prob
 
 
 
