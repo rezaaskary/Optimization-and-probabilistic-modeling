@@ -336,6 +336,19 @@ class Truncated_Gaussian(Continuous_Distributions):
         plot(list(X.ravel()), Y)
 
 
+class Half_Gaussian(Continuous_Distributions):
+    def __init__(self, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super().__init__(sigma, variance, vectorized, C)
+        """
+        The continuous truncated gaussian distribution function
+        :param sigma: the standard deviation of gaussian distribution
+        :param variance: the variance of gaussian distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param C: Number of chains
+        """
+
+
+
 
 
 class Continuous_Half_Gaussian:
