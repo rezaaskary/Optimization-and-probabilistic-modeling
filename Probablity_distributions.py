@@ -418,46 +418,48 @@ class Half_Gaussian(Continuous_Distributions):
         plot(list(X.ravel()), Y)
 
 
-class Continuous_Half_Gaussian:
-    def __init__(self, std: float = 1.0):
+class Skewed_Normal(Continuous_Distributions):
+    def __int__(self, mu: float = None , alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
+        super().__int__(mu, alpha, sigma, variance, vectorized, C)
         """
-        The half normal distribution function
-        :param std: the standard deviation of the half normal distribution
+        The skewed continuous truncated gaussian distribution function
+        :param alpha: the skewness parameter
+        :param mu: the mean of the gaussian distribution 
+        :param sigma: the standard deviation of gaussian distribution
+        :param variance: the variance of gaussian distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param C: Number of chains
         """
-        self.std = std
+        if self.vectorized:
+            self.mu_v = self.mu * np.ones((self.C, 1))
+            self.alpha_v = self.alpha * np.ones((self.C, 1))
+            self.sigma_v = self.sigma * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
+            self.pdf = self.Prob
+            self.logpdf = self.Log_prob
 
-    def Prob(self, x: float = 0.5)->np.ndarray:
+    def Erf(self, z)->np.ndarray:
         """
+        The error function used to calculate the truncated gaussian distribution
+        :param z: normalized input variable
+        :return: the value of the error function
+        """
+        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
+
+
+    def Prob(self, x)->np.ndarray:
+        """
+        calculating the probablity distribution of the skewed normal function
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
-        if x <= 0:
-            return 0
-        else:
-            return (np.sqrt(2) / (self.std * np.sqrt(np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.std ** 2))
+        L1 = 0.5 * (1 + self.Erf(((x - self.mu) / self.sigma) * (self.alpha / np.sqrt(2.0))))
+        L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+        return 2 * L1 * L2
+        return
 
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
-        """
-        if x <= 0:
-            return -np.inf
-        else:
-            return np.log(np.sqrt(2) / (self.std * np.sqrt(np.pi))) - (x ** 2) / (2 * self.std ** 2)
-
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        the module used to visualize the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
 
 
 
