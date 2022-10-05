@@ -84,11 +84,11 @@ class Uniform(Continuous_Distributions):
         if self.vectorized:
             self.lb_v = self.lb * np.ones((self.C, 1))
             self.ub_v = self.ub * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
-
-        else:
-
 
 
     def Prob(self, x: float = 0.5)->np.ndarray:
@@ -107,9 +107,9 @@ class Uniform(Continuous_Distributions):
         :param x: the array of the input variable (Cx1)
         :return:  the probability of the input array (Cx1)
         """
-        in_range_index = x>self.lb & x< self.ub
+        in_range_index = x>self.lb_v & x< self.ub_v
         prob = np.zeros((self.C,1))
-        prob[in_range_index, 0] = 1/(self.ub[in_range_index, 0]- self.lb[in_range_index,0])
+        prob[in_range_index, 0] = 1/(self.ub_v[in_range_index, 0]- self.lb_v[in_range_index,0])
         return prob
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
@@ -133,39 +133,6 @@ class Uniform(Continuous_Distributions):
         logprob[in_range_index, 0] = -np.log(self.ub_v[in_range_index, 0] - self.lb_v[in_range_index, 0])
         return logprob
 
-
-
-
-
-
-class Continuous_Uniform:
-    def __init__(self, lb: float = 0.0, ub: float = 1.0, vectorized: bool = False, Nchains: int = 1):
-        """
-        The continuous uniform distribution
-        :param lb: the lower bound of the uniform distribution
-        :param ub: the upper bound of the uniform distribution
-        :param vectorized: the type of calculating probablity distributions
-        :param Nchains: Number of chains
-        """
-        self.lb = lb
-        self.ub = ub
-        if isinstance(vectorized, bool):
-            self.vectorized = vectorized
-        else:
-            raise Exception('The type of calculation (vectorization) is not selected properly!')
-
-    def Prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
-        """
-        if x <= self.lb or x >= self.ub:
-            return 0
-        else:
-            return 1 / (self.ub - self.lb)
-
-
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
         the module used to visualize the probablity distribution
@@ -179,6 +146,14 @@ class Continuous_Uniform:
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
         show()
+
+
+
+
+
+
+
+
 #=========================================================================================================
 
 class Continuous_Gaussian:
