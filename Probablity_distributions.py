@@ -402,6 +402,7 @@ class Half_Gaussian(Continuous_Distributions):
         in_range_index = x > 0
         logprob = np.ones((self.C, 1)) * -np.inf
 
+        logprob[in_range_index, 0] = np.log(np.sqrt(2) / (self.sigma_v[in_range_index, 0] * np.sqrt(np.pi))) - (x ** 2) / (2 * self.sigma_v[in_range_index, 0] ** 2)
         return logprob
 
 
