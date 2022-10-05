@@ -365,7 +365,7 @@ class Half_Gaussian(Continuous_Distributions):
         if x <= 0:
             return 0
         else:
-            return (np.sqrt(2) / (self.sigma * np.sqrt(np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+            return (np.sqrt(2) / (self.sigma * np.sqrt(np.pi))) * np.exp(-((x) ** 2) / (2 * self.sigma ** 2))
 
 
     def Log_prob(self, x: float)->np.ndarray:
@@ -389,8 +389,26 @@ class Half_Gaussian(Continuous_Distributions):
 
         in_range_index = x > 0
         prob = np.zeros((self.C, 1))
-        prob[in_range_index, 0] = (np.sqrt(2) / (self.sigma[in_range_index, 0] * np.sqrt(np.pi))) * np.exp(-((x - self.mu[in_range_index, 0]) ** 2) / (2 * self.sigma[in_range_index, 0] ** 2))
+        prob[in_range_index, 0] = (np.sqrt(2) / (self.sigma[in_range_index, 0] * np.sqrt(np.pi))) * np.exp(-((x[in_range_index, 0]) ** 2) / (2 * self.sigma[in_range_index, 0] ** 2))
         return prob
+
+    def Log_prob_vectorized(self, x: float)->np.ndarray:
+        """
+        Calcualting the log probablity of an array of given variable by using the half normal distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
+
+        in_range_index = x > 0
+        logprob = np.ones((self.C, 1)) * -np.inf
+
+        if x <= 0:
+            return -np.inf
+        else:
+            return np.log(np.sqrt(2) / (self.std * np.sqrt(np.pi))) - (x ** 2) / (2 * self.std ** 2)
+
+        logprob[in_range_index, 0] = np.log(np.sqrt(2) / (self.sigma_v[in_range_index, 0] * np.sqrt(np.pi))) - (x ** 2) / (2 * self.sigma_v[in_range_index, 0] ** 2)
+
 
 
 
