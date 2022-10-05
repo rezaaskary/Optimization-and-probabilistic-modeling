@@ -82,8 +82,8 @@ class Uniform(Continuous_Distributions):
         :param C: Number of chains
         """
         if self.vectorized:
-            self.lb *= np.ones((self.C, 1))
-            self.ub *= np.ones((self.C, 1))
+            self.lb_v = self.lb * np.ones((self.C, 1))
+            self.ub_v = self.ub * np.ones((self.C, 1))
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
 
@@ -102,10 +102,15 @@ class Uniform(Continuous_Distributions):
             return 1 / (self.ub - self.lb)
 
     def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
+        """
+        calculating the probablity of the input array x in vectorized format
+        :param x:
+        :return:
+        """
         in_range_index = x>self.lb & x< self.ub
         prob = np.zeros((self.C,1))
         prob[in_range_index, 0] = 1/(self.ub[in_range_index, 0]- self.lb[in_range_index,0])
-
+        return prob
 
     def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
@@ -117,7 +122,9 @@ class Uniform(Continuous_Distributions):
         else:
             return -np.log(self.ub - self.lb)
 
+    def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
 
+        return
 
 
 
