@@ -254,6 +254,25 @@ class Truncated_Gaussian(Continuous_Distributions):
 
 
     def Prob(self, x: float)->np.ndarray:
+        """
+        calcualting the probablity distribution of the truncated normal function
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        if x <= self.lb or x >= self.ub:
+            return 0
+        else:
+            L1 = (self.ub - self.mu) / self.sigma
+            L2 = (self.lb - self.mu) / self.sigma
+            L = (x - self.mu) / self.sigma
+            Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
+            Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
+            fi = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * L ** 2)
+        return (1 / self.sigma) * (fi / (Fi_1 - Fi_2))
+
+
+
+
         return
 
     def Prob(self, x: float)->np.ndarray:
