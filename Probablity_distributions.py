@@ -303,18 +303,24 @@ class Truncated_Gaussian(Continuous_Distributions):
         Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
         fi = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * L ** 2)
         prob[in_range_index, 0] = (1 / self.sigma[in_range_index, 0]) * (fi / (Fi_1 - Fi_2))
-
         return prob
 
     def Log_prob_vectorized(self, x: np.ndarray) -> np.ndarray:
-        return
+        """
+        calculating the log probablity of the truncated normal distribution(vectorized)
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: The log of the probablity distribution of the given variable
+        """
 
-
-
-
-
-
-
+        in_range_index = x > self.lb_v & x < self.ub_v
+        logprob = np.ones((self.C, 1)) * -np.inf
+        L1 = (self.ub_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
+        L2 = (self.lb_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
+        L = (x[in_range_index, 0] - self.mu[in_range_index, 0]) / self.sigma[in_range_index, 0]
+        Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
+        Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
+        logprob[in_range_index, 0] = -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
+        return logprob
 
 
 class Continuous_Truncated_Gaussian:
