@@ -512,6 +512,18 @@ class Skewed_Normal(Continuous_Distributions):
 
 
 
+    class Beta(Continuous_Distributions):
+        def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
+            super().__int__(alpha, beta, vectorized, C)
+            """
+            Initializing beta distribution continuous function
+            :param alpha: exponent alpha parameter (alpha>0)
+            :param beta:  exponent beta parameter (beta>0)
+            :param vectorized: boolean variable used to determine vectorized calculation
+            :param C: An integer variable indicating the number of chains 
+            :return: None
+            """
+
 
 
 
