@@ -110,6 +110,11 @@ class Uniform(Continuous_Distributions):
 
 
 
+
+
+
+
+
     def Log_prob(self, x: float = 0.5)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
