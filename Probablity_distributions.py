@@ -512,25 +512,51 @@ class Skewed_Normal(Continuous_Distributions):
 
 
 
-    class Beta(Continuous_Distributions):
-        def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
-            super().__int__(alpha, beta, vectorized, C)
-            """
-            Initializing beta distribution continuous function
-            :param alpha: exponent alpha parameter (alpha>0)
-            :param beta:  exponent beta parameter (beta>0)
-            :param vectorized: boolean variable used to determine vectorized calculation
-            :param C: An integer variable indicating the number of chains 
-            :return: None
-            """
+class Beta(Continuous_Distributions):
+    def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
+        super().__int__(alpha, beta, vectorized, C)
+        """
+        Initializing beta distribution continuous function
+        :param alpha: exponent alpha parameter (alpha>0)
+        :param beta:  exponent beta parameter (beta>0)
+        :param vectorized: boolean variable used to determine vectorized calculation
+        :param C: An integer variable indicating the number of chains 
+        :return: None
+        """
 
         if self.alpha <= 0:
             raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
+        if self.vectorized:
+            self.alpha_v = self.alpha * np.ones((self.C, 1))
+            self.beta_v = self.beta * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
+            self.pdf = self.Prob
+            self.logpdf = self.Log_prob
 
 
+    def Gamma(self, z, method:str):
+        """
+        calcualting the Gamma function for use in other probablity distribution
+        :param z:
+        :return:
+        """
+        # if method is 'taylor':
+        def gamma_kernel(z,t):
+            fcn = np.exp(-t)*t**(z-1)
+            return fcn
 
 
+        t = np.linspace(0, 100,10000)
+        deltat = t[1]-t[0]
+
+        return
+
+
+    def Prob(self, x:float)->float:
+        return
 
