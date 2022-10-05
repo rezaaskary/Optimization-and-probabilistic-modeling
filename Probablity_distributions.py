@@ -6,7 +6,7 @@ class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
                  mu: float = None, alpha: float = None,\
                  lb: float = None, ub: float = None, vectorized: bool = False,\
-                 C: int = 1)->None:
+                 C: int = 1, beta: float = None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -71,6 +71,12 @@ class Continuous_Distributions:
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
+        if isinstance(beta, (float, int)):
+            self.beta = beta
+        elif beta is None:
+            self.beta = None
+        else:
+            raise Exception('The value of alpha is not specified correctly!')
 
 class Uniform(Continuous_Distributions):
     def __init__(self, lb: float = None, ub: float = None, vectorized: bool = False, C: int = 1) -> None:
@@ -152,7 +158,7 @@ class Uniform(Continuous_Distributions):
 #=========================================================================================================
 
 
-class Gaussian(Continuous_Distributions):
+class Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(sigma, variance, mu, vectorized, C)
         """
@@ -218,7 +224,7 @@ class Gaussian(Continuous_Distributions):
 
 
 
-class Truncated_Gaussian(Continuous_Distributions):
+class Truncated_Normal(Continuous_Distributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(lb, ub, sigma, variance, mu, vectorized, C)
         """
@@ -336,7 +342,7 @@ class Truncated_Gaussian(Continuous_Distributions):
         plot(list(X.ravel()), Y)
 
 
-class Half_Gaussian(Continuous_Distributions):
+class Half_Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(sigma, variance, vectorized, C)
         """
