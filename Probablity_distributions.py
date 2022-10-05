@@ -92,7 +92,7 @@ class Uniform(Continuous_Distributions):
             self.logpdf = self.Log_prob
 
 
-    def Prob(self, x: float = 0.5)->np.ndarray:
+    def Prob(self, x: float)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
@@ -113,7 +113,7 @@ class Uniform(Continuous_Distributions):
         prob[in_range_index, 0] = 1/(self.ub_v[in_range_index, 0]- self.lb_v[in_range_index,0])
         return prob
 
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
+    def Log_prob(self, x: float)->np.ndarray:
         """
         :param x: an integer value determining the variable we are calculating its probability distribution
         :return: The log of the probability distribution of the given variable
@@ -123,7 +123,7 @@ class Uniform(Continuous_Distributions):
         else:
             return -np.log(self.ub - self.lb)
 
-    def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
+    def Log_prob_vectorized(self, x: np.ndarray)->np.ndarray:
         """
         calculating the log probability of the input array
         :param x: an array determining the variable we are calculating its probability distribution
@@ -171,7 +171,7 @@ class Gaussian(Continuous_Distributions):
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
 
-    def Prob(self, x: float = 0.5)->np.ndarray:
+    def Prob(self, x: float)->np.ndarray:
         """
         calculating the probablity distribution of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
@@ -179,7 +179,7 @@ class Gaussian(Continuous_Distributions):
         """
         return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
+    def Log_prob(self, x: float)->np.ndarray:
         """
         calculating the log probablity distribution of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
@@ -187,7 +187,7 @@ class Gaussian(Continuous_Distributions):
         """
         return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
-    def Prob_vectorized(self, x: float = 0.5)->np.ndarray:
+    def Prob_vectorized(self, x: np.ndarray)->np.ndarray:
        """
        calculating the probablity distribution of a chain variable x by using normal distribution
        :param x: an integer value determining the variable we are calculating its probablity distribution
@@ -195,7 +195,7 @@ class Gaussian(Continuous_Distributions):
        """
        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
-    def Log_prob_vectorized(self, x: float = 0.5)->np.ndarray:
+    def Log_prob_vectorized(self, x: np.ndarray)->np.ndarray:
         """
         calculating the log probablity distribution of the array of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
@@ -223,6 +223,8 @@ class Truncated_Gaussian(Continuous_Distributions):
         super().__init__(lb, ub, sigma, variance, mu, vectorized, C)
         """
         The continuous truncated gaussian distribution function
+        :param lb: the lower bound of the uniform distribution
+        :param ub: the upper bound of the uniform distribution
         :param mu: the center of the gaussian distribution
         :param sigma: the standard deviation of gaussian distribution
         :param variance: the variance of gaussian distribution
@@ -240,6 +242,18 @@ class Truncated_Gaussian(Continuous_Distributions):
         else:
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
+
+
+
+    def Prob(self, x: float)->np.ndarray:
+        return
+
+
+
+
+
+
+
 
 
 
