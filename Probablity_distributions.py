@@ -491,59 +491,6 @@ class Skewed_Normal(Continuous_Distributions):
             (np.sqrt(2 * np.pi))) - 0.5 * ((x - self.mu_v) / self.sigma_v) ** 2
         return log_prob
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Skewed_Normal:
-    def __init__(self, mu: float = 0.0, std: float = 1.0, alpha: float = 1):
-        """
-       The continuous skewed Normal distribution
-       :param mu: the center bound of the truncated normal distribution
-       :param std: the standard deviation bound of the truncated normal distribution
-         :param alpha: the skewness parameter
-        """
-        self.mu = mu
-        self.std = std
-        self.alpha = alpha
-    def Erf(self, z)->np.ndarray:
-        """
-        The error function used to calculate the truncated gaussian distribution
-        :param z: normalized input variable
-        :return: the value of the error function
-        """
-        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
-
-    def Prob(self, x)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
-        """
-        L1 = 0.5 * (1 + self.Erf(((x -self.mu)/self.std)*(self.alpha/np.sqrt(2.0))))
-        L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x -self.mu)/self.std)**2)
-        return 2 * L1 * L2
-
-    def Log_prob(self, x: float = 0.5)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
-        """
-        return np.log(0.5 * (1 + self.Erf(((x -self.mu)/self.std)*(self.alpha/np.sqrt(2.0))))) - np.log((np.sqrt(2 * np.pi))) - 0.5 * ((x -self.mu)/self.std)**2
-
-
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
         the module used to visualize the probablity distribution
@@ -556,3 +503,14 @@ class Skewed_Normal:
         for i in range(len(X)):
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
+
+
+
+
+
+
+
+
+
+
+
