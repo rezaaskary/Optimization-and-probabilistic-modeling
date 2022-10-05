@@ -130,6 +130,8 @@ class Uniform(Continuous_Distributions):
         """
         logprob = np.ones((self.C, 1))
 
+
+
         return
 
 
