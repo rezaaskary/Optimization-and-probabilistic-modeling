@@ -404,6 +404,18 @@ class Half_Gaussian(Continuous_Distributions):
         logprob[in_range_index, 0] = np.log(np.sqrt(2) / (self.sigma_v[in_range_index, 0] * np.sqrt(np.pi))) - (x ** 2) / (2 * self.sigma_v[in_range_index, 0] ** 2)
         return logprob
 
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
 
 
 class Continuous_Half_Gaussian:
