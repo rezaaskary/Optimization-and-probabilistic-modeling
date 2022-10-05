@@ -71,6 +71,7 @@ class Continuous_Distributions:
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
+
 class Uniform(Continuous_Distributions):
     def __init__(self, lb: float = None, ub: float = None, vectorized: bool = False, C: int = 1) -> None:
         super().__init__(lb, ub, vectorized, C)
@@ -148,13 +149,40 @@ class Uniform(Continuous_Distributions):
         show()
 
 
-
-
-
-
-
-
 #=========================================================================================================
+
+
+class Gaussian(Continuous_Distributions):
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super().__init__(sigma, variance, mu, vectorized, C)
+        """
+        The continuous uniform distribution
+        :param lb: the lower bound of the uniform distribution
+        :param ub: the upper bound of the uniform distribution
+        :param vectorized: the type of calculating probablity distributions
+        :param C: Number of chains
+        """
+        if self.vectorized:
+            self.lb_v = self.lb * np.ones((self.C, 1))
+            self.ub_v = self.ub * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
+            self.pdf = self.Prob
+            self.logpdf = self.Log_prob
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Continuous_Gaussian:
     def __init__(self, mu: float = 0.0, std: float = 1.0):
