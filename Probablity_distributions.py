@@ -562,3 +562,69 @@ class Beta(Continuous_Distributions):
         """
         x = np.clip(x, 0, 1)
         return (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
+
+
+class Kumaraswamy(Continuous_Distributions):
+    def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
+        super().__int__(alpha, beta, vectorized, C)
+        """
+        Initializing Kumaraswamy distribution continuous function
+        :param alpha: exponent alpha parameter (alpha>0)
+        :param beta:  exponent beta parameter (beta>0)
+        :param vectorized: boolean variable used to determine vectorized calculation
+        :param C: An integer variable indicating the number of chains 
+        :return: None
+        """
+
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
+
+        self.mean = (self.beta * Gamma(1 + 1/self.alpha) * Gamma(self.beta))/( Gamma(self.beta + 1 + 1/self.alpha))
+
+        if self.vectorized:
+            self.alpha_v = self.alpha * np.ones((self.C, 1))
+            self.beta_v = self.beta * np.ones((self.C, 1))
+            self.pdf = self.Prob_vectorized
+            self.logpdf = self.Log_prob_vectorized
+        else:
+            self.pdf = self.Prob
+            self.logpdf = self.Log_prob
+
+
+    def Prob(self, x: float)->float:
+        """
+        calculating the probablity distribution of the Kumaraswamy distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return self.beta * self.alpha * (x** (self.alpha-1)) * ((1 - x**self.alpha)**(self.beta - 1))
+
+    def Log_prob(self, x: float)->float:
+        """
+        calculating the log probablity distribution of the Kumaraswamy distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return np.log(self.alpha) + np.log(self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log((1 - x**self.alpha))
+
+    def Prob_vectorized(self,x: np.ndarray)->np.ndarray:
+        """
+        calculating the probablity distribution of the Kumaraswamy distribution given an array of the input variables
+        :param x: an array value determining the variable we are calculating its probablity distribution (cx1)
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return self.beta * self.alpha * (x** (self.alpha-1)) * ((1 - x**self.alpha)**(self.beta - 1))
+
+    def Log_prob_vectorized(self,x: np.ndarray)->np.ndarray:
+        """
+        calculating the log probablity distribution of the Kumaraswamy distribution given any array on the input
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return np.log(self.alpha) + np.log(self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log((1 - x**self.alpha))
