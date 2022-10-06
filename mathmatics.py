@@ -48,7 +48,7 @@ def Beta(x, y, method: str = 'numerical'):
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 
 
-def Erf(z, method: str = 'numerical')->float:
+def Erf(z, method: str = 'fast')->float:
     """
     The error function used to calculate the truncated gaussian distribution
     :param z: normalized input variable
@@ -71,3 +71,5 @@ def Erf(z, method: str = 'numerical')->float:
         for n in range(20):
             erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
         return erf_val * (2/np.sqrt(np.pi))
+    else:
+        raise Exception('The method for calcualting the Error function is not specified correctly!')

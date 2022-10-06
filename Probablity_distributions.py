@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib.pyplot import plot, show
-from IPython.display import display, Latex
+from mathmatics import Beta, Gamma, Erf
 #=========================================================================================================
 class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
@@ -237,7 +237,7 @@ class Truncated_Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
-
+        self.Erf = Erf
         if self.vectorized:
             self.lb_v = self.lb * np.ones((self.C, 1))
             self.ub_v = self.ub * np.ones((self.C, 1))
