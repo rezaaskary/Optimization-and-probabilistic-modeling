@@ -190,17 +190,10 @@ class Normal(Continuous_Distributions):
         :param x: an array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log of the probability distribution of the given variable (Cx1)
         """
+        z = (x-self.mu)/(self.sigma * np.sqrt(2))
+        erf_value,derivatives_value = Erf(z)
 
-        Z = (x-self.mu)/(self.sigma * np.sqrt(2))
-
-        left_index = x <= self.lb
-        right_index = x >= self.lb
-        in_range_index = (x > self.lb) & (x < self.ub)
-        cdf = np.ones((self.C, 1))
-        cdf[left_index[:,0], 0] = 0
-        cdf[right_index[:, 0], 0] = 1
-        cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.lb)/(self.ub - self.lb)
-        return cdf
+        return erf_value, derivatives_value
 
 
 
