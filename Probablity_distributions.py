@@ -166,9 +166,9 @@ class Normal(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the probablity distribution of variable x by using normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        calculating the probablity distribution of variable x by using normal distribution (Cx1)
+        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
+        :return: the probablity of the occurance of the given variable (Cx1)
         """
         prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         derivatives_prob = (-1 / (self.sigma**3)) * np.sqrt(2/np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
@@ -176,23 +176,15 @@ class Normal(Continuous_Distributions):
 
     def Log_prob(self, x: float)->(np.ndarray, np.ndarray):
         """
-        calculating the log probablity  and the derivatives of distribution of variable x by using normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        calculating the log probablity  and the derivatives of distribution of variable x by using normal distribution (Cx1)
+        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
+        :return: the log probablity and the derivatives of the occurance of the given variable (Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
         derivatives_log_prob = -(x - self.mu)/(self.sigma ** 2)
         return log_prob, derivatives_log_prob
 
 
-
-    def Log_prob_vectorized(self, x: np.ndarray)->np.ndarray:
-        """
-        calculating the log probablity distribution of the array of variable x by using normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given array
-        """
-        return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
