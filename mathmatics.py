@@ -46,29 +46,34 @@ def Beta(x, y, method: str = 'numerical'):
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 #===============================================================================================================
-def Erf(z, method: str = 'fast')->float:
+def Erf(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     """
     The error function used to calculate the truncated gaussian distribution
     :param z: normalized input variable
     :return: the value of the error function
     """
+
+    derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+    Erf_function_value = z.copy()
+
     def erf_kernel(t):
         return (2/np.sqrt(np.pi)) * np.exp(-t**2)
 
     if method is 'fast':
-        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
+        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216)))
 
     elif method is 'numerical':
         t = np.linspace(0, z, 10000)
         f = erf_kernel(t)
         deltat = t[1] - t[0]
-        return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+        Erf_function_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 
     elif method is 'taylor':
         erf_val = 0
-        for n in range(20):
+        for n in range(terms):
             erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
-        return erf_val * (2/np.sqrt(np.pi))
+        Erf_function_value = erf_val * (2/np.sqrt(np.pi))
     else:
         raise Exception('The method for calcualting the Error function is not specified correctly!')
+    return Erf_function_value, derivatives_Erf
 #===============================================================================================================
