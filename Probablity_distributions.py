@@ -244,11 +244,11 @@ class Truncated_Normal(Continuous_Distributions):
 
         normal_argument = (x[in_range_index[:,0],0] - self.mu) / self.sigma
         normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
-        prob[in_range_index[:,0],0] =  (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
 
+        prob[in_range_index[:,0], 0] =  (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        der_prob[in_range_index[:,0], 0] = (1 / self.sigma**2) * (1/(erf_r - ert_l)) * (-1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
 
-
-        return (1 / self.sigma) * (fi / (Fi_1 - Fi_2))
+        return prob, der_prob
 
 
     def Log_prob(self, x: float)->np.ndarray:
