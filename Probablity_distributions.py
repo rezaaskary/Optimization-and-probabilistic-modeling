@@ -545,4 +545,20 @@ class Beta(Continuous_Distributions):
         x = np.clip(x, 0, 1)
         return (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
 
+    def Prob_vectorized(self,x: np.ndarray)->np.ndarray:
+        """
+        calculating the probablity distribution of the Beta distribution given an array of the input variables
+        :param x: an array value determining the variable we are calculating its probablity distribution (cx1)
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return ((x ** (self.alpha - 1)) * ((1 - x) ** (self.beta - 1))) / self.Beta(self.alpha, self.beta)
 
+    def Log_prob_vectorized(self,x: np.ndarray)->np.ndarray:
+        """
+        calculating the log probablity distribution of the Beta distribution given any array on the input
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
