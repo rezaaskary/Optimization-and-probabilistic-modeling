@@ -512,6 +512,11 @@ class Beta(Continuous_Distributions):
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
+        self.mean = (self.alpha)/(self.alpha + self.beta)
+        self.variance = (self.alpha * self.beta) / (((self.alpha + self.beta)**2) * (self.alpha + self.beta + 1))
+
+
+        self.Beta = Beta
         if self.vectorized:
             self.alpha_v = self.alpha * np.ones((self.C, 1))
             self.beta_v = self.beta * np.ones((self.C, 1))
@@ -522,18 +527,22 @@ class Beta(Continuous_Distributions):
             self.logpdf = self.Log_prob
 
 
-
-
-    def log_Gamma(self, z):
+    def Prob(self, x: float)->float:
         """
-        calcualting the natural logarithm of Gamma function for use in other probablity distribution
-        :param z:
-        :return:
+        calculating the probablity distribution of the Beta distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
         """
+        x = np.clip(x, 0, 1)
+        return ((x**(self.alpha - 1)) * ((1 - x)**(self.beta - 1))) / self.Beta(self.alpha, self.beta)
 
+    def Log_prob(self, x: float)->float:
+        """
+        calculating the log probablity distribution of the Beta distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        x = np.clip(x, 0, 1)
+        return (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
 
-
-
-    def Prob(self, x:float)->float:
-        return
 
