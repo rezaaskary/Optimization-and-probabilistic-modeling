@@ -164,8 +164,6 @@ class Normal(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
-
-
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the probablity distribution of variable x by using normal distribution
@@ -176,13 +174,15 @@ class Normal(Continuous_Distributions):
         derivatives_prob = (-1 / (self.sigma**3)) * np.sqrt(2/np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         return prob, derivatives_prob
 
-    def Log_prob(self, x: float)->np.ndarray:
+    def Log_prob(self, x: float)->(np.ndarray, np.ndarray):
         """
-        calculating the log probablity distribution of variable x by using normal distribution
+        calculating the log probablity  and the derivatives of distribution of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
-        return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        derivatives_log_prob = -(x - self.mu)/(self.sigma ** 2)
+        return log_prob, derivatives_log_prob
 
 
 
