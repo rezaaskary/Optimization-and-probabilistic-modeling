@@ -88,20 +88,12 @@ class Uniform(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
-        if self.vectorized:
-            self.lb_v = self.lb * np.ones((self.C, 1))
-            self.ub_v = self.ub * np.ones((self.C, 1))
-            self.pdf = self.Prob_vectorized
-            self.logpdf = self.Log_prob_vectorized
-        else:
-            self.pdf = self.Prob
-            self.logpdf = self.Log_prob
 
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
-    def Prob(self, x:np.ndarray)->np.ndarray:
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the probability of the input array x in vectorized format
         :param x: the array of the input variable (Cx1)
@@ -113,7 +105,7 @@ class Uniform(Continuous_Distributions):
         derivatives_prob = np.zeros((self.C, 1))
         return prob, derivatives_prob
 
-    def Log_prob(self, x: np.ndarray)->np.ndarray:
+    def Log_prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the log probability of the input array
         :param x: an array determining the variable we are calculating its probability distribution (Cx1)
@@ -141,8 +133,6 @@ class Uniform(Continuous_Distributions):
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.lb)/(self.ub - self.lb)
         return cdf
 
-
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
         the module used to visualize the probablity distribution
@@ -157,9 +147,7 @@ class Uniform(Continuous_Distributions):
         plot(list(X.ravel()), Y)
         show()
 
-
 #=========================================================================================================
-
 
 class Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
@@ -171,22 +159,22 @@ class Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
-        if self.vectorized:
-            self.mu_v = self.mu * np.ones((self.C, 1))
-            self.sigma_v = self.sigma * np.ones((self.C, 1))
-            self.pdf = self.Prob_vectorized
-            self.logpdf = self.Log_prob_vectorized
-        else:
-            self.pdf = self.Prob
-            self.logpdf = self.Log_prob
 
-    def Prob(self, x: float)->np.ndarray:
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
+
+
+
+    def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the probablity distribution of variable x by using normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
-        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        derivatives_prob = (-1 / (self.sigma**3)) * np.sqrt(2/np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        return prob, derivatives_prob
 
     def Log_prob(self, x: float)->np.ndarray:
         """
@@ -196,13 +184,7 @@ class Normal(Continuous_Distributions):
         """
         return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
-    def Prob_vectorized(self, x: np.ndarray)->np.ndarray:
-       """
-       calculating the probablity distribution of a chain variable x by using normal distribution
-       :param x: an integer value determining the variable we are calculating its probablity distribution
-       :return: the probablity of the occurance of the given variable
-       """
-       return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+
 
     def Log_prob_vectorized(self, x: np.ndarray)->np.ndarray:
         """
