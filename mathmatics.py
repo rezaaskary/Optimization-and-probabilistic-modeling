@@ -28,8 +28,7 @@ def Gamma(z, method: str = 'numerical'):
         return gamma_value
     else:
         raise Exception('The method of calculating the Gamma function is not specified correctly!')
-
-
+#===============================================================================================================
 def Beta(x, y, method: str = 'numerical'):
     """
     calculates the Beta function B(a,y)
@@ -46,8 +45,7 @@ def Beta(x, y, method: str = 'numerical'):
         f = beta_kernel(x, y, t)
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
-
-
+#===============================================================================================================
 def Erf(z, method: str = 'fast')->float:
     """
     The error function used to calculate the truncated gaussian distribution
@@ -73,3 +71,4 @@ def Erf(z, method: str = 'fast')->float:
         return erf_val * (2/np.sqrt(np.pi))
     else:
         raise Exception('The method for calcualting the Error function is not specified correctly!')
+#===============================================================================================================

@@ -250,15 +250,6 @@ class Truncated_Normal(Continuous_Distributions):
             self.logpdf = self.Log_prob
 
 
-    def Erf(self, z)->np.ndarray:
-        """
-        The error function used to calculate the truncated gaussian distribution
-        :param z: normalized input variable
-        :return: the value of the error function
-        """
-        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
-
-
     def Prob(self, x: float)->np.ndarray:
         """
         calcualting the probablity distribution of the truncated normal function
@@ -436,6 +427,7 @@ class Skewed_Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
+        self.Erf = Erf
         if self.vectorized:
             self.mu_v = self.mu * np.ones((self.C, 1))
             self.alpha_v = self.alpha * np.ones((self.C, 1))
@@ -445,14 +437,6 @@ class Skewed_Normal(Continuous_Distributions):
         else:
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
-
-    def Erf(self, z)->np.ndarray:
-        """
-        The error function used to calculate the truncated gaussian distribution
-        :param z: normalized input variable
-        :return: the value of the error function
-        """
-        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
 
 
     def Prob(self, x)->np.ndarray:
@@ -485,7 +469,6 @@ class Skewed_Normal(Continuous_Distributions):
         L1 = 0.5 * (1 + self.Erf(((x - self.mu_v) / self.sigma_v) * (self.alpha_v / np.sqrt(2.0))))
         L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu_v) / self.sigma_v) ** 2)
         return 2 * L1 * L2
-
 
     def Log_prob_vectorized(self, x:np.ndarray)->np.ndarray:
         """
