@@ -110,19 +110,21 @@ class Uniform(Continuous_Distributions):
         in_range_index = (x>self.lb) & (x< self.ub)
         prob = np.zeros((self.C, 1))
         prob[in_range_index[:,0], 0] = 1/(self.ub- self.lb)
-        der_prob = np.zeros((self.C, 1))
-        return prob, der_prob
+        derivatives_prob = np.zeros((self.C, 1))
+        return prob, derivatives_prob
 
     def Log_prob(self, x: np.ndarray)->np.ndarray:
         """
         calculating the log probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution
-        :return: The log of the probability distribution of the given variable
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log (and the derivatives log) of the probability distribution of the given variable (Cx1)
         """
         in_range_index = (x > self.lb) & (x < self.ub)
         logprob = np.ones((self.C, 1)) * (-np.inf)
+        derivatives_logprob = logprob.copy()
         logprob[in_range_index[:,0], 0] = -np.log(self.ub - self.lb)
-        return logprob
+        derivatives_logprob[in_range_index[:,0], 0] = 0
+        return logprob, derivatives_logprob
 
     def CDF(self, x: np.ndarray)->np.ndarray:
         """
