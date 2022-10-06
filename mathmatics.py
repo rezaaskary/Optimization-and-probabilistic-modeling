@@ -1,13 +1,11 @@
 import numpy as np
 
-
 def Gamma(z, method: str = 'numerical'):
     """
     calcualting the Gamma function for use in other probablity distribution
     :param z:
     :return:
     """
-
     def gamma_kernel(z, t):
         return np.exp(-t) * t ** (z - 1)
 
@@ -46,5 +44,25 @@ def Beta(x, y, method: str = 'numerical'):
     if method is 'numerical':
         t = np.linspace(0, 1, 10000)
         f = beta_kernel(x, y, t)
+        deltat = t[1] - t[0]
+        return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+
+
+def Erf(z, method: str = 'numerical')->float:
+    """
+    The error function used to calculate the truncated gaussian distribution
+    :param z: normalized input variable
+    :return: the value of the error function
+    """
+    def erf_kernel(t):
+        return (2/np.sqrt(np.pi)) * np.exp(-t**2)
+
+
+
+    if method is 'fast':
+        return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
+    elif method is 'numerical':
+        t = np.linspace(0, z, 10000)
+        f = erf_kernel(t)
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
