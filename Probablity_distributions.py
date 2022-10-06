@@ -226,7 +226,7 @@ class Truncated_Normal(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
-    def Prob(self, x: float)->np.ndarray:
+    def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calcualting the probablity distribution of the truncated normal function
         :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
@@ -254,9 +254,25 @@ class Truncated_Normal(Continuous_Distributions):
     def Log_prob(self, x: float)->np.ndarray:
         """
         calculating the log probablity of the truncated normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
+        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log (and its derivatives) of the probablity distribution of the given variable (Cx1)
         """
+
+        in_range_index = (x >= self.lb) & (x <= self.ub)
+        logprob = np.ones((self.C, 1)) * -np.inf
+        derivatives_logprob = np.ones((self.C, 1)) * -np.inf
+        arg_r = (self.ub - self.mu) / self.sigma
+        arg_l = (self.lb - self.mu) / self.sigma
+        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+
+        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+
+        logprob[in_range_index[:, 0], 0] =  -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(2 * np.pi) - 0.5 * normal_argument ** 2
+        derivatives_logprob [in_range_index[:, 0], 0] = (-1 / self.sigma**2) * (x[in_range_index[:, 0], 0] - self.mu)
+
+
+
         if x <= self.lb or x >= self.ub:
             return -np.inf
         else:
