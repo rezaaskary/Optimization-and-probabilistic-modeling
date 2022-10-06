@@ -184,7 +184,7 @@ class Normal(Continuous_Distributions):
         derivatives_log_prob = -(x - self.mu)/(self.sigma ** 2)
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray)->np.ndarray:
+    def CDF(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the CDF probability of the input array
         :param x: an array determining the variable we are calculating its probability distribution (Cx1)
@@ -192,10 +192,7 @@ class Normal(Continuous_Distributions):
         """
         z = (x-self.mu)/(self.sigma * np.sqrt(2))
         erf_value,derivatives_value = Erf(z)
-
         return erf_value, derivatives_value
-
-
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
@@ -209,7 +206,6 @@ class Normal(Continuous_Distributions):
         for i in range(len(X)):
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
-
 
 
 class Truncated_Normal(Continuous_Distributions):
