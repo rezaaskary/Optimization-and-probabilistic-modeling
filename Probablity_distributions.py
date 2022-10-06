@@ -222,33 +222,32 @@ class Truncated_Normal(Continuous_Distributions):
         :param C: Number of chains
         """
         self.Erf = Erf
-        if self.vectorized:
-            self.lb_v = self.lb * np.ones((self.C, 1))
-            self.ub_v = self.ub * np.ones((self.C, 1))
-            self.mu_v = self.mu * np.ones((self.C, 1))
-            self.sigma_v = self.sigma * np.ones((self.C, 1))
-            self.pdf = self.Prob_vectorized
-            self.logpdf = self.Log_prob_vectorized
-        else:
-            self.pdf = self.Prob
-            self.logpdf = self.Log_prob
-
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
     def Prob(self, x: float)->np.ndarray:
         """
         calcualting the probablity distribution of the truncated normal function
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
+        :return: the probablity (and the derivatives) of the occurance of the given variable (Cx1)
         """
-        if x <= self.lb or x >= self.ub:
-            return 0
-        else:
-            L1 = (self.ub - self.mu) / self.sigma
-            L2 = (self.lb - self.mu) / self.sigma
-            L = (x - self.mu) / self.sigma
-            Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
-            Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
-            fi = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * L ** 2)
+        in_range_index = (x >= self.lb) & (x <= self.ub)
+        prob = np.zeros((self.C, 1))
+        der_prob = np.zeros((self.C, 1))
+
+        arg_r = (self.ub - self.mu) / self.sigma
+        arg_l = (self.lb - self.mu) / self.sigma
+
+        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+
+        normal_argument = (x[in_range_index[:,0],0] - self.mu) / self.sigma
+        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
+        prob[in_range_index[:,0],0] =  (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+
+
+
         return (1 / self.sigma) * (fi / (Fi_1 - Fi_2))
 
 
