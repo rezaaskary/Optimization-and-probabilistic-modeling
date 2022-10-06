@@ -539,35 +539,7 @@ class Beta(Continuous_Distributions):
             self.logpdf = self.Log_prob
 
 
-    def Gamma(self, z, method:str):
-        """
-        calcualting the Gamma function for use in other probablity distribution
-        :param z:
-        :return:
-        """
-        if method is 'stirling':
-            gamma_value = np.sqrt(2*np.pi*z) * np.power(z,z-1) * np.exp(-z) * (1 + (1/(12*z)) + (1/(288*z**2)) - (1/(51480*z**3)))
-            return gamma_value
-        elif method is 'numerical':
-            def gamma_kernel(z,t):
-                fcn = np.exp(-t)*t**(z-1)
-                return fcn
-            t = np.linspace(0, 100,10000)
-            f = gamma_kernel(z, t)
-            deltat = t[1]-t[0]
-            gamma_value = deltat * (t[1:-1]).sum() + 0.5 * deltat * (t[0] + t[-1])
-            return gamma_value
 
-        elif method is 'Weierstrass':
-            euler_constant = 0.57721566490153286060
-            t = np.arange(1, 20)
-            VL = (np.exp(-euler_constant * z)/z)*((1/(1+z/t)) * np.exp(z/n)).prod()
-
-
-
-
-        else:
-            raise Exception('The method of calculating the Gamma function is not specified correctly!')
 
     def log_Gamma(self, z):
         """
