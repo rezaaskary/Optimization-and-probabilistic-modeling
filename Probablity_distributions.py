@@ -97,48 +97,49 @@ class Uniform(Continuous_Distributions):
             self.pdf = self.Prob
             self.logpdf = self.Log_prob
 
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
-    def Prob(self, x: float)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
-        """
-        if x <= self.lb or x >= self.ub:
-            return 0
-        else:
-            return 1 / (self.ub - self.lb)
-
-    def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
+    def Prob(self, x:np.ndarray)->np.ndarray:
         """
         calculating the probability of the input array x in vectorized format
         :param x: the array of the input variable (Cx1)
-        :return:  the probability of the input array (Cx1)
+        :return:  the probability of the input array (Cx1) and the derivatives of the probablity distribution (Cx1)
         """
         in_range_index = (x>self.lb) & (x< self.ub)
         prob = np.zeros((self.C, 1))
         prob[in_range_index[:,0], 0] = 1/(self.ub- self.lb)
-        return prob
+        der_prob = np.zeros((self.C, 1))
+        return prob, der_prob
 
-    def Log_prob(self, x: float)->np.ndarray:
-        """
-        :param x: an integer value determining the variable we are calculating its probability distribution
-        :return: The log of the probability distribution of the given variable
-        """
-        if x <= self.lb or x >= self.ub:
-            return -np.inf
-        else:
-            return -np.log(self.ub - self.lb)
-
-    def Log_prob_vectorized(self, x: np.ndarray)->np.ndarray:
+    def Log_prob(self, x: np.ndarray)->np.ndarray:
         """
         calculating the log probability of the input array
         :param x: an array determining the variable we are calculating its probability distribution
         :return: The log of the probability distribution of the given variable
         """
-        in_range_index = x > self.lb_v & x < self.ub_v
-        logprob = np.ones((self.C, 1))
-        logprob[in_range_index, 0] = -np.log(self.ub_v[in_range_index, 0] - self.lb_v[in_range_index, 0])
+        in_range_index = (x > self.lb) & (x < self.ub)
+        logprob = np.ones((self.C, 1)) * (-np.inf)
+        logprob[in_range_index[:,0], 0] = -np.log(self.ub - self.lb)
         return logprob
+
+    def CDF(self, x: np.ndarray)->np.ndarray:
+        """
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution
+        :return: The log of the probability distribution of the given variable
+        """
+        left_index = x <= self.lb
+        right_index = x >= self.lb
+        in_range_index = (x > self.lb) & (x < self.ub)
+        cdf = np.ones((self.C, 1))
+        cdf[left_index[:,0], 0] = 0
+        cdf[right_index[:, 0], 0] = 1
+        cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.lb)/(self.ub - self.lb)
+        return cdf
+
+
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
