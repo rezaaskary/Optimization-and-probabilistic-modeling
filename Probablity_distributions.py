@@ -114,9 +114,9 @@ class Uniform(Continuous_Distributions):
         :param x: the array of the input variable (Cx1)
         :return:  the probability of the input array (Cx1)
         """
-        in_range_index = x>self.lb_v & x< self.ub_v
-        prob = np.zeros((self.C,1))
-        prob[in_range_index, 0] = 1/(self.ub_v[in_range_index, 0]- self.lb_v[in_range_index,0])
+        in_range_index = (x>self.lb) & (x< self.ub)
+        prob = np.zeros((self.C, 1))
+        prob[in_range_index[:,0], 0] = 1/(self.ub- self.lb)
         return prob
 
     def Log_prob(self, x: float)->np.ndarray:
