@@ -57,12 +57,17 @@ def Erf(z, method: str = 'numerical')->float:
     def erf_kernel(t):
         return (2/np.sqrt(np.pi)) * np.exp(-t**2)
 
-
-
     if method is 'fast':
         return (2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216))
+
     elif method is 'numerical':
         t = np.linspace(0, z, 10000)
         f = erf_kernel(t)
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+
+    elif method is 'taylor':
+        erf_val = 0
+        for n in range(20):
+            erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
+        return erf_val * (2/np.sqrt(np.pi))
