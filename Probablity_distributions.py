@@ -159,7 +159,7 @@ class Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
-
+        self.Erf = Erf
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
@@ -191,7 +191,7 @@ class Normal(Continuous_Distributions):
         :return: The log of the probability distribution of the given variable (Cx1)
         """
         z = (x-self.mu)/(self.sigma * np.sqrt(2))
-        erf_value,derivatives_value = Erf(z)
+        erf_value, derivatives_value = self.Erf(z)
         return erf_value, derivatives_value
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
