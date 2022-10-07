@@ -833,10 +833,13 @@ class Asymetric_Laplace(Continuous_Distributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
+        cdf = np.zeros((self.C, 1))
+        in_range_index = x >= self.mu
 
-
-
-        return
+        cdf[in_range_index[:, 0], 0] = 1 - (1/(1 + self.kappa**2)) * np.exp(-self.b * self.kappa * (x[in_range_index[:,0],0] - self.mu))
+        cdf[~in_range_index[:, 0], 0] =  (self.kappa**2/(1 + self.kappa**2)) * np.exp((self.b / self.kappa) * (~x[in_range_index[:,0],0] - self.mu))
+        derivatives_cdf = None
+        return cdf, derivatives_cdf
 
 
 
