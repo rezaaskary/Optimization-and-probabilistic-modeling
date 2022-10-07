@@ -187,6 +187,10 @@ class Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
+        if self.mu is None or self.sigma is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
+
+
         self.Erf = Erf
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
