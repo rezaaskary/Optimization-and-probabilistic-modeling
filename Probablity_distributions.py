@@ -3,11 +3,10 @@ from matplotlib.pyplot import plot, show
 from mathmatics import Beta, Gamma, Erf
 #=========================================================================================================
 class Continuous_Distributions:
-    def __init__(self,  variance: float = None, sigma: float=None,\
-                 mu: float = None, alpha: float = None,\
-                 lb: float = None, ub: float = None, vectorized: bool = True,\
-                 C: int = 1, beta: float = None, Lambda:float = None,\
-                 a:float=None,b:float=None)->None:
+    def __init__(self, variance: float = None, sigma: float=None, mu: float = None,\
+                lb: float = None, ub: float = None, alpha: float = None,\
+                 a:float=None, b:float=None, vectorized: bool = True,\
+                 C: int = 1, beta: float = None, Lambda:float = None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -88,24 +87,36 @@ class Continuous_Distributions:
             raise Exception('The value of lambda is not specified correctly!')
 
         if isinstance(a, (float, int)):
-            self.Lambda = a
+            self.a = a
         elif a is None:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
 
         if isinstance(b, (float, int)):
-            self.Lambda = b
+            self.b = b
         elif b is None:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
 
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        Visualizing the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return: a line plot from matplotlib library
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
 
 
 class Uniform(Continuous_Distributions):
     def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Uniform,self).__init__(a,b,vectorized,C)
+        super(Uniform,self).__init__(a = a, b = b, vectorized = vectorized, C = C)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
@@ -187,7 +198,7 @@ class Uniform(Continuous_Distributions):
 
 class Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super().__init__(sigma, variance, mu, vectorized, C)
+        super(Normal,self).__init__(sigma = sigma, variance = variance, mu = mu, vectorized = vectorized, C = C)
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
@@ -258,7 +269,7 @@ class Normal(Continuous_Distributions):
 
 class Truncated_Normal(Continuous_Distributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super().__init__(lb, ub, sigma, variance, mu, vectorized, C)
+        super(Truncated_Normal,self).__init__(lb = lb, ub = ub, sigma = sigma, variance = variance, mu = mu, vectorized = vectorized, C = C)
         """
         The continuous truncated gaussian distribution function
         :param lb: the lower bound of the uniform distribution
@@ -374,7 +385,7 @@ class Truncated_Normal(Continuous_Distributions):
 
 class Half_Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super().__init__(sigma, variance, vectorized, C)
+        super(Half_Normal,self).__init__(sigma = sigma, variance = variance, vectorized = vectorized, C = C)
         """
         The continuous truncated gaussian distribution function
         :param sigma: the standard deviation of gaussian distribution
@@ -455,8 +466,9 @@ class Half_Normal(Continuous_Distributions):
 
 
 class Skewed_Normal(Continuous_Distributions):
-    def __int__(self, mu: float = None , alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
-        super().__int__(mu, alpha, sigma,  vectorized, C)
+    def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
+        super(Skewed_Normal,self).__int__(mu = mu, alpha = alpha, sigma = sigma,  vectorized = vectorized, C = C)
+
         """
         The skewed continuous truncated gaussian distribution function
         :param alpha: the skewness parameter
@@ -536,7 +548,7 @@ class Skewed_Normal(Continuous_Distributions):
 
 class Beta(Continuous_Distributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
-        super().__int__(alpha, beta, vectorized, C)
+        super(Beta,self).__int__(alpha = alpha, beta = beta, vectorized = vectorized, C = C)
         """
         Initializing beta distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -622,7 +634,7 @@ class Beta(Continuous_Distributions):
 
 class Kumaraswamy(Continuous_Distributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
-        super().__int__(alpha, beta, vectorized, C)
+        super(Kumaraswamy,self).__int__(alpha = alpha, beta = beta, vectorized = vectorized, C = C)
         """
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -638,7 +650,6 @@ class Kumaraswamy(Continuous_Distributions):
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
         self.mean = (self.beta * Gamma(1 + 1/self.alpha) * Gamma(self.beta))/( Gamma(self.beta + 1 + 1/self.alpha))
-
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
@@ -650,8 +661,6 @@ class Kumaraswamy(Continuous_Distributions):
         :return: A dictionary of calculated metrics
         """
         return None
-
-
 
     def Prob(self, x: np.ndarray)-> (np.ndarray,np.ndarray):
         """
@@ -884,20 +893,6 @@ class myclass(Continuous_Distributions):
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         return
-
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-
 
 
 
