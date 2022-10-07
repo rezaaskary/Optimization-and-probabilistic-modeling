@@ -9,19 +9,19 @@ def Gamma(z, method: str = 'numerical'):
     def gamma_kernel(z, t):
         return np.exp(-t) * t ** (z - 1)
 
-    if method is 'stirling':
+    if method == 'stirling':
         gamma_value = np.sqrt(2 * np.pi * z) * np.power(z, z - 1) * np.exp(-z) * (
                     1 + (1 / (12 * z)) + (1 / (288 * z ** 2)) - (1 / (51480 * z ** 3)))
         return gamma_value
 
-    elif method is 'numerical':
+    elif method == 'numerical':
         t = np.linspace(0, 100, 10000)
         f = gamma_kernel(z, t)
         deltat = t[1] - t[0]
         gamma_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
         return gamma_value
 
-    elif method is 'Weierstrass':   # for non-integer values
+    elif method == 'Weierstrass':   # for non-integer values
         euler_constant = 0.57721566490153286060
         t = np.arange(1, 20)
         gamma_value = (np.exp(-euler_constant * z) / z) * ((1 / (1 + z / t)) * np.exp(z / n)).prod()
