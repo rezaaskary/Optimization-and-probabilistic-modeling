@@ -192,7 +192,7 @@ class Normal(Continuous_Distributions):
         """
         z = (x-self.mu)/(self.sigma * np.sqrt(2))
         erf_value, derivatives_value = self.Erf(z)
-        return erf_value, derivatives_value
+        return erf_value, derivatives_value/(self.sigma * np.sqrt(2))
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
         """
@@ -366,8 +366,9 @@ class Half_Normal(Continuous_Distributions):
         in_range_index = (x >= 0)
         cdf = np.zeros((self.C, 1))
         derivatives_value =  np.zeros((self.C, 1))
+        z = x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2))
         erf_value, derivatives_erf = self.Erf(x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2)))
-        derivatives_value[in_range_index[:, 0], 0] = derivatives_erf
+        derivatives_value[in_range_index[:, 0], 0] = derivatives_erf * (1/(self.sigma * np.sqrt(2)))
         cdf[in_range_index[:, 0], 0] = erf_value
         return cdf, derivatives_value
 
@@ -399,15 +400,9 @@ class Skewed_Normal(Continuous_Distributions):
         :param C: Number of chains
         """
         self.Erf = Erf
-        if self.vectorized:
-            self.mu_v = self.mu * np.ones((self.C, 1))
-            self.alpha_v = self.alpha * np.ones((self.C, 1))
-            self.sigma_v = self.sigma * np.ones((self.C, 1))
-            self.pdf = self.Prob_vectorized
-            self.logpdf = self.Log_prob_vectorized
-        else:
-            self.pdf = self.Prob
-            self.logpdf = self.Log_prob
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
 
     def Prob(self, x)->np.ndarray:
