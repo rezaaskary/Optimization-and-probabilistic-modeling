@@ -7,7 +7,7 @@ class Continuous_Distributions:
                 lb: float = None, ub: float = None, alpha: float = None,\
                  a:float=None, b:float=None, vectorized: bool = True,\
                  C: int = 1, beta: float = None, Lambda:float = None,\
-                 kappa:float = None, nu:float = None)->None:
+                 kappa:float = None, nu:float = None,gamma:float = gamma)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -116,6 +116,12 @@ class Continuous_Distributions:
         else:
             raise Exception('The value of nu is not specified correctly!')
 
+        if isinstance(gamma, (float, int)):
+            self.gamma = gamma
+        elif gamma is None:
+            self.gamma = None
+        else:
+            raise Exception('The value of nu is not specified correctly!')
 
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
@@ -989,6 +995,64 @@ class Half_Student_t(Continuous_Distributions):
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         return None, None
+
+
+
+class Cauchy (Continuous_Distributions):
+    def __int__(self, gamma:float = None, mu:float = None, vectorized: bool = False, C: int = 1) -> None:
+        super(Cauchy ,self).__int__(gamma = gamma, mu = mu, vectorized = vectorized, C = C)
+        """
+        :param vectorized: 
+        :param C: 
+        :return: 
+        """
+
+        if self.gamma <= 0:
+            raise Exception('The value of the gamma should be positive!')
+
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Cauchy  distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probablity of the Cauchy  distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        """
+        prob = (1/)
+
+        return
+
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
+        return
+
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for Cauchy  distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
+        return
+
+
+
+
+
 
 
 
