@@ -560,4 +560,3 @@ class Kumaraswamy(Continuous_Distributions):
 
         return cdf, derivatives_cdf
 
-    
