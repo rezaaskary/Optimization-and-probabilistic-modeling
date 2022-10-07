@@ -142,9 +142,9 @@ class Uniform(Continuous_Distributions):
 
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the probability of the input array x in vectorized format
-        :param x: the array of the input variable (Cx1)
-        :return:  the probability of the input array (Cx1) and the derivatives of the probablity distribution (Cx1)
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         in_range_index = (x>self.a) & (x< self.b)
         prob = np.zeros((self.C, 1))
@@ -154,9 +154,9 @@ class Uniform(Continuous_Distributions):
 
     def Log_prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the log probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log (and the derivatives log) of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         in_range_index = (x > self.a) & (x < self.b)
         logprob = np.ones((self.C, 1)) * (-np.inf)
@@ -180,22 +180,7 @@ class Uniform(Continuous_Distributions):
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a)/(self.b - self.a)
         return cdf
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
-        """
-        the module used to visualize the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-        show()
-
 #=========================================================================================================
-
 class Normal(Continuous_Distributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super(Normal,self).__init__(sigma = sigma, variance = variance, mu = mu, vectorized = vectorized, C = C)
@@ -225,9 +210,9 @@ class Normal(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the probablity distribution of variable x by using normal distribution (Cx1)
-        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the probablity of the occurance of the given variable (Cx1)
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         derivatives_prob = (-1 / (self.sigma**3)) * np.sqrt(2/np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
@@ -235,9 +220,9 @@ class Normal(Continuous_Distributions):
 
     def Log_prob(self, x: float)->(np.ndarray, np.ndarray):
         """
-        calculating the log probablity  and the derivatives of distribution of variable x by using normal distribution (Cx1)
-        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the log probablity and the derivatives of the occurance of the given variable (Cx1)
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
         derivatives_log_prob = -(x - self.mu)/(self.sigma ** 2)
@@ -253,18 +238,6 @@ class Normal(Continuous_Distributions):
         erf_value, derivatives_value = self.Erf(z)
         return erf_value, derivatives_value/(self.sigma * np.sqrt(2))
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
-        """
-         the module used to visualize the probablity distribution
-         :param lower_lim: the lower limit used in ploting the probablity distribution
-         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-         :return:
-         """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
 
 
 class Truncated_Normal(Continuous_Distributions):
@@ -301,9 +274,9 @@ class Truncated_Normal(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calcualting the probablity distribution of the truncated normal function
-        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the probablity (and the derivatives) of the occurance of the given variable (Cx1)
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
         prob = np.zeros((self.C, 1))
@@ -326,9 +299,9 @@ class Truncated_Normal(Continuous_Distributions):
 
     def Log_prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the log probablity of the truncated normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log (and its derivatives) of the probablity distribution of the given variable (Cx1)
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
 
         in_range_index = (x >= self.lb) & (x <= self.ub)
@@ -369,18 +342,7 @@ class Truncated_Normal(Continuous_Distributions):
         derivatives_value = None
         return cdf, derivatives_value
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
+
 
 
 class Half_Normal(Continuous_Distributions):
@@ -409,9 +371,9 @@ class Half_Normal(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        Calculating the probablity of half normal distribution
-        :param x: an array value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the probablity and the derivatives of the occurance of the given variable (Cx1)
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
         prob = np.zeros((self.C, 1))
@@ -424,9 +386,9 @@ class Half_Normal(Continuous_Distributions):
 
     def Log_prob(self, x: np.ndarray)->np.ndarray:
         """
-        Calcualting the log probablity of the half normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
 
         in_range_index = (x >= 0)
@@ -451,19 +413,6 @@ class Half_Normal(Continuous_Distributions):
         cdf[in_range_index[:, 0], 0] = erf_value
         return cdf, derivatives_value
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-
 
 class Skewed_Normal(Continuous_Distributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
@@ -479,10 +428,8 @@ class Skewed_Normal(Continuous_Distributions):
         :param C: Number of chains
         """
 
-
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Skewed Normal distribution)!')
-
 
         self.Erf = Erf
         self.pdf = self.Prob
@@ -500,9 +447,9 @@ class Skewed_Normal(Continuous_Distributions):
 
     def Prob(self, x)->np.ndarray:
         """
-        calculating the probablity distribution of the skewed normal function
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         z = (x - self.mu) / self.sigma
         erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
@@ -514,8 +461,9 @@ class Skewed_Normal(Continuous_Distributions):
 
     def Log_prob(self, x: float)->np.ndarray:
         """
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         z = (x - self.mu) / self.sigma
         erf_value, der_erf_value = self.Erf((z * self.alpha)/np.sqrt(2))
@@ -531,18 +479,6 @@ class Skewed_Normal(Continuous_Distributions):
         """
         return None, None
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
 
 
 
@@ -583,9 +519,9 @@ class Beta(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)->(np.ndarray,np.ndarray):
         """
-        calculating the probablity distribution of the Beta distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the probablity and the derivatives of the occurance of the given variable
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
 
         x = np.clip(x, 0, 1)
@@ -598,9 +534,9 @@ class Beta(Continuous_Distributions):
 
     def Log_prob(self, x: np.ndarray)->(np.ndarray,np.ndarray):
         """
-        calculating the log probablity distribution of the Beta distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         x = np.clip(x, 0, 1)
         log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
@@ -614,22 +550,6 @@ class Beta(Continuous_Distributions):
         :return: The log of the probability distribution of the given variable (Cx1)
         """
         return None, None
-
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-
-
-
 
 
 class Kumaraswamy(Continuous_Distributions):
@@ -664,9 +584,9 @@ class Kumaraswamy(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray)-> (np.ndarray,np.ndarray):
         """
-        calculating the probablity distribution of the Kumaraswamy distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         x = np.clip(x, 0, 1)
         term1 = (x** (self.alpha-1))
@@ -678,9 +598,9 @@ class Kumaraswamy(Continuous_Distributions):
 
     def Log_prob(self, x: float)->float:
         """
-        calculating the log probablity distribution of the Kumaraswamy distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         x = np.clip(x, 0, 1)
         log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log((1 - x**self.alpha))
@@ -699,18 +619,7 @@ class Kumaraswamy(Continuous_Distributions):
 
         return cdf, derivatives_cdf
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
+
 
 
 class Exponential(Continuous_Distributions):
@@ -737,9 +646,9 @@ class Exponential(Continuous_Distributions):
 
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the probablity distribution of the Kumaraswamy distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         prob = np.zeros((self.C, 1))
         derivatives_prob = np.zeros((self.C, 1))
@@ -751,9 +660,9 @@ class Exponential(Continuous_Distributions):
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the log probablity distribution of the Kumaraswamy distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
         in_range_index = x >= 0
         log_prob = np.ones((self.C, 1)) * -np.inf
@@ -775,18 +684,6 @@ class Exponential(Continuous_Distributions):
         der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
         return cdf, der_cdf
 
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
 
 
 class Laplace(Continuous_Distributions):
@@ -813,35 +710,23 @@ class Laplace(Continuous_Distributions):
 
 
     def Prob(self, x:np.ndarray,)->(np.ndarray, np.ndarray):
-
+        """
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        """
         return
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
         return
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         return
-
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-        """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return: a line plot from matplotlib library
-        """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-
-
-
-
-
-
-
-
 
 
 
@@ -859,9 +744,6 @@ class myclass(Continuous_Distributions):
         """
 
 
-
-
-
     @property
     def statistics(self):
         """
@@ -873,8 +755,8 @@ class myclass(Continuous_Distributions):
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
         Parallelized calculating the probablity of the ----- distribution
-        :param x: an numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: the probablity of the occurance of the given variable
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         return
 
