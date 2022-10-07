@@ -988,17 +988,7 @@ class Half_Student_t(Continuous_Distributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
-        return
-
-
-
-
-
-
-
-
-
-
+        return None, None
 
 
 
