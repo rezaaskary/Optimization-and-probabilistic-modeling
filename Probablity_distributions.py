@@ -733,11 +733,11 @@ class Laplace(Continuous_Distributions):
 
         derivatives_log_prob = np.zeros(((self.C, 1)))
         right_index = x >= self.mu
+        derivatives_log_prob[right_index[:, 0], 0] = - (1/self.b) * (x - self.mu)
+        derivatives_log_prob[~right_index[:, 0], 0] = (1 / self.b) * (x - self.mu)
+        log_prob = -np.log(2 * self.b) - (1/self.b) * np.abs(x - self.mu)
 
-
-
-
-        return
+        return log_prob, derivatives_log_prob
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
