@@ -251,7 +251,7 @@ class Truncated_Normal(Continuous_Distributions):
         return prob, der_prob
 
 
-    def Log_prob(self, x: float)->np.ndarray:
+    def Log_prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the log probablity of the truncated normal distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
@@ -270,53 +270,32 @@ class Truncated_Normal(Continuous_Distributions):
 
         logprob[in_range_index[:, 0], 0] =  -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(2 * np.pi) - 0.5 * normal_argument ** 2
         derivatives_logprob [in_range_index[:, 0], 0] = (-1 / self.sigma**2) * (x[in_range_index[:, 0], 0] - self.mu)
+        return logprob, derivatives_logprob
 
 
-
-        if x <= self.lb or x >= self.ub:
-            return -np.inf
-        else:
-            L1 = (self.ub - self.mu) / self.std
-            L2 = (self.lb - self.mu) / self.std
-            L = (x - self.mu) / self.std
-            Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
-            Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
-            return -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
-
-    def Prob_vectorized(self, x: np.ndarray) -> np.ndarray:
+    def CDF(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the probablity distribution of a chain variable x by using truncated normal distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log of the probability distribution of the given variable (Cx1)
         """
 
-        in_range_index = x > self.lb_v & x < self.ub_v
-        prob = np.zeros((self.C, 1))
-        L1 = (self.ub_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
-        L2 = (self.lb_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
-        L = (x[in_range_index, 0] - self.mu[in_range_index, 0]) / self.sigma[in_range_index, 0]
-        Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
-        Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
-        fi = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * L ** 2)
-        prob[in_range_index, 0] = (1 / self.sigma[in_range_index, 0]) * (fi / (Fi_1 - Fi_2))
-        return prob
+        right_index = x > self.ub
+        in_range_index = (x >= self.lb) & (x <= self.ub)
+        cdf = np.zeros((self.C, 1))
+        cdf[right_index[:, 0], 0] = 1.0
 
-    def Log_prob_vectorized(self, x: np.ndarray) -> np.ndarray:
-        """
-        calculating the log probablity of the truncated normal distribution(vectorized)
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: The log of the probablity distribution of the given variable
-        """
+        b = (self.ub - self.mu) / self.sigma
+        a = (self.lb - self.mu) / self.sigma
+        xi = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
 
-        in_range_index = x > self.lb_v & x < self.ub_v
-        logprob = np.ones((self.C, 1)) * -np.inf
-        L1 = (self.ub_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
-        L2 = (self.lb_v[in_range_index, 0] - self.mu_v[in_range_index, 0]) / self.sigma_v[in_range_index, 0]
-        L = (x[in_range_index, 0] - self.mu[in_range_index, 0]) / self.sigma[in_range_index, 0]
-        Fi_1 = 0.5 * (1 + self.Erf(L1 / 2 ** 0.5))
-        Fi_2 = 0.5 * (1 + self.Erf(L2 / 2 ** 0.5))
-        logprob[in_range_index, 0] = -np.log(self.std) - np.log(Fi_1 - Fi_2) - np.log((np.sqrt(2 * np.pi))) - 0.5 * L ** 2
-        return logprob
+        erf_r = 0.5 * (1 + self.Erf( b / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf( a / np.sqrt(2)))
+        ert_xi = 0.5 * (1 + self.Erf( xi / np.sqrt(2)))
+        cdf[in_range_index[:, 0], 0] = (ert_xi - ert_l) / (erf_r - ert_l)
+        derivatives_value = None
+        return cdf, derivatives_value
+
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
