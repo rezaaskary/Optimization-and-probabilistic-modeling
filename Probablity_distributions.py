@@ -121,6 +121,10 @@ class Uniform(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
+    @property
+    def statistics(self):
+        return None
+
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the probability of the input array x in vectorized format
@@ -196,6 +200,10 @@ class Normal(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
+    @property
+    def statistics(self):
+        return None
+
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         calculating the probablity distribution of variable x by using normal distribution (Cx1)
@@ -263,6 +271,10 @@ class Truncated_Normal(Continuous_Distributions):
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
+
+    @property
+    def statistics(self):
+        return None
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -365,6 +377,9 @@ class Half_Normal(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
+    @property
+    def statistics(self):
+        return None
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -448,6 +463,10 @@ class Skewed_Normal(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
+    @property
+    def statistics(self):
+        return None
+
 
     def Prob(self, x)->np.ndarray:
         """
@@ -521,6 +540,12 @@ class Beta(Continuous_Distributions):
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
+
+    @property
+    def statistics(self):
+        return None
+
+
 
 
     def Prob(self, x: np.ndarray)->(np.ndarray,np.ndarray):
@@ -597,6 +622,11 @@ class Kumaraswamy(Continuous_Distributions):
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
 
+    @property
+    def statistics(self):
+        return None
+
+
 
     def Prob(self, x: np.ndarray)-> (np.ndarray,np.ndarray):
         """
@@ -663,6 +693,11 @@ class Kumaraswamy(Continuous_Distributions):
             if self.Lambda <= 0:
                 raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
 
+        @property
+        def statistics(self):
+            return None
+
+
         def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
             """
             calculating the probablity distribution of the Kumaraswamy distribution
@@ -716,6 +751,7 @@ class Kumaraswamy(Continuous_Distributions):
                 Y.append(self.Prob(X[i]))
             plot(list(X.ravel()), Y)
 
+
 class Laplace(Continuous_Distributions):
     def __int__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
         super().__int__(mu, b, vectorized, C)
@@ -729,6 +765,41 @@ class Laplace(Continuous_Distributions):
         """
         if self.b <= 0:
             raise Exception('The location parameter b (for calculating the Laplace distribution) should be positive')
+
+    @property
+    def statistics(self):
+        return None
+
+
+    def Prob(self, x:np.ndarray,)->(np.ndarray, np.ndarray):
+
+        return
+
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        return
+
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        return
+
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
+
+
+
+
+
+
+
 
 
 
@@ -744,7 +815,16 @@ class myclass(Continuous_Distributions):
         :return: 
         """
 
-    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+    @property
+    def statistics(self):
+        return None
+
+    def Prob(self, x:np.ndarray,C:optional)->(np.ndarray, np.ndarray):
+        """
+        calculating the probablity distribution of the ----- distribution
+        :param x: an numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: the probablity of the occurance of the given variable
+        """
         return
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
