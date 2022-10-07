@@ -927,6 +927,64 @@ class Student_t(Continuous_Distributions):
 
 
 
+class Half_Student_t(Continuous_Distributions):
+    def __int__(self, nu:float=None, sigma: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super(Half_Student_t,self).__int__(nu = nu, sigma = sigma, vectorized = vectorized, C = C)
+        """
+        
+        :param nu: 
+        :param sigma: 
+        :param vectorized: 
+        :param C: 
+        :return: 
+        """
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        """
+        coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+
+
+        prob = coef * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
+        derivatives_prob = coef * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
+
+
+
+
+        return
+
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
+        return
+
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
+        return
+
+
 
 
 
