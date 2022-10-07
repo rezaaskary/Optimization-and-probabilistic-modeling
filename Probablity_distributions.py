@@ -587,7 +587,6 @@ class Kumaraswamy(Continuous_Distributions):
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
-        self.mean = (self.beta * Gamma(1 + 1/self.alpha) * Gamma(self.beta))/( Gamma(self.beta + 1 + 1/self.alpha))
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
@@ -653,6 +652,10 @@ class Exponential(Continuous_Distributions):
         if self.Lambda <= 0:
             raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
 
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
+
     @property
     def statistics(self):
         """
@@ -717,6 +720,10 @@ class Laplace(Continuous_Distributions):
         """
         if self.b <= 0:
             raise Exception('The location parameter b (for calculating the Laplace distribution) should be positive')
+
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -790,6 +797,9 @@ class Asymetric_Laplace(Continuous_Distributions):
         if self.b<=0:
             raise Exception('The rate of the change of the exponential term should be positive(Asymetric Laplace distribution)!')
 
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
 
     @property
@@ -863,7 +873,18 @@ class Student_t(Continuous_Distributions):
         :param C: 
         :return: 
         """
+        if self.nu <= 0:
+            raise Exception('The value of nu should be positive (Student-t distribution)!')
+        if self.sigma <= 0:
+            raise Exception('The value of sigma should be positive (Student-t distribution)!')
+        if self.Lambda <= 0:
+            raise Exception('The value of lambda should be positive (Student-t distribution)!')
 
+
+        self.Gamma = Gamma
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -879,6 +900,9 @@ class Student_t(Continuous_Distributions):
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
+        coef = (self.Gamma((self.nu+1)/2) / self.Gamma(self.nu/2)) * np.sqrt(self.Lambda/(np.pi * self.nu))
+        prob = coef * (1 +(self.Lambda/self.nu) * (x - self.mu)**2 )**(-(self.nu+1)/2)
+
         return
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
@@ -921,6 +945,9 @@ class myclass(Continuous_Distributions):
         :param C: 
         :return: 
         """
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
 
     @property
