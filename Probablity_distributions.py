@@ -636,6 +636,14 @@ class Kumaraswamy(Continuous_Distributions):
             :param x: an integer value determining the variable we are calculating its probablity distribution
             :return: the probablity of the occurance of the given variable
             """
+            x = np.clip(x, 0, np.inf)
+            prob = np.zeros((self.C, 1))
+            derivatives_prob = np.zeros((self.C, 1))
+            in_range_index = x>=0
+            prob[in_range_index[:,0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+
+
+
             return
         def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
             """
