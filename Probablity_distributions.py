@@ -490,14 +490,16 @@ class Beta(Continuous_Distributions):
 
         return prob, derivatives_prob
 
-    def Log_prob(self, x: float)->float:
+    def Log_prob(self, x: np.ndarray)->(np.ndarray,np.ndarray):
         """
         calculating the log probablity distribution of the Beta distribution
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
         x = np.clip(x, 0, 1)
-        return (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
+        log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha, self.beta))
+        derivatives_log_prob = ((self.alpha - 1)/x) - ((self.beta - 1)/(1 - x))
+        return log_prob, derivatives_log_prob
 
     def Prob_vectorized(self,x: np.ndarray)->np.ndarray:
         """
