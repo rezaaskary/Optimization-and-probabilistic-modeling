@@ -358,13 +358,12 @@ class Truncated_Normal(Continuous_Distributions):
         derivatives_value = None
         return cdf, derivatives_value
 
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -441,13 +440,12 @@ class Half_Normal(Continuous_Distributions):
         cdf[in_range_index[:, 0], 0] = erf_value
         return cdf, derivatives_value
 
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -521,13 +519,12 @@ class Skewed_Normal(Continuous_Distributions):
         """
         return None, None
 
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -608,10 +605,10 @@ class Beta(Continuous_Distributions):
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -693,13 +690,12 @@ class Kumaraswamy(Continuous_Distributions):
 
         return cdf, derivatives_cdf
 
-
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -708,80 +704,80 @@ class Kumaraswamy(Continuous_Distributions):
         plot(list(X.ravel()), Y)
 
 
-    class Exponential(Continuous_Distributions):
-        def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
-            super().__int__(Lambda, vectorized, C)
-            """
-            Initializing Kumaraswamy distribution continuous function
-            :param Lambda: the rate of the change of the exponential term (Lambda>0)
-            :param vectorized: boolean variable used to determine vectorized calculation
-            :param C: An integer variable indicating the number of chains 
-            :return: None
-            """
-            if self.Lambda <= 0:
-                raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
+class Exponential(Continuous_Distributions):
+    def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
+        super().__int__(Lambda, vectorized, C)
+        """
+        Initializing Kumaraswamy distribution continuous function
+        :param Lambda: the rate of the change of the exponential term (Lambda>0)
+        :param vectorized: boolean variable used to determine vectorized calculation
+        :param C: An integer variable indicating the number of chains 
+        :return: None
+        """
+        if self.Lambda <= 0:
+            raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
 
-        @property
-        def statistics(self):
-            """
-            Statistics calculated for the ---- distribution function given distribution parameters
-            :return: A dictionary of calculated metrics
-            """
-            return None
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
 
 
-        def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
-            """
-            calculating the probablity distribution of the Kumaraswamy distribution
-            :param x: an integer value determining the variable we are calculating its probablity distribution
-            :return: the probablity of the occurance of the given variable
-            """
-            prob = np.zeros((self.C, 1))
-            derivatives_prob = np.zeros((self.C, 1))
-            in_range_index = x>=0
-            prob[in_range_index[:,0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
-            derivatives_prob[in_range_index[:,0], 0] = -(self.Lambda**2) * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        calculating the probablity distribution of the Kumaraswamy distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        prob = np.zeros((self.C, 1))
+        derivatives_prob = np.zeros((self.C, 1))
+        in_range_index = x>=0
+        prob[in_range_index[:,0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+        derivatives_prob[in_range_index[:,0], 0] = -(self.Lambda**2) * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
 
-            return prob, derivatives_prob
+        return prob, derivatives_prob
 
-        def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
-            """
-            calculating the log probablity distribution of the Kumaraswamy distribution
-            :param x: an integer value determining the variable we are calculating its probablity distribution
-            :return: the probablity of the occurance of the given variable
-            """
-            in_range_index = x >= 0
-            log_prob = np.ones((self.C, 1)) * -np.inf
-            derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
-            log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:,0], 0]
-            derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
-            return log_prob, derivatives_log_prob
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        calculating the log probablity distribution of the Kumaraswamy distribution
+        :param x: an integer value determining the variable we are calculating its probablity distribution
+        :return: the probablity of the occurance of the given variable
+        """
+        in_range_index = x >= 0
+        log_prob = np.ones((self.C, 1)) * -np.inf
+        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+        log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:,0], 0]
+        derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
+        return log_prob, derivatives_log_prob
 
-        def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
-            """
-            calculating the CDF probability of the input array
-            :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-            :return: The log of the probability distribution of the given variable (Cx1)
-            """
-            in_range_index = x >= 0
-            cdf = np.zeros((self.C, 1))
-            der_cdf = np.zeros((self.C, 1))
-            cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:,0], 0])
-            der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
-            return cdf, der_cdf
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log of the probability distribution of the given variable (Cx1)
+        """
+        in_range_index = x >= 0
+        cdf = np.zeros((self.C, 1))
+        der_cdf = np.zeros((self.C, 1))
+        cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:,0], 0])
+        der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+        return cdf, der_cdf
 
-        def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
-            """
-            the module used to visualize the probablity distribution
-            :param lower_lim: the lower limit used in ploting the probablity distribution
-            :param upper_lim: the uppwer limit used in ploting the probablity distribution
-            :return:
-            """
-            X = np.linspace(lower_lim, upper_lim, 1000)
-            Y = list()
-            for i in range(len(X)):
-                Y.append(self.Prob(X[i]))
-            plot(list(X.ravel()), Y)
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        Visualizing the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return: a line plot from matplotlib library
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
 
 
 class Laplace(Continuous_Distributions):
@@ -819,10 +815,10 @@ class Laplace(Continuous_Distributions):
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
@@ -901,3 +897,9 @@ class myclass(Continuous_Distributions):
         for i in range(len(X)):
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
+
+
+
+
+
+ts = Uniform(a=1,b=2,C=4,vectorized=True)
