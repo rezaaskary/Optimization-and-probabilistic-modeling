@@ -426,9 +426,11 @@ class Skewed_Normal(Continuous_Distributions):
         """
         z = (x - self.mu) / self.sigma
 
-        log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z**2) + np.log(1 + self.Erf((z * self.alpha)/np.sqrt(2)))
+        erf_value, der_erf_value = self.Erf((z * self.alpha)/np.sqrt(2))
 
-        return log_prob
+        log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z**2) + np.log(1 + erf_value)
+        derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (der_erf_value / (1 + erf_value))
+        return log_prob, derivatives_log_prob
 
 
     def Prob_vectorized(self, x:np.ndarray)->np.ndarray:
