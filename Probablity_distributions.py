@@ -123,6 +123,10 @@ class Uniform(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
@@ -202,6 +206,10 @@ class Normal(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
@@ -274,6 +282,10 @@ class Truncated_Normal(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
@@ -379,6 +391,10 @@ class Half_Normal(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
     def Prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
@@ -465,6 +481,10 @@ class Skewed_Normal(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
 
@@ -543,6 +563,10 @@ class Beta(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
 
@@ -624,6 +648,10 @@ class Kumaraswamy(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
 
@@ -695,6 +723,10 @@ class Kumaraswamy(Continuous_Distributions):
 
         @property
         def statistics(self):
+            """
+            Statistics calculated for the ---- distribution function given distribution parameters
+            :return: A dictionary of calculated metrics
+            """
             return None
 
 
@@ -768,6 +800,10 @@ class Laplace(Continuous_Distributions):
 
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
 
@@ -804,7 +840,9 @@ class Laplace(Continuous_Distributions):
 
 
 
-
+#######################################################################################################################
+########################################################################################################################
+#######################################################################################################################
 
 class myclass(Continuous_Distributions):
     def __int__(self,  vectorized: bool = False, C: int = 1) -> None:
@@ -815,13 +853,21 @@ class myclass(Continuous_Distributions):
         :return: 
         """
 
+
+
+
+
     @property
     def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
         return None
 
     def Prob(self, x:np.ndarray,C:optional)->(np.ndarray, np.ndarray):
         """
-        calculating the probablity distribution of the ----- distribution
+        Parallelized calculating the probablity of the ----- distribution
         :param x: an numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: the probablity of the occurance of the given variable
         """
@@ -829,7 +875,7 @@ class myclass(Continuous_Distributions):
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        Parallelized calculating The log (and its derivatives) of the ---- distribution
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
@@ -841,8 +887,6 @@ class myclass(Continuous_Distributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
-
-
         return
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
