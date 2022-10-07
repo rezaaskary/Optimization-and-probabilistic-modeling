@@ -6,7 +6,7 @@ class Continuous_Distributions:
     def __init__(self, variance: float = None, sigma: float=None, mu: float = None,\
                 lb: float = None, ub: float = None, alpha: float = None,\
                  a:float=None, b:float=None, vectorized: bool = True,\
-                 C: int = 1, beta: float = None, Lambda:float = None)->None:
+                 C: int = 1, beta: float = None, Lambda:float = None, kappa:float = None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -99,6 +99,14 @@ class Continuous_Distributions:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
+
+
+        if isinstance(kappa, (float, int)):
+            self.kappa = kappa
+        elif kappa is None:
+            self.kappa = None
+        else:
+            raise Exception('The value of kappa is not specified correctly!')
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
@@ -756,17 +764,55 @@ class Laplace(Continuous_Distributions):
 
 
 
+class Asymetric_Laplace(Continuous_Distributions):
+    def __int__(self, kappa:float = None, mu:float = None, b:float = None, vectorized: bool = False, C: int = 1) -> None:
+        super(myclass,self).__int__(kappa = kappa, mu = mu, b = b, vectorized = vectorized, C = C)
+        """
+        :param mu: The center of the distribution
+        :param b : The rate of the change of the exponential term
+        :param kappa: Symetric parameter
+        :param vectorized: Boolean variable used to determine vectorized calculation 
+        :param C: An integer variable indicating the number of chains 
+        """
+
+        if self.kappa <= 0:
+            raise Exception('The values of Symmetric parameter should be positive(Asymetric Laplace distribution)!')
+        if self.b<=0:
+            raise Exception('The rate of the change of the exponential term should be positive(Asymetric Laplace distribution)!')
 
 
 
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
 
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        """
+        return
 
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
+        return
 
-
-
-
-
-
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
+        return
 
 
 
