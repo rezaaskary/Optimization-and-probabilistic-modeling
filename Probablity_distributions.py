@@ -861,7 +861,7 @@ class myclass(Continuous_Distributions):
         """
         return None
 
-    def Prob(self, x:np.ndarray,C:optional)->(np.ndarray, np.ndarray):
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
         Parallelized calculating the probablity of the ----- distribution
         :param x: an numpy array values determining the variable we are calculating its probablity distribution (Cx1)
