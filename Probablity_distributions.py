@@ -716,7 +716,6 @@ class Laplace(Continuous_Distributions):
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
         derivatives_prob = np.zeros(((self.C, 1)))
-
         right_index = x >= self.mu
 
         derivatives_prob[right_index[:, 0], 0] = (-1/(2*self.b**2)) * np.exp((-1/self.b) * (x[right_index[:, 0], 0] - self.mu))
@@ -731,6 +730,13 @@ class Laplace(Continuous_Distributions):
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
+
+        derivatives_log_prob = np.zeros(((self.C, 1)))
+        right_index = x >= self.mu
+
+
+
+
         return
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
