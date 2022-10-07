@@ -3,9 +3,9 @@ from matplotlib.pyplot import plot, show
 from mathmatics import Beta, Gamma, Erf
 #=========================================================================================================
 class Continuous_Distributions:
-    def __init__(self, sigma: float = None, variance: float = None,
+    def __init__(self,  variance: float = None, sigma: float=None,\
                  mu: float = None, alpha: float = None,\
-                 lb: float = None, ub: float = None, vectorized: bool = False,\
+                 lb: float = None, ub: float = None, vectorized: bool = True,\
                  C: int = 1, beta: float = None, Lambda:float = None,\
                  a:float=None,b:float=None)->None:
 
@@ -105,7 +105,7 @@ class Continuous_Distributions:
 
 class Uniform(Continuous_Distributions):
     def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super().__init__(a, b, vectorized, C)
+        super(Uniform,self).__init__(a,b,vectorized,C)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
