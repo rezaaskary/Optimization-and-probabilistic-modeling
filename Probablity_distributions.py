@@ -469,27 +469,26 @@ class Beta(Continuous_Distributions):
 
         self.mean = (self.alpha)/(self.alpha + self.beta)
         self.variance = (self.alpha * self.beta) / (((self.alpha + self.beta)**2) * (self.alpha + self.beta + 1))
-
-
         self.Beta = Beta
-        if self.vectorized:
-            self.alpha_v = self.alpha * np.ones((self.C, 1))
-            self.beta_v = self.beta * np.ones((self.C, 1))
-            self.pdf = self.Prob_vectorized
-            self.logpdf = self.Log_prob_vectorized
-        else:
-            self.pdf = self.Prob
-            self.logpdf = self.Log_prob
+        self.pdf = self.Prob
+        self.logpdf = self.Log_prob
+        self.cdf = self.CDF
 
 
-    def Prob(self, x: float)->float:
+    def Prob(self, x: np.ndarray)->(np.ndarray,np.ndarray):
         """
         calculating the probablity distribution of the Beta distribution
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
+        :param x: an integer value determining the variable we are calculating its probablity distribution (Cx1)
+        :return: the probablity and the derivatives of the occurance of the given variable
         """
+
         x = np.clip(x, 0, 1)
-        return ((x**(self.alpha - 1)) * ((1 - x)**(self.beta - 1))) / self.Beta(self.alpha, self.beta)
+        term1 = (x**(self.alpha - 1))
+        term2 = ((1 - x)**(self.beta - 1))
+        prob = (term1 * term2) / self.Beta(self.alpha, self.beta)
+        derivatives_prob = (1/self.Beta(self.alpha, self.beta)) * (((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * ((1 - x)**(self.beta - 2)) * term1)
+
+        return prob, derivatives_prob
 
     def Log_prob(self, x: float)->float:
         """
