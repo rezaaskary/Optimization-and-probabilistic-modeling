@@ -424,8 +424,10 @@ class Skewed_Normal(Continuous_Distributions):
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: The log of the probablity distribution of the given variable
         """
-        log_prob = np.log(0.5 * (1 + self.Erf(((x - self.mu) / self.sigma) * (self.alpha / np.sqrt(2.0))))) - np.log(
-            (np.sqrt(2 * np.pi))) - 0.5 * ((x - self.mu) / self.sigma) ** 2
+        z = (x - self.mu) / self.sigma
+
+        log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z**2) + np.log(1 + self.Erf((z * self.alpha)/np.sqrt(2)))
+
         return log_prob
 
 
