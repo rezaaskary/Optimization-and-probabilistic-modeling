@@ -427,7 +427,7 @@ class Half_Normal(Continuous_Distributions):
 
 class Skewed_Normal(Continuous_Distributions):
     def __int__(self, mu: float = None , alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
-        super().__int__(mu, alpha, sigma, variance, vectorized, C)
+        super().__int__(mu, alpha, sigma,  vectorized, C)
         """
         The skewed continuous truncated gaussian distribution function
         :param alpha: the skewness parameter
@@ -437,6 +437,12 @@ class Skewed_Normal(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
+
+
+        if self.mu is None or self.sigma is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Skewed Normal distribution)!')
+
+
         self.Erf = Erf
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
