@@ -688,7 +688,7 @@ class Exponential(Continuous_Distributions):
 
 class Laplace(Continuous_Distributions):
     def __int__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
-        super().__int__(mu, b, vectorized, C)
+        super(Laplace,self).__int__(mu = mu, b = b, vectorized = vectorized, C = C)
         """
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -735,13 +735,28 @@ class Laplace(Continuous_Distributions):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #######################################################################################################################
 ########################################################################################################################
 #######################################################################################################################
 
 class myclass(Continuous_Distributions):
     def __int__(self,  vectorized: bool = False, C: int = 1) -> None:
-        super().__int__( vectorized, C)
+        super(myclass,self).__int__(vectorized = vectorized, C = C)
         """
         :param vectorized: 
         :param C: 
