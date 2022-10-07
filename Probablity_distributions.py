@@ -430,7 +430,9 @@ class Skewed_Normal(Continuous_Distributions):
         derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (der_erf_value / (1 + erf_value))
         return log_prob, derivatives_log_prob
 
+    def CDF(self,x:np.ndarray)->(np.ndarray,np.ndarray):
 
+        return None, None
 
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
