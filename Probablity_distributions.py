@@ -798,17 +798,15 @@ class Asymetric_Laplace(Continuous_Distributions):
         """
         prob = np.zeros((self.C, 1))
         derivatives_prob = np.zeros((self.C, 1))
-
         in_range_index = x >= self.mu
+
         coef = self.b/(self.kappa + 1/self.kappa)
         prob[in_range_index[:,0],0] = coef * np.exp(-self.b * self.kappa * (x[in_range_index[:,0],0] - self.mu))
         prob[~in_range_index[:,0],0] = coef * np.exp((self.b / self.kappa) * (x[~in_range_index[:,0],0] - self.mu))
 
-
-
-
-
-        return
+        derivatives_prob[in_range_index[:,0],0] = coef * (-self.b * self.kappa) * np.exp(-self.b * self.kappa * (x[in_range_index[:,0],0] - self.mu))
+        derivatives_prob[~in_range_index[:, 0], 0] = coef * (self.b / self.kappa) * np.exp(-self.b * self.kappa * (x[~in_range_index[:,0],0] - self.mu))
+        return prob, derivatives_prob
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -816,7 +814,18 @@ class Asymetric_Laplace(Continuous_Distributions):
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
-        return
+
+        log_prob = np.zeros((self.C, 1))
+        derivatives_log_prob = np.zeros((self.C, 1))
+        in_range_index = x >= self.mu
+        coef = self.b / (self.kappa + 1 / self.kappa)
+
+        log_prob[in_range_index[:,0],0] = np.log(coef) + (-self.b * self.kappa * (x[in_range_index[:,0],0] - self.mu))
+        log_prob[~in_range_index[:,0],0] = np.log(coef) + ((self.b / self.kappa) * (x[~in_range_index[:,0],0] - self.mu))
+
+        derivatives_log_prob[in_range_index[:,0],0] = -self.b * self.kappa
+        derivatives_log_prob[~in_range_index[:, 0], 0] = (self.b / self.kappa)
+        return log_prob, derivatives_log_prob
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -824,6 +833,9 @@ class Asymetric_Laplace(Continuous_Distributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
+
+
+
         return
 
 
