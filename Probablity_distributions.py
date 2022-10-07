@@ -553,20 +553,11 @@ class Kumaraswamy(Continuous_Distributions):
         derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x**(self.alpha-1))) / (1 - x**self.alpha)
         return log_prob, derivatives_log_prob
 
-    def Prob_vectorized(self,x: np.ndarray)->np.ndarray:
-        """
-        calculating the probablity distribution of the Kumaraswamy distribution given an array of the input variables
-        :param x: an array value determining the variable we are calculating its probablity distribution (cx1)
-        :return: the probablity of the occurance of the given variable
-        """
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         x = np.clip(x, 0, 1)
-        return self.beta * self.alpha * (x** (self.alpha-1)) * ((1 - x**self.alpha)**(self.beta - 1))
+        cdf = 1 - (1 - x**self.alpha)**self.beta
+        derivatives_cdf = self.beta * self.alpha * (x**(self.alpha-1)) * (1 - x**self.alpha)**(self.beta - 1)
 
-    def Log_prob_vectorized(self,x: np.ndarray)->np.ndarray:
-        """
-        calculating the log probablity distribution of the Kumaraswamy distribution given any array on the input
-        :param x: an integer value determining the variable we are calculating its probablity distribution
-        :return: the probablity of the occurance of the given variable
-        """
-        x = np.clip(x, 0, 1)
-        return np.log(self.alpha) + np.log(self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log((1 - x**self.alpha))
+        return cdf, derivatives_cdf
+
+    
