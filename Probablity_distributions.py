@@ -998,7 +998,7 @@ class Half_Student_t(Continuous_Distributions):
 
 
 
-class Cauchy (Continuous_Distributions):
+class Cauchy(Continuous_Distributions):
     def __int__(self, gamma:float = None, mu:float = None, vectorized: bool = False, C: int = 1) -> None:
         super(Cauchy ,self).__int__(gamma = gamma, mu = mu, vectorized = vectorized, C = C)
         """
@@ -1029,9 +1029,11 @@ class Cauchy (Continuous_Distributions):
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
-        prob = (1/)
+        denominator = (1 + ((x - self.mu)/self.gamma)**2)
+        prob = (1/(np.pi * self.gamma)) * (1 / denominator)
+        derivatives_prob = (-2 / (np.pi * self.gamma **3 )) * ((x - self.mu)/denominator**2)
 
-        return
+        return prob, derivatives_prob
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -1039,7 +1041,11 @@ class Cauchy (Continuous_Distributions):
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
-        return
+        denominator = (1 + ((x - self.mu)/self.gamma)**2)
+        log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
+        derivatives_log_prob = ((-2/self.gamma ** 2) * (x - self.mu)) /  denominator
+
+        return log_prob, derivatives_log_prob
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
