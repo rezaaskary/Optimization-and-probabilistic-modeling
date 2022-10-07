@@ -938,6 +938,7 @@ class Half_Student_t(Continuous_Distributions):
         :param C: 
         :return: 
         """
+        self.Gamma = Gamma
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
         self.cdf = self.CDF
@@ -957,16 +958,14 @@ class Half_Student_t(Continuous_Distributions):
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
+
+        prob = np.zeros((self.C, 1))
+        in_range_index = x >= 0
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+        prob[in_range_index[:,0],0] = coef * (1 + (1 / self.nu) * ((x[in_range_index[:,0],0] /self.sigma)**2)) ** (-(self.nu + 1) / 2)
+        derivatives_prob[in_range_index[:,0],0] = coef * (-(self.nu + 1) / 2) * (1/(self.nu * self.sigma**2)) * (2 * x[in_range_index[:,0],0]) * ((1 + (1/(self.nu * self.sigma**2)) * ((x[in_range_index[:,0],0])**2))**(-(self.nu + 1) / 2 - 1))
 
-
-        prob = coef * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
-        derivatives_prob = coef * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
-
-
-
-
-        return
+        return prob, derivatives_prob
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
