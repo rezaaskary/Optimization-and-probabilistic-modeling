@@ -513,6 +513,23 @@ class Beta(Continuous_Distributions):
         """
         return None, None
 
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
+
+
+
+
+
 class Kumaraswamy(Continuous_Distributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1)->None:
         super().__int__(alpha, beta, vectorized, C)
@@ -574,3 +591,32 @@ class Kumaraswamy(Continuous_Distributions):
 
         return cdf, derivatives_cdf
 
+
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
+
+
+
+
+
+    class Kumaraswamy(Continuous_Distributions):
+        def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
+            super().__int__(alpha, beta, vectorized, C)
+            """
+            Initializing Kumaraswamy distribution continuous function
+            :param alpha: exponent alpha parameter (alpha>0)
+            :param beta:  exponent beta parameter (beta>0)
+            :param vectorized: boolean variable used to determine vectorized calculation
+            :param C: An integer variable indicating the number of chains 
+            :return: None
+            """
