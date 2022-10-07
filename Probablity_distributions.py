@@ -711,11 +711,19 @@ class Laplace(Continuous_Distributions):
 
     def Prob(self, x:np.ndarray,)->(np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
+        Parallelized calculating the probablity of the Laplace distribution
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
-        return
+        derivatives_prob = np.zeros(((self.C, 1)))
+
+        right_index = x >= self.mu
+
+        derivatives_prob[right_index[:, 0], 0] = (-1/(2*self.b**2)) * np.exp((-1/self.b) * (x[right_index[:, 0], 0] - self.mu))
+        derivatives_prob[~right_index[:, 0], 0] = (1/(2*self.b**2)) * np.exp((1/self.b) * (x[~right_index[:, 0], 0] - self.mu))
+        prob = (1/(2*self.b)) * np.exp((-1/self.b) * np.abs(x-self.mu))
+
+        return prob, derivatives_prob
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
