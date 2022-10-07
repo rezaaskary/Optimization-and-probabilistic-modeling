@@ -411,9 +411,12 @@ class Skewed_Normal(Continuous_Distributions):
         :param x: an integer value determining the variable we are calculating its probablity distribution
         :return: the probablity of the occurance of the given variable
         """
-        L1 = 0.5 * (1 + self.Erf(((x - self.mu) / self.sigma) * (self.alpha / np.sqrt(2.0))))
-        L2 = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
-        return 2 * L1 * L2
+        z = (x - self.mu) / self.sigma
+        erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
+        normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z) ** 2)
+        prob = 2 * erf_part * normal_part
+        derivatives_prob = -np.sqrt(2/np.pi) * (z/self.sigma) * np.exp(-0.5 * (z) ** 2) * erf_part + (self.alpha/self.sigma) * np.sqrt(2/np.pi) * np.exp(-0.5 * (z) ** 2) * der_erf_part
+        return prob, derivatives_prob
 
 
     def Log_prob(self, x: float)->np.ndarray:
