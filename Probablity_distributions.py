@@ -828,17 +828,29 @@ class myclass(Continuous_Distributions):
         return
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating The log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
         return
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
+
+
         return
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        the module used to visualize the probablity distribution
+        Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
-        :return:
+        :return: a line plot from matplotlib library
         """
         X = np.linspace(lower_lim, upper_lim, 1000)
         Y = list()
