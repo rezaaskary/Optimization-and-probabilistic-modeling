@@ -785,14 +785,14 @@ class Asymetric_Laplace(Continuous_Distributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the ---- distribution function given distribution parameters
+        Statistics calculated for the Asymetric Laplace distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         return None
 
     def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
+        Parallelized calculating the probablity of the Asymetric Laplace distribution
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
         :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
         """
@@ -810,7 +810,7 @@ class Asymetric_Laplace(Continuous_Distributions):
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        Parallelized calculating the log (and its derivatives) of the Asymetric Laplace distribution
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
@@ -829,7 +829,7 @@ class Asymetric_Laplace(Continuous_Distributions):
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Asymetric Laplace distribution
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
@@ -840,6 +840,59 @@ class Asymetric_Laplace(Continuous_Distributions):
         cdf[~in_range_index[:, 0], 0] =  (self.kappa**2/(1 + self.kappa**2)) * np.exp((self.b / self.kappa) * (~x[in_range_index[:,0],0] - self.mu))
         derivatives_cdf = None
         return cdf, derivatives_cdf
+
+
+class myclass(Continuous_Distributions):
+    def __int__(self,  vectorized: bool = False, C: int = 1) -> None:
+        super(myclass,self).__int__(vectorized = vectorized, C = C)
+        """
+        :param vectorized: 
+        :param C: 
+        :return: 
+        """
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probablity of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        """
+        return
+
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
+        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        """
+        return
+
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
+        return
+
+
+
+
+
+
+
+
+
+
 
 
 
