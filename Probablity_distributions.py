@@ -6,7 +6,7 @@ class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
                  mu: float = None, alpha: float = None,\
                  lb: float = None, ub: float = None, vectorized: bool = False,\
-                 C: int = 1, beta: float = None)->None:
+                 C: int = 1, beta: float = None, Lambda:float = None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -77,6 +77,16 @@ class Continuous_Distributions:
             self.beta = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
+
+
+        if isinstance(Lambda, (float, int)):
+            self.Lambda = Lambda
+        elif Lambda is None:
+            self.Lambda = None
+        else:
+            raise Exception('The value of lambda is not specified correctly!')
+
+
 
 class Uniform(Continuous_Distributions):
     def __init__(self, lb: float = None, ub: float = None, vectorized: bool = False, C: int = 1) -> None:
@@ -606,10 +616,7 @@ class Kumaraswamy(Continuous_Distributions):
         plot(list(X.ravel()), Y)
 
 
-
-
-
-    class Kumaraswamy(Continuous_Distributions):
+    class Exponential(Continuous_Distributions):
         def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
             super().__int__(alpha, beta, vectorized, C)
             """
@@ -620,3 +627,27 @@ class Kumaraswamy(Continuous_Distributions):
             :param C: An integer variable indicating the number of chains 
             :return: None
             """
+            if self.Lambda <= 0:
+                raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
+
+        def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+            """
+            calculating the probablity distribution of the Kumaraswamy distribution
+            :param x: an integer value determining the variable we are calculating its probablity distribution
+            :return: the probablity of the occurance of the given variable
+            """
+            return
+        def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+            """
+            calculating the log probablity distribution of the Kumaraswamy distribution
+            :param x: an integer value determining the variable we are calculating its probablity distribution
+            :return: the probablity of the occurance of the given variable
+            """
+            return
+        def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+            """
+            calculating the CDF probability of the input array
+            :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+            :return: The log of the probability distribution of the given variable (Cx1)
+            """
+            return
