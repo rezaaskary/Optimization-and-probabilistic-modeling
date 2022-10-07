@@ -666,4 +666,10 @@ class Kumaraswamy(Continuous_Distributions):
             :param x: an array determining the variable we are calculating its probability distribution (Cx1)
             :return: The log of the probability distribution of the given variable (Cx1)
             """
-            return
+            in_range_index = x >= 0
+            cdf = np.zeros((self.C, 1))
+            der_cdf = np.zeros((self.C, 1))
+            cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:,0], 0])
+            der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+
+            return cdf, der_cdf
