@@ -636,22 +636,30 @@ class Kumaraswamy(Continuous_Distributions):
             :param x: an integer value determining the variable we are calculating its probablity distribution
             :return: the probablity of the occurance of the given variable
             """
-            x = np.clip(x, 0, np.inf)
             prob = np.zeros((self.C, 1))
             derivatives_prob = np.zeros((self.C, 1))
             in_range_index = x>=0
             prob[in_range_index[:,0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
+            derivatives_prob[in_range_index[:,0], 0] = -(self.Lambda**2) * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
 
+            return prob, derivatives_prob
 
-
-            return
         def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
             """
             calculating the log probablity distribution of the Kumaraswamy distribution
             :param x: an integer value determining the variable we are calculating its probablity distribution
             :return: the probablity of the occurance of the given variable
             """
-            return
+            in_range_index = x >= 0
+            log_prob = np.ones((self.C, 1)) * -np.inf
+            derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+            log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:,0], 0]
+            derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
+            return log_prob, derivatives_log_prob
+
+
+
+
         def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
             """
             calculating the CDF probability of the input array
