@@ -6,7 +6,8 @@ class Continuous_Distributions:
     def __init__(self, sigma: float = None, variance: float = None,
                  mu: float = None, alpha: float = None,\
                  lb: float = None, ub: float = None, vectorized: bool = False,\
-                 C: int = 1, beta: float = None, Lambda:float = None)->None:
+                 C: int = 1, beta: float = None, Lambda:float = None,\
+                 a:float=None,b:float=None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -85,6 +86,20 @@ class Continuous_Distributions:
             self.Lambda = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
+
+        if isinstance(a, (float, int)):
+            self.Lambda = a
+        elif a is None:
+            self.a = None
+        else:
+            raise Exception('The value of a is not specified correctly!')
+
+        if isinstance(b, (float, int)):
+            self.Lambda = b
+        elif b is None:
+            self.b = None
+        else:
+            raise Exception('The value of b is not specified correctly!')
 
 
 
@@ -673,3 +688,4 @@ class Kumaraswamy(Continuous_Distributions):
             der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
 
             return cdf, der_cdf
+
