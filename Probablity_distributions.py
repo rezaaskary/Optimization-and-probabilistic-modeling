@@ -167,9 +167,9 @@ class Uniform(Continuous_Distributions):
 
     def CDF(self, x: np.ndarray)->np.ndarray:
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution
-        :return: The log of the probability distribution of the given variable
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         left_index = x <= self.a
         right_index = x >= self.a
@@ -230,9 +230,9 @@ class Normal(Continuous_Distributions):
 
     def CDF(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         z = (x-self.mu)/(self.sigma * np.sqrt(2))
         erf_value, derivatives_value = self.Erf(z)
@@ -321,9 +321,9 @@ class Truncated_Normal(Continuous_Distributions):
 
     def CDF(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
 
         right_index = x > self.ub
@@ -400,9 +400,9 @@ class Half_Normal(Continuous_Distributions):
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
         cdf = np.zeros((self.C, 1))
@@ -473,9 +473,9 @@ class Skewed_Normal(Continuous_Distributions):
 
     def CDF(self,x:np.ndarray)->(np.ndarray,np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         return None, None
 
@@ -545,9 +545,9 @@ class Beta(Continuous_Distributions):
 
     def CDF(self, x: np.ndarray)->(np.ndarray,np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         return None, None
 
@@ -609,9 +609,9 @@ class Kumaraswamy(Continuous_Distributions):
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         x = np.clip(x, 0, 1)
         cdf = 1 - (1 - x**self.alpha)**self.beta
@@ -673,9 +673,9 @@ class Exponential(Continuous_Distributions):
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
-        calculating the CDF probability of the input array
-        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log of the probability distribution of the given variable (Cx1)
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         in_range_index = x >= 0
         cdf = np.zeros((self.C, 1))
@@ -726,6 +726,11 @@ class Laplace(Continuous_Distributions):
         return
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        """
         return
 
 
