@@ -431,7 +431,11 @@ class Skewed_Normal(Continuous_Distributions):
         return log_prob, derivatives_log_prob
 
     def CDF(self,x:np.ndarray)->(np.ndarray,np.ndarray):
-
+        """
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log of the probability distribution of the given variable (Cx1)
+        """
         return None, None
 
 
@@ -502,6 +506,11 @@ class Beta(Continuous_Distributions):
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray)->(np.ndarray,np.ndarray):
+        """
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log of the probability distribution of the given variable (Cx1)
+        """
         return None, None
 
 class Kumaraswamy(Continuous_Distributions):
@@ -554,6 +563,11 @@ class Kumaraswamy(Continuous_Distributions):
         return log_prob, derivatives_log_prob
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        """
+        calculating the CDF probability of the input array
+        :param x: an array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log of the probability distribution of the given variable (Cx1)
+        """
         x = np.clip(x, 0, 1)
         cdf = 1 - (1 - x**self.alpha)**self.beta
         derivatives_cdf = self.beta * self.alpha * (x**(self.alpha-1)) * (1 - x**self.alpha)**(self.beta - 1)
