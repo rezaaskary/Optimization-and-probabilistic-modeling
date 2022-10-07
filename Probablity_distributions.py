@@ -864,7 +864,7 @@ class Asymetric_Laplace(Continuous_Distributions):
 
 class Student_t(Continuous_Distributions):
     def __int__(self, nu:float = None, mu:float = None, Lambda:float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(myclass,self).__int__(nu = nu, mu = mu, Lambda = Lambda, vectorized = vectorized, C = C)
+        super(Student_t,self).__int__(nu = nu, mu = mu, Lambda = Lambda, vectorized = vectorized, C = C)
         """
         :param nu: 
         :param mu: 
@@ -923,7 +923,9 @@ class Student_t(Continuous_Distributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
-        return
+        return None, None
+
+
 
 
 
