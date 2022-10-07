@@ -651,12 +651,11 @@ class Kumaraswamy(Continuous_Distributions):
 
 
     class Exponential(Continuous_Distributions):
-        def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
-            super().__int__(alpha, beta, vectorized, C)
+        def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
+            super().__int__(Lambda, vectorized, C)
             """
             Initializing Kumaraswamy distribution continuous function
-            :param alpha: exponent alpha parameter (alpha>0)
-            :param beta:  exponent beta parameter (beta>0)
+            :param Lambda: the rate of the change of the exponential term (Lambda>0)
             :param vectorized: boolean variable used to determine vectorized calculation
             :param C: An integer variable indicating the number of chains 
             :return: None
@@ -691,9 +690,6 @@ class Kumaraswamy(Continuous_Distributions):
             derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
             return log_prob, derivatives_log_prob
 
-
-
-
         def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
             """
             calculating the CDF probability of the input array
@@ -705,6 +701,67 @@ class Kumaraswamy(Continuous_Distributions):
             der_cdf = np.zeros((self.C, 1))
             cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:,0], 0])
             der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:,0], 0])
-
             return cdf, der_cdf
 
+        def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+            """
+            the module used to visualize the probablity distribution
+            :param lower_lim: the lower limit used in ploting the probablity distribution
+            :param upper_lim: the uppwer limit used in ploting the probablity distribution
+            :return:
+            """
+            X = np.linspace(lower_lim, upper_lim, 1000)
+            Y = list()
+            for i in range(len(X)):
+                Y.append(self.Prob(X[i]))
+            plot(list(X.ravel()), Y)
+
+class Laplace(Continuous_Distributions):
+    def __int__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
+        super().__int__(mu, b, vectorized, C)
+        """
+        Initializing Kumaraswamy distribution continuous function
+        :param alpha: exponent alpha parameter (alpha>0)
+        :param beta:  exponent beta parameter (beta>0)
+        :param vectorized: boolean variable used to determine vectorized calculation
+        :param C: An integer variable indicating the number of chains 
+        :return: None
+        """
+        if self.b <= 0:
+            raise Exception('The location parameter b (for calculating the Laplace distribution) should be positive')
+
+
+
+
+
+
+class myclass(Continuous_Distributions):
+    def __int__(self,  vectorized: bool = False, C: int = 1) -> None:
+        super().__int__( vectorized, C)
+        """
+        :param vectorized: 
+        :param C: 
+        :return: 
+        """
+
+    def Prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        return
+
+    def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        return
+
+    def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
+        return
+
+    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+        """
+        the module used to visualize the probablity distribution
+        :param lower_lim: the lower limit used in ploting the probablity distribution
+        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        :return:
+        """
+        X = np.linspace(lower_lim, upper_lim, 1000)
+        Y = list()
+        for i in range(len(X)):
+            Y.append(self.Prob(X[i]))
+        plot(list(X.ravel()), Y)
