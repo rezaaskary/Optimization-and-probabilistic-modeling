@@ -104,8 +104,8 @@ class Continuous_Distributions:
 
 
 class Uniform(Continuous_Distributions):
-    def __init__(self, lb: float = None, ub: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super().__init__(lb, ub, vectorized, C)
+    def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super().__init__(a, b, vectorized, C)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
@@ -113,6 +113,9 @@ class Uniform(Continuous_Distributions):
         :param vectorized: the type of calculating probablity distributions
         :param C: Number of chains
         """
+
+        if self.a >= self.b:
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
@@ -124,9 +127,9 @@ class Uniform(Continuous_Distributions):
         :param x: the array of the input variable (Cx1)
         :return:  the probability of the input array (Cx1) and the derivatives of the probablity distribution (Cx1)
         """
-        in_range_index = (x>self.lb) & (x< self.ub)
+        in_range_index = (x>self.a) & (x< self.b)
         prob = np.zeros((self.C, 1))
-        prob[in_range_index[:,0], 0] = 1/(self.ub- self.lb)
+        prob[in_range_index[:,0], 0] = 1/(self.b- self.a)
         derivatives_prob = np.zeros((self.C, 1))
         return prob, derivatives_prob
 
@@ -136,10 +139,10 @@ class Uniform(Continuous_Distributions):
         :param x: an array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log (and the derivatives log) of the probability distribution of the given variable (Cx1)
         """
-        in_range_index = (x > self.lb) & (x < self.ub)
+        in_range_index = (x > self.a) & (x < self.b)
         logprob = np.ones((self.C, 1)) * (-np.inf)
         derivatives_logprob = logprob.copy()
-        logprob[in_range_index[:,0], 0] = -np.log(self.ub - self.lb)
+        logprob[in_range_index[:,0], 0] = -np.log(self.b - self.a)
         derivatives_logprob[in_range_index[:,0], 0] = 0
         return logprob, derivatives_logprob
 
@@ -149,13 +152,13 @@ class Uniform(Continuous_Distributions):
         :param x: an array determining the variable we are calculating its probability distribution
         :return: The log of the probability distribution of the given variable
         """
-        left_index = x <= self.lb
-        right_index = x >= self.lb
-        in_range_index = (x > self.lb) & (x < self.ub)
+        left_index = x <= self.a
+        right_index = x >= self.a
+        in_range_index = (x > self.a) & (x < self.b)
         cdf = np.ones((self.C, 1))
         cdf[left_index[:,0], 0] = 0
         cdf[right_index[:, 0], 0] = 1
-        cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.lb)/(self.ub - self.lb)
+        cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a)/(self.b - self.a)
         return cdf
 
     def Visualize(self, lower_lim: float = -10, upper_lim: float = -10)->np.ndarray:
