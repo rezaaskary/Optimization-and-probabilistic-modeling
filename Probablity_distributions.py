@@ -964,8 +964,8 @@ class Half_Student_t(Continuous_Distributions):
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (1 / (self.sigma * np.sqrt(np.pi * self.nu)))
         prob[in_range_index[:,0],0] = coef * (1 + (1 / self.nu) * ((x[in_range_index[:,0],0] /self.sigma)**2)) ** (-(self.nu + 1) / 2)
         derivatives_prob[in_range_index[:,0],0] = coef * (-(self.nu + 1) / 2) * (1/(self.nu * self.sigma**2)) * (2 * x[in_range_index[:,0],0]) * ((1 + (1/(self.nu * self.sigma**2)) * ((x[in_range_index[:,0],0])**2))**(-(self.nu + 1) / 2 - 1))
-
         return prob, derivatives_prob
+
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
@@ -973,6 +973,14 @@ class Half_Student_t(Continuous_Distributions):
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
         :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
         """
+        log_prob = np.ones((self.C, 1)) * -np.inf
+        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+        in_range_index = x >= 0
+        coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+
+        log_prob[in_range_index[:,0],0] = np.log(coef) - ((self.nu + 1) / 2) * np.log((1 + (1 / self.nu) * ((x[in_range_index[:,0],0] /self.sigma)**2)))
+
+
         return
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
