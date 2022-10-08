@@ -325,34 +325,14 @@ class TruncatedNormal(ContinuousDistributions):
         normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
         normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
         prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
-        return prob
+        if self.return_der_pdf:
+            der_prob = np.zeros_like(x)
+            der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
+                    -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
+        else:
+            der_prob = None
+        return prob, der_prob
 
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the probability of the Truncated Normal distribution
-        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivative of the probability of the Truncated Normal distribution Cx1
-        """
-        in_range_index = (x >= self.lb) & (x <= self.ub)
-        der_prob = np.zeros_like(x)
-
-        arg_r = (self.ub - self.mu) / self.sigma
-        arg_l = (self.lb - self.mu) / self.sigma
-
-        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
-
-        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
-        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
-
-        prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
-        der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
-                -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
-
-        return
-
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Truncated Normal distribution
