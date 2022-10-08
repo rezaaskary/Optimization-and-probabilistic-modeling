@@ -7,8 +7,9 @@ class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
                  a: float = None, b: float = None, vectorized: bool = True,
-                 beta: float = None, Lambda: float = None,
-                 kappa: float = None, nu: float = None, gamma: float = None) -> None:
+                 beta: float = None, Lambda: float = None, return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True, kappa: float = None, nu: float = None,
+                 gamma: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -115,10 +116,24 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of nu is not specified correctly!')
 
+        if isinstance(return_der_pdf, bool):
+            self.return_der_pdf = return_der_pdf
+        elif self.return_der_pdf is None:
+            self.return_der_pdf = False
+        else:
+            raise Exception('It is not specified whether to return the derivatives of pdf!')
+
+        if isinstance(return_der_logpdf, bool):
+            self.return_der_logpdf = return_der_logpdf
+        elif self.return_der_logpdf is None:
+            self.return_der_logpdf = False
+        else:
+            raise Exception('It is not specified whether to return the derivatives of logpdf!')
+
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
         Visualizing the probability distribution
-        :param lower_lim: the lower limit used in ploting the probability distribution
+        :param lower_lim: the lower limit used in plotting the probability distribution
         :param upper_lim: the upper limit used in ploting the probability distribution
         :return: a line plot from matplotlib library
         """
@@ -132,8 +147,8 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, a: float = None, b: float = None) -> None:
-        super(Uniform, self).__init__(a=a, b=b)
+    def __init__(self, a: float = None, b: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+        super(Uniform, self).__init__(a=a, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
@@ -151,7 +166,7 @@ class Uniform(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Uniform distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -161,18 +176,13 @@ class Uniform(ContinuousDistributions):
         in_range_index = (x > self.a) & (x < self.b)
         prob = np.zeros_like(x)
         prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
-        return prob
+        if self.return_der_pdf:
+            derivatives_prob = np.zeros_like(x)
+        else:
+            derivatives_prob = None
+        return prob, derivatives_prob
 
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivatives of the Uniform distribution
-        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivative of the occurrence of the given variable Cx1
-        """
-        derivatives_prob = np.zeros_like(x)
-        return derivatives_prob
-
-    def log_prob(self, x: np.ndarray) -> np.ndarray:
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Uniform distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -181,18 +191,13 @@ class Uniform(ContinuousDistributions):
         in_range_index = (x > self.a) & (x < self.b)
         log_prob = -np.inf * np.ones_like(x)
         log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
-        return log_prob
 
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivatives log of the Uniform distribution
-        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivatives of the log of Uniform distribution Cx1
-        """
-        in_range_index = (x > self.a) & (x < self.b)
-        derivatives_log_prob = -np.inf * np.ones_like(x)
-        derivatives_log_prob[in_range_index[:, 0], 0] = 0
-        return derivatives_log_prob
+        if self.return_der_logpdf:
+            derivatives_log_prob = -np.inf * np.ones_like(x)
+            derivatives_log_prob[in_range_index[:, 0], 0] = 0
+        else:
+            derivatives_log_prob = None
+        return log_prob, derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -211,7 +216,7 @@ class Uniform(ContinuousDistributions):
 
 
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None) -> None:
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu)
         """
         The continuous gaussian distribution function
@@ -266,29 +271,29 @@ class Normal(ContinuousDistributions):
         """
         Parallelized calculating the derivatives of the log of the Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+        :return: The derivatives of the log probability of the occurrence of an independent variable
          Cx1
         """
-        log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
         derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
-        return
-    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        return derivatives_log_prob
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Normal distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
+        :return: The cumulative distribution function with respect to the input variable
         (Cx1, Cx1)
         """
         z = (x - self.mu) / (self.sigma * np.sqrt(2))
-        erf_value, derivatives_value = self.Erf(z)
-        return erf_value, derivatives_value / (self.sigma * np.sqrt(2))
+        erf_value, _ = self.Erf(z)
+        return erf_value
 
 
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
-                 mu: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(TruncatedNormal, self).__init__(lb=lb, ub=ub, sigma=sigma, variance=variance, mu=mu, vectorized=vectorized
-                                              , C=C)
+                 mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+        super(TruncatedNormal, self).__init__(lb=lb, ub=ub, sigma=sigma, variance=variance, mu=mu)
+
         """
         The continuous truncated gaussian distribution function
         :param lb: the lower bound of the uniform distribution
@@ -296,8 +301,6 @@ class TruncatedNormal(ContinuousDistributions):
         :param mu: the center of the gaussian distribution
         :param sigma: the standard deviation of gaussian distribution
         :param variance: the variance of gaussian distribution
-        :param vectorized: the type of calculating probability distributions
-        :param C: Number of chains
         """
 
         if self.lb >= self.ub:
@@ -320,11 +323,29 @@ class TruncatedNormal(ContinuousDistributions):
         """
         Parallelized calculating the probability of the Truncated Normal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        prob = np.zeros((self.C, 1))
-        der_prob = np.zeros((self.C, 1))
+        prob = np.zeros_like(x)
+        arg_r = (self.ub - self.mu) / self.sigma
+        arg_l = (self.lb - self.mu) / self.sigma
+
+        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+
+        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
+        prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        return prob
+
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the Truncated Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability of the Truncated Normal distribution Cx1
+        """
+        in_range_index = (x >= self.lb) & (x <= self.ub)
+        der_prob = np.zeros_like(x)
 
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
@@ -339,9 +360,8 @@ class TruncatedNormal(ContinuousDistributions):
         der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
                 -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
 
-        return prob, der_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
         return
+
     def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
         return
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
@@ -393,7 +413,7 @@ class TruncatedNormal(ContinuousDistributions):
 
 
 class HalfNormal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1) -> None:
+    def __init__(self, sigma: float = None, variance: float = None, , return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(HalfNormal, self).__init__(sigma=sigma, variance=variance, vectorized=vectorized, C=C)
         """
         The continuous truncated gaussian distribution function
@@ -468,7 +488,7 @@ class HalfNormal(ContinuousDistributions):
 
 class SkewedNormal(ContinuousDistributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
-                vectorized: bool = False, C: int = 1) -> None:
+                , return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
 
         """
@@ -538,7 +558,7 @@ class SkewedNormal(ContinuousDistributions):
 
 
 class BetaPdf(ContinuousDistributions):
-    def __init__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
+    def __init__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(BetaPdf, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
         Initializing beta distribution continuous function
@@ -611,7 +631,7 @@ class BetaPdf(ContinuousDistributions):
 
 
 class Kumaraswamy(ContinuousDistributions):
-    def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
+    def __int__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
         Initializing Kumaraswamy distribution continuous function
@@ -685,7 +705,7 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 class Exponential(ContinuousDistributions):
-    def __init__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
+    def __init__(self, Lambda: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(Exponential, self).__init__(Lambda=Lambda, vectorized=vectorized, C=C)
         """
         Initializing Exponential distribution continuous function
@@ -756,7 +776,7 @@ class Exponential(ContinuousDistributions):
 
 
 class Laplace(ContinuousDistributions):
-    def __init__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
+    def __init__(self, mu: None, b: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(Laplace, self).__init__(mu=mu, b=b, vectorized=vectorized, C=C)
         """
         Initializing Laplace distribution continuous function
@@ -834,8 +854,7 @@ class Laplace(ContinuousDistributions):
 
 
 class AsymmetricLaplace(ContinuousDistributions):
-    def __init__(self, kappa: float = None, mu: float = None, b: float = None, vectorized: bool = False,
-                C: int = 1) -> None:
+    def __init__(self, kappa: float = None, mu: float = None, b: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
         """
         :param mu: The center of the distribution
@@ -929,8 +948,7 @@ class AsymmetricLaplace(ContinuousDistributions):
 
 
 class StudentT(ContinuousDistributions):
-    def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, vectorized: bool = False,
-                C: int = 1) -> None:
+    def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(StudentT, self).__init__(nu=nu, mu=mu, Lambda=Lambda, vectorized=vectorized, C=C)
         """
         :param nu: 
@@ -1000,7 +1018,7 @@ class StudentT(ContinuousDistributions):
 
 
 class HalfStudentT(ContinuousDistributions):
-    def __init__(self, nu: float = None, sigma: float = None, vectorized: bool = False, C: int = 1) -> None:
+    def __init__(self, nu: float = None, sigma: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(HalfStudentT, self).__init__(nu=nu, sigma=sigma, vectorized=vectorized, C=C)
         """
         
@@ -1077,7 +1095,7 @@ class HalfStudentT(ContinuousDistributions):
 
 
 class Cauchy(ContinuousDistributions):
-    def __int__(self, gamma: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
+    def __int__(self, gamma: float = None, mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
         super(Cauchy, self).__int__(gamma=gamma, mu=mu, vectorized=vectorized, C=C)
         """
         :param vectorized: 
@@ -1141,8 +1159,8 @@ class Cauchy(ContinuousDistributions):
 #######################################################################################################################
 
 class MyClass(ContinuousDistributions):
-    def __init__(self, vectorized: bool = False, C: int = 1) -> None:
-        super(MyClass, self).__init__(vectorized=vectorized, C=C)
+    def __init__(self, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+        super(MyClass, self).__init__(return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
         """
         :param vectorized: A boolean variable used to activate vectorized calculation 
         :param C: The number of chains used for simulation
