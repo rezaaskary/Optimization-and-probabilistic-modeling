@@ -53,11 +53,11 @@ class ContinuousDistributions:
             raise Exception('The type of calculation is not specified correctly!')
 
         if isinstance(chains, int):
-            self.C = chains
+            self.chains = chains
         elif chains is None:
-            self.C = 1
+            self.chains = 1
         else:
-            raise Exception(' The number of chains is not specified correctly!')
+            raise Exception('The number of chains is not specified correctly!')
 
         if isinstance(mu, (float, int)):
             self.mu = mu
@@ -124,9 +124,9 @@ class ContinuousDistributions:
 
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
-        Visualizing the probablity distribution
-        :param lower_lim: the lower limit used in ploting the probablity distribution
-        :param upper_lim: the uppwer limit used in ploting the probablity distribution
+        Visualizing the probability distribution
+        :param lower_lim: the lower limit used in ploting the probability distribution
+        :param upper_lim: the upper limit used in ploting the probability distribution
         :return: a line plot from matplotlib library
         """
         x_m = np.linspace(start=lower_lim, stop=upper_lim, num=1000)
@@ -139,14 +139,14 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Uniform, self).__init__(a=a, b=b, vectorized=vectorized, C=C)
+    def __init__(self, a: float = None, b: float = None, vectorized: bool = False, chains: int = 1) -> None:
+        super(Uniform, self).__init__(a=a, b=b, vectorized=vectorized, chains=chains)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
         :param ub: the upper bound of the uniform distribution
-        :param vectorized: the type of calculating probablity distributions
-        :param C: Number of chains
+        :param vectorized: the type of calculating probability distributions
+        :param chains: Number of chains
         """
 
         if self.a >= self.b:
