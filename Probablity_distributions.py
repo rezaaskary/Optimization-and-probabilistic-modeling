@@ -725,23 +725,21 @@ class Exponential(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Exponential distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         in_range_index = x >= 0
-        cdf = np.zeros((self.C, 1))
-        der_cdf = np.zeros((self.C, 1))
+        cdf = np.zeros_like(x)
         cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:, 0], 0])
-        der_cdf[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
-        return cdf, der_cdf
+        return cdf
 
 
 class Laplace(ContinuousDistributions):
     def __init__(self, mu: None, b: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(Laplace, self).__init__(mu=mu, b=b, vectorized=vectorized, C=C)
+        super(Laplace, self).__init__(mu=mu, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
         """
         Initializing Laplace distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -753,10 +751,6 @@ class Laplace(ContinuousDistributions):
         if self.b <= 0:
             raise Exception('The location parameter b (for calculating the Laplace distribution) should be positive')
 
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
-
     @property
     def statistics(self):
         """
@@ -765,39 +759,40 @@ class Laplace(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray, ) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray, ) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Laplace distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        derivatives_prob = np.zeros((self.C, 1))
-        right_index = x >= self.mu
 
-        derivatives_prob[right_index[:, 0], 0] = (-1 / (2 * self.b ** 2)) * np.exp(
-            (-1 / self.b) * (x[right_index[:, 0], 0] - self.mu))
-        derivatives_prob[~right_index[:, 0], 0] = (1 / (2 * self.b ** 2)) * np.exp(
-            (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu))
+        right_index = x >= self.mu
         prob = (1 / (2 * self.b)) * np.exp((-1 / self.b) * np.abs(x - self.mu))
+        if self.return_der_pdf:
+            derivatives_prob = np.zeros_like(x)
+            derivatives_prob[right_index[:, 0], 0] = (-1 / (2 * self.b ** 2)) * np.exp(
+                (-1 / self.b) * (x[right_index[:, 0], 0] - self.mu))
+            derivatives_prob[~right_index[:, 0], 0] = (1 / (2 * self.b ** 2)) * np.exp(
+                (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu))
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Laplace distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-
-        derivatives_log_prob = np.zeros((self.C, 1))
         right_index = x >= self.mu
-        derivatives_log_prob[right_index[:, 0], 0] = - (1 / self.b) * (x[right_index[:, 0], 0] - self.mu)
-        derivatives_log_prob[~right_index[:, 0], 0] = (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu)
         log_prob = -np.log(2 * self.b) - (1 / self.b) * np.abs(x - self.mu)
-
+        if self.return_der_logpdf:
+            derivatives_log_prob = np.zeros_like(x)
+            derivatives_log_prob[right_index[:, 0], 0] = - (1 / self.b) * (x[right_index[:, 0], 0] - self.mu)
+            derivatives_log_prob[~right_index[:, 0], 0] = (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu)
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
