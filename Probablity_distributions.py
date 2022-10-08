@@ -655,14 +655,14 @@ class Exponential(Continuous_Distributions):
     def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
         super().__int__(Lambda=Lambda, vectorized=vectorized, C=C)
         """
-        Initializing Kumaraswamy distribution continuous function
+        Initializing Exponential distribution continuous function
         :param Lambda: the rate of the change of the exponential term (Lambda>0)
         :param vectorized: boolean variable used to determine vectorized calculation
         :param C: An integer variable indicating the number of chains 
         :return: None
         """
         if self.Lambda <= 0:
-            raise Exception('Parameter lambda (for calculating the beta distribution) should be positive')
+            raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
 
         self.pdf = self.Prob
         self.logpdf = self.Log_prob
@@ -671,16 +671,16 @@ class Exponential(Continuous_Distributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the ---- distribution function given distribution parameters
+        Statistics calculated for the Exponential distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         return None
 
     def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        Parallelized calculating the probability of the Exponential distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         prob = np.zeros((self.C, 1))
         derivatives_prob = np.zeros((self.C, 1))
