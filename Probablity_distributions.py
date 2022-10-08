@@ -7,7 +7,7 @@ class Continuous_Distributions:
                 lb: float = None, ub: float = None, alpha: float = None,\
                  a:float=None, b:float=None, vectorized: bool = True,\
                  C: int = 1, beta: float = None, Lambda:float = None,\
-                 kappa:float = None, nu:float = None,gamma:float = gamma)->None:
+                 kappa:float = None, nu:float = None, gamma:float = None)->None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -966,12 +966,12 @@ class Half_Student_t(Continuous_Distributions):
         """
 
         prob = np.zeros((self.C, 1))
+        derivatives_prob = np.zeros((self.C, 1))
         in_range_index = x >= 0
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (1 / (self.sigma * np.sqrt(np.pi * self.nu)))
-        prob[in_range_index[:,0],0] = coef * (1 + (1 / self.nu) * ((x[in_range_index[:,0],0] /self.sigma)**2)) ** (-(self.nu + 1) / 2)
-        derivatives_prob[in_range_index[:,0],0] = coef * (-(self.nu + 1) / 2) * (1/(self.nu * self.sigma**2)) * (2 * x[in_range_index[:,0],0]) * ((1 + (1/(self.nu * self.sigma**2)) * ((x[in_range_index[:,0],0])**2))**(-(self.nu + 1) / 2 - 1))
+        prob[in_range_index[:, 0], 0] = coef * (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] /self.sigma)**2)) ** (-(self.nu + 1) / 2)
+        derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (1/(self.nu * self.sigma**2)) * (2 * x[in_range_index[:, 0], 0]) * ((1 + (1/(self.nu * self.sigma**2)) * ((x[in_range_index[:,0],0])**2))**(-(self.nu + 1) / 2 - 1))
         return prob, derivatives_prob
-
 
     def Log_prob(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
