@@ -1173,4 +1173,4 @@ class MyClass(ContinuousDistributions):
         return cdf
 
 
-ts = Uniform(a=1, b=2, C=4, vectorized=True)
+ts = Uniform(a=1, b=2, return_der_pdf=True,return_der_logpdf=True)
