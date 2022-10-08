@@ -253,7 +253,7 @@ class Normal(ContinuousDistributions):
             derivatives_prob = None
         return prob, derivatives_prob
 
-    def log_prob(self, x: float) -> np.ndarray:
+    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -454,7 +454,7 @@ class HalfNormal(ContinuousDistributions):
         :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
-        cdf = np.zeros((self.C, 1))
+        cdf = np.zeros_like(x)
         erf_value, _ = self.Erf(x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2)))
         cdf[in_range_index[:, 0], 0] = erf_value
         return cdf
@@ -896,15 +896,15 @@ class AsymmetricLaplace(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable
         (Cx1, Cx1)
         """
-        cdf = np.zeros((self.C, 1))
+        cdf = np.zeros_like(x)
         in_range_index = x >= self.mu
 
         cdf[in_range_index[:, 0], 0] = 1 - (1 / (1 + self.kappa ** 2)) * np.exp(
             -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
         cdf[~in_range_index[:, 0], 0] = (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp(
             (self.b / self.kappa) * (~x[in_range_index[:, 0], 0] - self.mu))
-        derivatives_cdf = None
-        return cdf, derivatives_cdf
+
+        return cdf
 
 
 class StudentT(ContinuousDistributions):
@@ -1149,7 +1149,7 @@ class MyClass(ContinuousDistributions):
 
         return pdf, derivatives_pdf
 
-    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
