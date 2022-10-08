@@ -578,7 +578,8 @@ class BetaPdf(ContinuousDistributions):
         """
         Parallelized calculating the log (and its derivatives) of the Beta distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable (Cx1, Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
         x = np.clip(a=x, a_min=0, a_max=1)
         log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
@@ -589,18 +590,19 @@ class BetaPdf(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Beta distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function with respect to the input variable Cx1
         """
-        return None, None
+        return None
 
 
 class Kumaraswamy(ContinuousDistributions):
     def __int__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
+        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
+                                          return_der_logpdf=return_der_logpdf)
         """
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
