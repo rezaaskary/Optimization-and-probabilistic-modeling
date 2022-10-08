@@ -458,8 +458,9 @@ class HalfNormal(ContinuousDistributions):
 
 class SkewedNormal(ContinuousDistributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
-                , return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
+                return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+        super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, return_der_pdf=return_der_pdf,
+                                           return_der_logpdf=return_der_logpdf)
 
         """
         The skewed continuous truncated gaussian distribution function
