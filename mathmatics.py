@@ -1,5 +1,37 @@
 import numpy as np
 
+
+def Arctan(z, method:str = 'taylor'):
+    if method == 'taylor':
+        N = 10
+        if z>=1:
+            fcn_value = 0.5 * np.pi
+            derivative_value = 0
+            for n in range(N):
+                denom_value = ((2*n+1)*(z**(2*n+1)))
+                fcn_value += ((-1)**(n+1)) / denom_value
+                derivative_value += (((-1)**n) * (2*n+1) * (2*n+1) * z**(2*n)) /denom_value**2
+        elif z<=-1:
+            fcn_value = -0.5 * np.pi
+            derivative_value = 0
+            for n in range(N):
+                denom_value = ((2 * n + 1) * (z ** (2 * n + 1)))
+                fcn_value += ((-1) ** (n + 1)) / denom_value
+                derivative_value += (((-1) ** n) * (2 * n + 1) * (2 * n + 1) * z ** (2*n)) / denom_value ** 2
+        else:
+            fcn_value = 0
+            derivative_value = 0
+            for n in range(N):
+                denom_value = ((2 * n + 1) * (z ** (2 * n + 1)))
+                fcn_value += (((-1) ** n) * (z ** (2 * n + 1)) ) / (2 * n + 1)
+                derivative_value += ((-1) ** n) * z ** (2 * n)
+
+    return fcn_value, derivative_value
+
+
+
+
+
 def Gamma(z, method: str = 'numerical'):
     """
     calcualting the Gamma function for use in other probablity distribution

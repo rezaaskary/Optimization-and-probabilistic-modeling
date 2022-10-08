@@ -1044,8 +1044,8 @@ class Cauchy(Continuous_Distributions):
         denominator = (1 + ((x - self.mu)/self.gamma)**2)
         log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
         derivatives_log_prob = ((-2/self.gamma ** 2) * (x - self.mu)) /  denominator
-
         return log_prob, derivatives_log_prob
+
 
     def CDF(self, x:np.ndarray)->(np.ndarray, np.ndarray):
         """
