@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib.pyplot import plot, show
+from matplotlib.pyplot import plot, show, grid
 from mathmatics import Beta, Gamma, Erf
 #=========================================================================================================
 class Continuous_Distributions:
@@ -136,6 +136,8 @@ class Continuous_Distributions:
         for i in range(len(X)):
             Y.append(self.Prob(X[i]))
         plot(list(X.ravel()), Y)
+        grid(which = 'both')
+        show()
 
 
 class Uniform(Continuous_Distributions):
