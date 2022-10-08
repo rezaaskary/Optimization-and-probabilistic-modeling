@@ -134,7 +134,7 @@ class ContinuousDistributions:
         """
         Visualizing the probability distribution
         :param lower_lim: the lower limit used in plotting the probability distribution
-        :param upper_lim: the upper limit used in ploting the probability distribution
+        :param upper_lim: the upper limit used in plotting the probability distribution
         :return: a line plot from matplotlib library
         """
         x_m = np.linspace(start=lower_lim, stop=upper_lim, num=1000)
@@ -358,7 +358,7 @@ class TruncatedNormal(ContinuousDistributions):
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones_like(x) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (
-                        x[in_range_index[:, 0], 0] - self.mu)
+                    x[in_range_index[:, 0], 0] - self.mu)
         else:
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
@@ -451,7 +451,7 @@ class HalfNormal(ContinuousDistributions):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         in_range_index = (x >= 0)
         cdf = np.zeros_like(x)
@@ -572,8 +572,8 @@ class BetaPdf(ContinuousDistributions):
         prob = (term1 * term2) / self.Beta(self.alpha, self.beta)
         if self.return_der_pdf:
             derivatives_prob = (1 / self.Beta(self.alpha, self.beta)) * (
-                    ((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * (
-                    (1 - x) ** (self.beta - 2)) * term1)
+                    ((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * ((1 - x) ** (self.beta - 2))
+                    * term1)
         else:
             derivatives_prob = None
         return prob, derivatives_prob
@@ -640,7 +640,7 @@ class Kumaraswamy(ContinuousDistributions):
         if self.return_der_pdf:
             derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 + \
                                self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
-                                           x ** (self.alpha - 1)) * \
+                                       x ** (self.alpha - 1)) * \
                                ((1 - x ** self.alpha) ** (self.beta - 2))
         else:
             derivatives_prob = None
@@ -941,7 +941,7 @@ class StudentT(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * \
+        coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) *\
                       np.sqrt(self.Lambda / (np.pi * self.nu))
         prob = coefficient * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
         derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
@@ -952,7 +952,8 @@ class StudentT(ContinuousDistributions):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable (Cx1, Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
         coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
         log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
@@ -1011,11 +1012,11 @@ class HalfStudentT(ContinuousDistributions):
         if self.return_der_pdf:
             derivatives_prob = np.zeros_like(x)
             derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (
-                        1 / (self.nu * self.sigma ** 2)) * (
+                    1 / (self.nu * self.sigma ** 2)) * (
                                                                 2 * x[in_range_index[:, 0], 0]) * (
-                                                                    (1 + (1 / (self.nu * self.sigma ** 2)) * (
-                                                                            (x[in_range_index[:, 0], 0]) ** 2)) ** (
-                                                                                -(self.nu + 1) / 2 - 1))
+                                                                (1 + (1 / (self.nu * self.sigma ** 2)) * (
+                                                                        (x[in_range_index[:, 0], 0]) ** 2)) ** (
+                                                                        -(self.nu + 1) / 2 - 1))
         else:
             derivatives_prob = None
         return prob, derivatives_prob
@@ -1173,4 +1174,4 @@ class MyClass(ContinuousDistributions):
         return cdf
 
 
-ts = Uniform(a=1, b=2, return_der_pdf=True,return_der_logpdf=True)
+ts = Uniform(a=1, b=2, return_der_pdf=True, return_der_logpdf=True)
