@@ -426,20 +426,24 @@ class HalfNormal(ContinuousDistributions):
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        Parallelized calculating the log (and its derivatives) of the Half Normal distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
 
         in_range_index = (x >= 0)
-        logprob = np.ones((self.C, 1)) * -np.inf
-        derivatives_logprob = np.ones((self.C, 1)) * -np.inf
-        logprob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
+        log_prob = np.ones_like(x) * -np.inf
+        log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
                 (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
-        derivatives_logprob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
-        return logprob, derivatives_logprob
+        if self.return_der_logpdf:
+            derivatives_log_prob = np.ones_like(x) * -np.inf
+            derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
+        else:
+            derivatives_log_prob = None
+        return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
         :param x: An array of the input variable (Cx1)
@@ -447,12 +451,9 @@ class HalfNormal(ContinuousDistributions):
         """
         in_range_index = (x >= 0)
         cdf = np.zeros((self.C, 1))
-        derivatives_value = np.zeros((self.C, 1))
-        z = x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2))
-        erf_value, derivatives_erf = self.Erf(x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2)))
-        derivatives_value[in_range_index[:, 0], 0] = derivatives_erf * (1 / (self.sigma * np.sqrt(2)))
+        erf_value, _ = self.Erf(x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2)))
         cdf[in_range_index[:, 0], 0] = erf_value
-        return cdf, derivatives_value
+        return cdf
 
 
 class SkewedNormal(ContinuousDistributions):
