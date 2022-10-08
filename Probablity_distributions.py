@@ -128,7 +128,7 @@ class Continuous_Distributions:
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
         :return: a line plot from matplotlib library
         """
-        x_m = np.linspace(lower_lim, upper_lim, 1000)
+        x_m = np.linspace(start=lower_lim, stop=upper_lim, num=1000)
         y_m = list()
         for i in range(len(x_m)):
             y_m.append(self.Prob(x_m[i]))
@@ -136,10 +136,9 @@ class Continuous_Distributions:
         grid(which='both')
         show()
 
-
 class Uniform(Continuous_Distributions):
     def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Uniform,self).__init__(a=a, b=b, vectorized = vectorized, C = C)
+        super(Uniform, self).__init__(a=a, b=b, vectorized=vectorized, C=C)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
@@ -407,7 +406,7 @@ class Half_Normal(Continuous_Distributions):
         return prob, derivatives_prob
 
 
-    def Log_prob(self, x: np.ndarray)->np.ndarray:
+    def Log_prob(self, x: np.ndarray)->(np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
@@ -417,7 +416,7 @@ class Half_Normal(Continuous_Distributions):
         in_range_index = (x >= 0)
         logprob = np.ones((self.C, 1)) * -np.inf
         derivatives_logprob = np.ones((self.C, 1)) * -np.inf
-        logprob[in_range_index[:, 0], 0] = 0.5 * np.log(2/np.pi) - np.log(self.sigma) - (x[in_range_index[:, 0], 0]** 2) / (2 * self.std ** 2)
+        logprob[in_range_index[:, 0], 0] = 0.5 * np.log(2/np.pi) - np.log(self.sigma) - ((x[in_range_index[:, 0], 0])**2 ) / (2 * self.sigma ** 2)
         derivatives_logprob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma**2
         return logprob, derivatives_logprob
 
@@ -439,7 +438,7 @@ class Half_Normal(Continuous_Distributions):
 
 class Skewed_Normal(Continuous_Distributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1)->None:
-        super(Skewed_Normal,self).__int__(mu = mu, alpha = alpha, sigma = sigma,  vectorized = vectorized, C = C)
+        super(Skewed_Normal, self).__int__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
 
         """
         The skewed continuous truncated gaussian distribution function
