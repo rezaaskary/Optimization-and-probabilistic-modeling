@@ -266,16 +266,6 @@ class Normal(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivatives of the log of the Normal distribution
-        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivatives of the log probability of the occurrence of an independent variable
-         Cx1
-        """
-        derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
-        return derivatives_log_prob
-
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Normal distribution
@@ -287,11 +277,11 @@ class Normal(ContinuousDistributions):
         erf_value, _ = self.Erf(z)
         return erf_value
 
-
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
                  mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(TruncatedNormal, self).__init__(lb=lb, ub=ub, sigma=sigma, variance=variance, mu=mu)
+        super(TruncatedNormal, self).__init__(lb=lb, ub=ub, mu=mu, sigma=sigma, variance=variance,
+                                              return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
 
         """
         The continuous truncated gaussian distribution function
