@@ -795,7 +795,7 @@ class Laplace(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Laplace distribution
         :param x: An array of the input variable (Cx1)
@@ -803,18 +803,18 @@ class Laplace(ContinuousDistributions):
         (Cx1, Cx1)
         """
 
-        derivatives_log_prob = np.zeros((self.C, 1))
         right_index = x >= self.mu
-        cdf = np.zeros((self.C, 1))
+        cdf = np.zeros_like(x)
         cdf[right_index[:, 0], 0] = 1 - 0.5 * np.exp((-1 / self.b) * (x[right_index[:, 0], 0] - self.mu))
         cdf[~right_index[:, 0], 0] = 0.5 * np.exp((1 / self.b) * (x[~right_index[:, 0], 0] - self.mu))
-        derivatives_cdf = None
-        return cdf, derivatives_cdf
+        return cdf
 
 
 class AsymmetricLaplace(ContinuousDistributions):
-    def __init__(self, kappa: float = None, mu: float = None, b: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
+    def __init__(self, kappa: float = None, mu: float = None, b: float = None, return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True) -> None:
+        super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, return_der_pdf=return_der_pdf,
+                                                return_der_logpdf=return_der_logpdf)
         """
         :param mu: The center of the distribution
         :param b : The rate of the change of the exponential term
