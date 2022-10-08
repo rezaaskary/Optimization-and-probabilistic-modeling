@@ -1142,6 +1142,8 @@ class HalfCauchy(ContinuousDistributions):
         pdf[index_in_range[:, 0], 0] = (2/(self.beta * np.pi)) * (1/denominator)
         if self.return_der_pdf:
             derivatives_pdf = np.zeros_like(x)
+            derivatives_pdf[index_in_range[:, 0], 0] = (-4/((self.beta**3) * np.pi)) * ((x[index_in_range[:, 0], 0]) /
+                                                                                        denominator ** 2)
         else:
             derivatives_pdf = None
 
