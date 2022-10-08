@@ -531,13 +531,12 @@ class SkewedNormal(ContinuousDistributions):
 
 class BetaPdf(ContinuousDistributions):
     def __init__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(BetaPdf, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
+        super(BetaPdf, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
+                                      return_der_logpdf=return_der_logpdf)
         """
         Initializing beta distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
         :param beta:  exponent beta parameter (beta>0)
-        :param vectorized: boolean variable used to determine vectorized calculation
-        :param C: An integer variable indicating the number of chains 
         :return: None
         """
 
@@ -546,12 +545,7 @@ class BetaPdf(ContinuousDistributions):
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
-        self.mean = self.alpha / (self.alpha + self.beta)
-        self.variance = (self.alpha * self.beta) / (((self.alpha + self.beta) ** 2) * (self.alpha + self.beta + 1))
         self.Beta = Beta
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -561,36 +555,38 @@ class BetaPdf(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Beta distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
 
-        x = np.clip(x, 0, 1)
+        x = np.clip(a=x, a_min=0, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = ((1 - x) ** (self.beta - 1))
         prob = (term1 * term2) / self.Beta(self.alpha, self.beta)
-        derivatives_prob = (1 / self.Beta(self.alpha, self.beta)) * (
-                ((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * (
-                (1 - x) ** (self.beta - 2)) * term1)
-
+        if self.return_der_pdf:
+            derivatives_prob = (1 / self.Beta(self.alpha, self.beta)) * (
+                    ((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * (
+                    (1 - x) ** (self.beta - 2)) * term1)
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Beta distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable (Cx1, Cx1)
         """
-        x = np.clip(x, 0, 1)
+        x = np.clip(a=x, a_min=0, a_max=1)
         log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
                                                                                                      self.beta))
-        derivatives_log_prob = ((self.alpha - 1) / x) - ((self.beta - 1) / (1 - x))
+        if self.return_der_logpdf:
+            derivatives_log_prob = ((self.alpha - 1) / x) - ((self.beta - 1) / (1 - x))
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
