@@ -176,19 +176,21 @@ class Uniform(ContinuousDistributions):
         """
         Parallelized calculating the log (and its derivatives) of the Uniform distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
-         (Cx1, Cx1)
+        :return: The derivatives of the log probability of the occurrence of an independent variable Cx1
         """
         in_range_index = (x > self.a) & (x < self.b)
-        log_prob = np.ones((self.C, 1)) * (-np.inf)
-        derivatives_log_prob = np.ones((self.C, 1)) * (-np.inf)
+        log_prob = -np.inf * np.ones_like(x)
         log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
-        derivatives_log_prob[in_range_index[:, 0], 0] = 0
         return log_prob
 
     def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives log of the Uniform distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivatives of the log probability of the occurrence of an independent variable Cx1
+        """
         in_range_index = (x > self.a) & (x < self.b)
-        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+        derivatives_log_prob = -np.inf * np.ones_like(x)
         derivatives_log_prob[in_range_index[:, 0], 0] = 0
         return derivatives_log_prob
 
