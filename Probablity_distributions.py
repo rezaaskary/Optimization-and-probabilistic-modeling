@@ -160,7 +160,7 @@ class Uniform(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the Uniform distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -169,8 +169,11 @@ class Uniform(ContinuousDistributions):
         in_range_index = (x > self.a) & (x < self.b)
         prob = np.zeros((self.C, 1))
         prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
+        return prob
+
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
         derivatives_prob = np.zeros((self.C, 1))
-        return prob, derivatives_prob
+        return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
@@ -241,18 +244,20 @@ class Normal(ContinuousDistributions):
     def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Normal distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probability of the occurance of an independent variable (Cx1, Cx1)
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
         derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Normal distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
+        (Cx1, Cx1)
         """
         z = (x - self.mu) / (self.sigma * np.sqrt(2))
         erf_value, derivatives_value = self.Erf(z)
@@ -271,7 +276,7 @@ class TruncatedNormal(ContinuousDistributions):
         :param mu: the center of the gaussian distribution
         :param sigma: the standard deviation of gaussian distribution
         :param variance: the variance of gaussian distribution
-        :param vectorized: the type of calculating probablity distributions
+        :param vectorized: the type of calculating probability distributions
         :param C: Number of chains
         """
 
@@ -282,23 +287,20 @@ class TruncatedNormal(ContinuousDistributions):
                 'The value of either mean or standard deviation is not specified (Truncated Normal distribution)!')
 
         self.Erf = Erf
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the ---- distribution function given distribution parameters
+        Statistics calculated for the Truncated Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        Parallelized calculating the probability of the Truncated Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
         prob = np.zeros((self.C, 1))
@@ -319,16 +321,17 @@ class TruncatedNormal(ContinuousDistributions):
 
         return prob, der_prob
 
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        Parallelized calculating the log (and its derivatives) of the Truncated Normal distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
 
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        logprob = np.ones((self.C, 1)) * -np.inf
-        derivatives_logprob = np.ones((self.C, 1)) * -np.inf
+        log_prob = np.ones((self.C, 1)) * -np.inf
+        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
         normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
@@ -336,16 +339,17 @@ class TruncatedNormal(ContinuousDistributions):
         erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
         ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
 
-        logprob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
+        log_prob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
             2 * np.pi) - 0.5 * normal_argument ** 2
-        derivatives_logprob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (x[in_range_index[:, 0], 0] - self.mu)
-        return logprob, derivatives_logprob
+        derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (x[in_range_index[:, 0], 0] - self.mu)
+        return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Truncated Normal distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
+        (Cx1, Cx1)
         """
 
         right_index = x > self.ub
