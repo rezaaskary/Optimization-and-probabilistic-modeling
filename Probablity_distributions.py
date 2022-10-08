@@ -1141,15 +1141,13 @@ class MyClass(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        return
+        pdf = np.zeros_like(x)
+        if self.return_der_pdf:
+            derivatives_pdf = np.zeros_like(x)
+        else:
+            derivatives_pdf = None
 
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivative of the probability of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The probability (and the derivative) of the occurrence of the given variable Cx1
-        """
-        return
+        return pdf, derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -1159,21 +1157,14 @@ class MyClass(ContinuousDistributions):
         """
         return
 
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivatives of the log of  ---- distribution
-        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
-        """
-        return
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        return
+        cdf = np.zeros_like(x)
+        return cdf
 
 
 ts = Uniform(a=1, b=2, C=4, vectorized=True)
