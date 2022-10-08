@@ -658,22 +658,21 @@ class Kumaraswamy(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Kumaraswamy distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         x = np.clip(x, 0, 1)
         cdf = 1 - (1 - x ** self.alpha) ** self.beta
-        derivatives_cdf = self.beta * self.alpha * (x ** (self.alpha - 1)) * (1 - x ** self.alpha) ** (self.beta - 1)
-
-        return cdf, derivatives_cdf
+        return cdf
 
 
 class Exponential(ContinuousDistributions):
     def __init__(self, Lambda: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(Exponential, self).__init__(Lambda=Lambda, vectorized=vectorized, C=C)
+        super(Exponential, self).__init__(Lambda=Lambda, return_der_pdf=return_der_pdf,
+                                          return_der_logpdf=return_der_logpdf)
         """
         Initializing Exponential distribution continuous function
         :param Lambda: the rate of the change of the exponential term (Lambda>0)
@@ -684,10 +683,6 @@ class Exponential(ContinuousDistributions):
         if self.Lambda <= 0:
             raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
 
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
-
     @property
     def statistics(self):
         """
@@ -696,24 +691,24 @@ class Exponential(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Exponential distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros((self.C, 1))
-        derivatives_prob = np.zeros((self.C, 1))
+        prob = np.zeros_like(x)
+
         in_range_index = x >= 0
         prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
-        derivatives_prob[in_range_index[:, 0], 0] = -(self.Lambda ** 2) * np.exp(
-            -self.Lambda * x[in_range_index[:, 0], 0])
-
+        if self.return_der_pdf:
+            derivatives_prob = np.zeros(x)
+            derivatives_prob[in_range_index[:, 0], 0] = -(self.Lambda ** 2) * np.exp(
+                -self.Lambda * x[in_range_index[:, 0], 0])
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
+
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Exponential distribution
