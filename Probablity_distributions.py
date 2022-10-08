@@ -497,35 +497,36 @@ class SkewedNormal(ContinuousDistributions):
         normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
         prob = 2 * erf_part * normal_part
         if self.return_der_pdf:
-            derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z) ** 2) * erf_part + (
-                    self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z) ** 2) * der_erf_part
+            derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
+                    self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
         else:
             derivatives_prob = None
         return prob, derivatives_prob
 
-    def Log_prob(self, x: float) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        Parallelized calculating the log (and its derivatives) of the Skewed Normal distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
         z = (x - self.mu) / self.sigma
         erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
         log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
-        derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
-                der_erf_value / (1 + erf_value))
+        if self.return_der_logpdf:
+            derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
+                    der_erf_value / (1 + erf_value))
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Skewed Normal distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function with respect to the input variable Cx1
         """
-        return None, None
+        return None
 
 
 class BetaPdf(ContinuousDistributions):
