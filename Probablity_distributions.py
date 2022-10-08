@@ -216,8 +216,10 @@ class Uniform(ContinuousDistributions):
 
 
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu)
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True) -> None:
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, return_der_pdf=return_der_pdf,
+                                     return_der_logpdf=return_der_logpdf)
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
@@ -243,19 +245,12 @@ class Normal(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable Cx1
         """
         prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
-        derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
-            -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        if self.return_der_pdf:
+            derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
+                -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Parallelized calculating the derivatives of the probability of the Normal distribution
-        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivative of the probability of Normal distribution Cx1
-        """
-        derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
-            -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
-        return derivatives_prob
 
     def log_prob(self, x: float) -> np.ndarray:
         """
@@ -265,7 +260,11 @@ class Normal(ContinuousDistributions):
          (Cx1, Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
-        return log_prob
+        if self.return_der_logpdf:
+            derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
+        else:
+            derivatives_log_prob = None
+        return log_prob, derivatives_log_prob
 
     def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
         """
