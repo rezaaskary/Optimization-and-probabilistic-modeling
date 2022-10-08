@@ -445,7 +445,7 @@ class HalfNormal(ContinuousDistributions):
 class SkewedNormal(ContinuousDistributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
                 vectorized: bool = False, C: int = 1) -> None:
-        super(SkewedNormal, self).__int__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
+        super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
 
         """
         The skewed continuous truncated gaussian distribution function
@@ -511,8 +511,8 @@ class SkewedNormal(ContinuousDistributions):
 
 
 class Beta(ContinuousDistributions):
-    def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
-        super(Beta, self).__int__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
+    def __init__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
+        super(Beta, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
         Initializing beta distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -582,7 +582,7 @@ class Beta(ContinuousDistributions):
 
 class Kumaraswamy(ContinuousDistributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
-        super(Kumaraswamy, self).__int__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
+        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -652,8 +652,8 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 class Exponential(ContinuousDistributions):
-    def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
-        super(Exponential, self).__int__(Lambda=Lambda, vectorized=vectorized, C=C)
+    def __init__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
+        super(Exponential, self).__init__(Lambda=Lambda, vectorized=vectorized, C=C)
         """
         Initializing Exponential distribution continuous function
         :param Lambda: the rate of the change of the exponential term (Lambda>0)
@@ -720,8 +720,8 @@ class Exponential(ContinuousDistributions):
 
 
 class Laplace(ContinuousDistributions):
-    def __int__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
-        super(Laplace, self).__int__(mu=mu, b=b, vectorized=vectorized, C=C)
+    def __init__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
+        super(Laplace, self).__init__(mu=mu, b=b, vectorized=vectorized, C=C)
         """
         Initializing Laplace distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
