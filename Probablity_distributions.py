@@ -3,7 +3,7 @@ from matplotlib.pyplot import plot, show, grid
 from mathmatics import Beta, Gamma, Erf
 
 
-class Continuous_Distributions:
+class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
                  a: float = None, b: float = None, vectorized: bool = True,
@@ -138,7 +138,7 @@ class Continuous_Distributions:
         show()
 
 
-class Uniform(Continuous_Distributions):
+class Uniform(ContinuousDistributions):
     def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
         super(Uniform, self).__init__(a=a, b=b, vectorized=vectorized, C=C)
         """
@@ -206,7 +206,7 @@ class Uniform(Continuous_Distributions):
 
 
 # =========================================================================================================
-class Normal(Continuous_Distributions):
+class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False,
                  C: int = 1) -> None:
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, vectorized=vectorized, C=C)
@@ -265,11 +265,11 @@ class Normal(Continuous_Distributions):
         return erf_value, derivatives_value / (self.sigma * np.sqrt(2))
 
 
-class Truncated_Normal(Continuous_Distributions):
+class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
                  mu: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Truncated_Normal, self).__init__(lb=lb, ub=ub, sigma=sigma, variance=variance, mu=mu,
-                                               vectorized=vectorized, C=C)
+        super(TruncatedNormal, self).__init__(lb=lb, ub=ub, sigma=sigma, variance=variance, mu=mu, vectorized=vectorized
+                                              , C=C)
         """
         The continuous truncated gaussian distribution function
         :param lb: the lower bound of the uniform distribution
@@ -371,14 +371,14 @@ class Truncated_Normal(Continuous_Distributions):
         return cdf, derivatives_value
 
 
-class Half_Normal(Continuous_Distributions):
+class HalfNormal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Half_Normal, self).__init__(sigma=sigma, variance=variance, vectorized=vectorized, C=C)
+        super(HalfNormal, self).__init__(sigma=sigma, variance=variance, vectorized=vectorized, C=C)
         """
         The continuous truncated gaussian distribution function
         :param sigma: the standard deviation of gaussian distribution
         :param variance: the variance of gaussian distribution
-        :param vectorized: the type of calculating probablity distributions
+        :param vectorized: the type of calculating probability distributions
         :param C: Number of chains
         """
 
@@ -442,10 +442,10 @@ class Half_Normal(Continuous_Distributions):
         return cdf, derivatives_value
 
 
-class Skewed_Normal(Continuous_Distributions):
+class SkewedNormal(ContinuousDistributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
                 vectorized: bool = False, C: int = 1) -> None:
-        super(Skewed_Normal, self).__int__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
+        super(SkewedNormal, self).__int__(mu=mu, alpha=alpha, sigma=sigma, vectorized=vectorized, C=C)
 
         """
         The skewed continuous truncated gaussian distribution function
@@ -453,7 +453,7 @@ class Skewed_Normal(Continuous_Distributions):
         :param mu: the mean of the gaussian distribution 
         :param sigma: the standard deviation of gaussian distribution
         :param variance: the variance of gaussian distribution
-        :param vectorized: the type of calculating probablity distributions
+        :param vectorized: the type of calculating probability distributions
         :param C: Number of chains
         """
 
@@ -510,7 +510,7 @@ class Skewed_Normal(Continuous_Distributions):
         return None, None
 
 
-class Beta(Continuous_Distributions):
+class Beta(ContinuousDistributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
         super(Beta, self).__int__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
@@ -580,7 +580,7 @@ class Beta(Continuous_Distributions):
         return None, None
 
 
-class Kumaraswamy(Continuous_Distributions):
+class Kumaraswamy(ContinuousDistributions):
     def __int__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
         super(Kumaraswamy, self).__int__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
@@ -651,9 +651,9 @@ class Kumaraswamy(Continuous_Distributions):
         return cdf, derivatives_cdf
 
 
-class Exponential(Continuous_Distributions):
+class Exponential(ContinuousDistributions):
     def __int__(self, Lambda: None, vectorized: bool = False, C: int = 1) -> None:
-        super().__int__(Lambda=Lambda, vectorized=vectorized, C=C)
+        super(Exponential, self).__int__(Lambda=Lambda, vectorized=vectorized, C=C)
         """
         Initializing Exponential distribution continuous function
         :param Lambda: the rate of the change of the exponential term (Lambda>0)
@@ -719,7 +719,7 @@ class Exponential(Continuous_Distributions):
         return cdf, der_cdf
 
 
-class Laplace(Continuous_Distributions):
+class Laplace(ContinuousDistributions):
     def __int__(self, mu: None, b: None, vectorized: bool = False, C: int = 1) -> None:
         super(Laplace, self).__int__(mu=mu, b=b, vectorized=vectorized, C=C)
         """
@@ -795,10 +795,10 @@ class Laplace(Continuous_Distributions):
         return cdf, derivatives_cdf
 
 
-class AsymmetricLaplace(Continuous_Distributions):
+class AsymmetricLaplace(ContinuousDistributions):
     def __int__(self, kappa: float = None, mu: float = None, b: float = None, vectorized: bool = False,
                 C: int = 1) -> None:
-        super(myclass, self).__int__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
+        super(AsymmetricLaplace, self).__int__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
         """
         :param mu: The center of the distribution
         :param b : The rate of the change of the exponential term
@@ -887,7 +887,7 @@ class AsymmetricLaplace(Continuous_Distributions):
         return cdf, derivatives_cdf
 
 
-class StudentT(Continuous_Distributions):
+class StudentT(ContinuousDistributions):
     def __int__(self, nu: float = None, mu: float = None, Lambda: float = None, vectorized: bool = False,
                 C: int = 1) -> None:
         super(StudentT, self).__int__(nu=nu, mu=mu, Lambda=Lambda, vectorized=vectorized, C=C)
@@ -921,9 +921,9 @@ class StudentT(Continuous_Distributions):
 
     def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the Student_t distribution
+        Parallelized calculating the probability of the Student_t distribution
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) *\
                       np.sqrt(self.Lambda / (np.pi * self.nu))
@@ -955,7 +955,7 @@ class StudentT(Continuous_Distributions):
         return None, None
 
 
-class HalfStudentT(Continuous_Distributions):
+class HalfStudentT(ContinuousDistributions):
     def __int__(self, nu: float = None, sigma: float = None, vectorized: bool = False, C: int = 1) -> None:
         super(HalfStudentT, self).__int__(nu=nu, sigma=sigma, vectorized=vectorized, C=C)
         """
@@ -1029,7 +1029,7 @@ class HalfStudentT(Continuous_Distributions):
         return None, None
 
 
-class Cauchy(Continuous_Distributions):
+class Cauchy(ContinuousDistributions):
     def __int__(self, gamma: float = None, mu: float = None, vectorized: bool = False, C: int = 1) -> None:
         super(Cauchy, self).__int__(gamma=gamma, mu=mu, vectorized=vectorized, C=C)
         """
@@ -1091,9 +1091,9 @@ class Cauchy(Continuous_Distributions):
 ########################################################################################################################
 #######################################################################################################################
 
-class myclass(Continuous_Distributions):
+class MyClass(ContinuousDistributions):
     def __int__(self, vectorized: bool = False, C: int = 1) -> None:
-        super(myclass, self).__int__(vectorized=vectorized, C=C)
+        super(MyClass, self).__int__(vectorized=vectorized, C=C)
         """
         :param vectorized: 
         :param C: 
