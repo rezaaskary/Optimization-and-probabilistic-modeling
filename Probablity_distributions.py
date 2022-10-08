@@ -819,8 +819,6 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param mu: The center of the distribution
         :param b : The rate of the change of the exponential term
         :param kappa: Symmetric parameter
-        :param vectorized: Boolean variable used to determine vectorized calculation 
-        :param C: An integer variable indicating the number of chains 
         """
 
         if self.kappa <= 0:
@@ -828,10 +826,6 @@ class AsymmetricLaplace(ContinuousDistributions):
         if self.b <= 0:
             raise Exception(
                 'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
-
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -841,14 +835,13 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Asymmetric Laplace distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros((self.C, 1))
-        derivatives_prob = np.zeros((self.C, 1))
+        prob = np.zeros_like(x)
         in_range_index = x >= self.mu
 
         coefficient = self.b / (self.kappa + 1 / self.kappa)
@@ -856,17 +849,17 @@ class AsymmetricLaplace(ContinuousDistributions):
                                                                                      self.mu))
         prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
                                                                                        self.mu))
-
-        derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
-            -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
-        derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
-            -self.b * self.kappa * (x[~in_range_index[:, 0], 0] - self.mu))
+        if self.return_der_pdf:
+            derivatives_prob = np.zeros_like(x)
+            derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
+                -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
+            derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
+                -self.b * self.kappa * (x[~in_range_index[:, 0], 0] - self.mu))
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Asymmetric Laplace distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
