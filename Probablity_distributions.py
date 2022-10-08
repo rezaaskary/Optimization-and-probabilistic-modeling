@@ -1146,21 +1146,25 @@ class HalfCauchy(ContinuousDistributions):
                                                                                         denominator ** 2)
         else:
             derivatives_pdf = None
-
         return pdf, derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log of the ---- distribution
+        Parallelized calculating the log of the Half Cauchy distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
         log_pdf = np.ones_like(x) * -np.inf
+        index_in_range = x >= 0
+        denominator = (1+((x[index_in_range[:, 0], 0])/self.beta) ** 2)
+        log_pdf[index_in_range[:, 0], 0] = np.log(2/(self.beta * np.pi)) - np.log(denominator)
+
         if self.return_der_logpdf:
             derivatives_log_pdf = np.ones_like(x) * -np.inf
+            derivatives_log_pdf[index_in_range[:, 0], 0] = (-2/self.beta ** 2) * (x[index_in_range[:, 0], 0] /
+                                                                                  denominator)
         else:
             derivatives_log_pdf = None
-
         return log_pdf, derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
