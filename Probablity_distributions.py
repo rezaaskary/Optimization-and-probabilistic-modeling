@@ -1098,10 +1098,13 @@ class Cauchy(ContinuousDistributions):
         """
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
         log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
-        derivatives_log_prob = ((-2 / self.gamma ** 2) * (x - self.mu)) / denominator
+        if self.return_der_logpdf:
+            derivatives_log_prob = ((-2 / self.gamma ** 2) * (x - self.mu)) / denominator
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Cauchy  distribution
         :param x: An array of the input variable (Cx1)
