@@ -1,13 +1,13 @@
 import numpy as np
 from matplotlib.pyplot import plot, show, grid
 from mathmatics import Beta, Gamma, Erf
-#=========================================================================================================
+
 class Continuous_Distributions:
-    def __init__(self, variance: float = None, sigma: float=None, mu: float = None,\
-                lb: float = None, ub: float = None, alpha: float = None,\
-                 a:float=None, b:float=None, vectorized: bool = True,\
-                 C: int = 1, beta: float = None, Lambda:float = None,\
-                 kappa:float = None, nu:float = None, gamma:float = None)->None:
+    def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
+                 lb: float = None, ub: float = None, alpha: float = None,
+                 a: float = None, b: float = None, vectorized: bool = True,
+                 C: int = 1, beta: float = None, Lambda: float = None,
+                 kappa: float = None, nu: float = None, gamma: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -79,7 +79,6 @@ class Continuous_Distributions:
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-
         if isinstance(Lambda, (float, int)):
             self.Lambda = Lambda
         elif Lambda is None:
@@ -100,7 +99,6 @@ class Continuous_Distributions:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
-
 
         if isinstance(kappa, (float, int)):
             self.kappa = kappa
@@ -123,26 +121,25 @@ class Continuous_Distributions:
         else:
             raise Exception('The value of nu is not specified correctly!')
 
-
-    def Visualize(self, lower_lim: float = -10, upper_lim: float = -10):
+    def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
         Visualizing the probablity distribution
         :param lower_lim: the lower limit used in ploting the probablity distribution
         :param upper_lim: the uppwer limit used in ploting the probablity distribution
         :return: a line plot from matplotlib library
         """
-        X = np.linspace(lower_lim, upper_lim, 1000)
-        Y = list()
-        for i in range(len(X)):
-            Y.append(self.Prob(X[i]))
-        plot(list(X.ravel()), Y)
-        grid(which = 'both')
+        x_m = np.linspace(lower_lim, upper_lim, 1000)
+        y_m = list()
+        for i in range(len(x_m)):
+            y_m.append(self.Prob(x_m[i]))
+        plot(list(x_m.ravel()), y_m)
+        grid(which='both')
         show()
 
 
 class Uniform(Continuous_Distributions):
     def __init__(self, a: float = None, b: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(Uniform,self).__init__(a = a, b = b, vectorized = vectorized, C = C)
+        super(Uniform,self).__init__(a=a, b=b, vectorized = vectorized, C = C)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
