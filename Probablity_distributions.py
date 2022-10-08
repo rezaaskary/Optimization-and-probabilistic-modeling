@@ -187,7 +187,7 @@ class Uniform(ContinuousDistributions):
         """
         Parallelized calculating the derivatives log of the Uniform distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The derivatives of the log probability of the occurrence of an independent variable Cx1
+        :return: The derivatives of the log of Uniform distribution Cx1
         """
         in_range_index = (x > self.a) & (x < self.b)
         derivatives_log_prob = -np.inf * np.ones_like(x)
@@ -198,13 +198,12 @@ class Uniform(ContinuousDistributions):
         """
         Parallelized calculating the cumulative distribution function for Uniform distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
-        (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         left_index = x <= self.a
         right_index = x >= self.a
         in_range_index = (x > self.a) & (x < self.b)
-        cdf = np.ones((self.C, 1))
+        cdf = np.ones_like(x)
         cdf[left_index[:, 0], 0] = 0
         cdf[right_index[:, 0], 0] = 1
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a) / (self.b - self.a)
@@ -212,15 +211,12 @@ class Uniform(ContinuousDistributions):
 
 
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False,
-                 C: int = 1) -> None:
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, vectorized=vectorized, C=C)
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None) -> None:
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu)
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
         :param std: the standard deviation of gaussian distribution
-        :param vectorized: the type of calculating probablity distributions
-        :param C: Number of chains
         """
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
@@ -237,19 +233,26 @@ class Normal(ContinuousDistributions):
 
     def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        Parallelized calculating the probability of the Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable Cx1
         """
         prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
             -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         return prob, derivatives_prob
+
     def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the derivatives of the probability of the Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability of Normal distribution Cx1
+        """
+        derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
+            -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        return derivatives_prob
+
+    def log_prob(self, x: float) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -257,9 +260,18 @@ class Normal(ContinuousDistributions):
          (Cx1, Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
-        derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
-        return log_prob, derivatives_log_prob
+        return log_prob
 
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the log of the Normal distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         Cx1
+        """
+        log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
+        return
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for Normal distribution
