@@ -342,8 +342,7 @@ class TruncatedNormal(ContinuousDistributions):
         """
 
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        log_prob = np.ones((self.C, 1)) * -np.inf
-        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+        log_prob = np.ones_like(x) * -np.inf
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
         normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
@@ -353,7 +352,12 @@ class TruncatedNormal(ContinuousDistributions):
 
         log_prob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
             2 * np.pi) - 0.5 * normal_argument ** 2
-        derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (x[in_range_index[:, 0], 0] - self.mu)
+
+        if self.return_der_logpdf:
+            derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+            derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (x[in_range_index[:, 0], 0] - self.mu)
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
