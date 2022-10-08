@@ -1115,6 +1115,62 @@ class Cauchy(ContinuousDistributions):
         return
 
 
+class HalfCauchy(ContinuousDistributions):
+    def __init__(self, beta: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+        super(HalfCauchy, self).__init__(beta=beta, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+
+        if self.beta <= 0:
+            raise Exception('The value of beta should be positive (Half Couchy)!')
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the HalfCauchy distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        """
+        pdf = np.zeros_like(x)
+        index_in_range = x >= 0
+        denominator = (1+((x[index_in_range[:, 0], 0])/self.beta) ** 2)
+        pdf[index_in_range[:, 0], 0] = (2/(self.beta * np.pi)) * (1/denominator)
+        if self.return_der_pdf:
+            derivatives_pdf = np.zeros_like(x)
+        else:
+            derivatives_pdf = None
+
+        return pdf, derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        """
+        log_pdf = np.ones_like(x) * -np.inf
+        if self.return_der_logpdf:
+            derivatives_log_pdf = np.ones_like(x) * -np.inf
+        else:
+            derivatives_log_pdf = None
+
+        return log_pdf, derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
+        """
+        cdf = np.zeros_like(x)
+        return cdf
+
+
 #######################################################################################################################
 ########################################################################################################################
 #######################################################################################################################
