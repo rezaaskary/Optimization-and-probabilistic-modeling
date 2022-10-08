@@ -7,7 +7,7 @@ class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
                  a: float = None, b: float = None, vectorized: bool = True,
-                 C: int = 1, beta: float = None, Lambda: float = None,
+                 chains: int = 1, beta: float = None, Lambda: float = None,
                  kappa: float = None, nu: float = None, gamma: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
@@ -52,9 +52,9 @@ class ContinuousDistributions:
         else:
             raise Exception('The type of calculation is not specified correctly!')
 
-        if isinstance(C, int):
-            self.C = C
-        elif C is None:
+        if isinstance(chains, int):
+            self.C = chains
+        elif chains is None:
             self.C = 1
         else:
             raise Exception(' The number of chains is not specified correctly!')
@@ -1133,9 +1133,9 @@ class MyClass(ContinuousDistributions):
     def __init__(self, vectorized: bool = False, C: int = 1) -> None:
         super(MyClass, self).__init__(vectorized=vectorized, C=C)
         """
-        :param vectorized: 
-        :param C: 
-        :return: 
+        :param vectorized: A boolean variable used to activate vectorized calculation 
+        :param C: The number of chains used for simulation
+        :return: None
         """
 
     @property
