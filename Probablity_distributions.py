@@ -132,7 +132,7 @@ class ContinuousDistributions:
         x_m = np.linspace(start=lower_lim, stop=upper_lim, num=1000)
         y_m = list()
         for i in range(len(x_m)):
-            y_m.append(self.Prob(x_m[i]))
+            y_m.append(self.pdf(x_m[i]))
         plot(list(x_m.ravel()), y_m)
         grid(which='both')
         show()
@@ -152,23 +152,19 @@ class Uniform(ContinuousDistributions):
         if self.a >= self.b:
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
-
     @property
     def statistics(self):
         """
-        Statistics calculated for the ---- distribution function given distribution parameters
+        Statistics calculated for the Uniform distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        Parallelized calculating the probability of the Uniform distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         in_range_index = (x > self.a) & (x < self.b)
         prob = np.zeros((self.C, 1))
@@ -176,24 +172,25 @@ class Uniform(ContinuousDistributions):
         derivatives_prob = np.zeros((self.C, 1))
         return prob, derivatives_prob
 
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        Parallelized calculating the log (and its derivatives) of the Uniform distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable (Cx1, Cx1)
         """
         in_range_index = (x > self.a) & (x < self.b)
-        logprob = np.ones((self.C, 1)) * (-np.inf)
-        derivatives_logprob = logprob.copy()
-        logprob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
-        derivatives_logprob[in_range_index[:, 0], 0] = 0
-        return logprob, derivatives_logprob
+        log_prob = np.ones((self.C, 1)) * (-np.inf)
+        derivatives_log_prob = np.ones((self.C, 1)) * (-np.inf)
+        log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
+        derivatives_log_prob[in_range_index[:, 0], 0] = 0
+        return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function for Uniform distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
+        (Cx1, Cx1)
         """
         left_index = x <= self.a
         right_index = x >= self.a
@@ -221,9 +218,6 @@ class Normal(ContinuousDistributions):
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
         self.Erf = Erf
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -233,7 +227,7 @@ class Normal(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probablity of the ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
@@ -244,11 +238,11 @@ class Normal(ContinuousDistributions):
             -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         return prob, derivatives_prob
 
-    def Log_prob(self, x: float) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
+        Parallelized calculating the log (and its derivatives) of the Normal distribution
         :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        :return: The log probablity and derivatives of the log probability of the occurance of an independent variable (Cx1, Cx1)
         """
         log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
         derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
@@ -796,9 +790,9 @@ class Laplace(ContinuousDistributions):
 
 
 class AsymmetricLaplace(ContinuousDistributions):
-    def __int__(self, kappa: float = None, mu: float = None, b: float = None, vectorized: bool = False,
+    def __init__(self, kappa: float = None, mu: float = None, b: float = None, vectorized: bool = False,
                 C: int = 1) -> None:
-        super(AsymmetricLaplace, self).__int__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
+        super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, vectorized=vectorized, C=C)
         """
         :param mu: The center of the distribution
         :param b : The rate of the change of the exponential term
@@ -888,9 +882,9 @@ class AsymmetricLaplace(ContinuousDistributions):
 
 
 class StudentT(ContinuousDistributions):
-    def __int__(self, nu: float = None, mu: float = None, Lambda: float = None, vectorized: bool = False,
+    def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, vectorized: bool = False,
                 C: int = 1) -> None:
-        super(StudentT, self).__int__(nu=nu, mu=mu, Lambda=Lambda, vectorized=vectorized, C=C)
+        super(StudentT, self).__init__(nu=nu, mu=mu, Lambda=Lambda, vectorized=vectorized, C=C)
         """
         :param nu: 
         :param mu: 
@@ -956,8 +950,8 @@ class StudentT(ContinuousDistributions):
 
 
 class HalfStudentT(ContinuousDistributions):
-    def __int__(self, nu: float = None, sigma: float = None, vectorized: bool = False, C: int = 1) -> None:
-        super(HalfStudentT, self).__int__(nu=nu, sigma=sigma, vectorized=vectorized, C=C)
+    def __init__(self, nu: float = None, sigma: float = None, vectorized: bool = False, C: int = 1) -> None:
+        super(HalfStudentT, self).__init__(nu=nu, sigma=sigma, vectorized=vectorized, C=C)
         """
         
         :param nu: 
@@ -1092,16 +1086,13 @@ class Cauchy(ContinuousDistributions):
 #######################################################################################################################
 
 class MyClass(ContinuousDistributions):
-    def __int__(self, vectorized: bool = False, C: int = 1) -> None:
-        super(MyClass, self).__int__(vectorized=vectorized, C=C)
+    def __init__(self, vectorized: bool = False, C: int = 1) -> None:
+        super(MyClass, self).__init__(vectorized=vectorized, C=C)
         """
         :param vectorized: 
         :param C: 
         :return: 
         """
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -1111,27 +1102,29 @@ class MyClass(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the probablity of the ----- distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The probablity (and the derivative) of the occurance of the given variable (Cx1, Cx1)
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         return
 
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
         return
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its detivatives) with respect to the input variable (Cx1, Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable
+        (Cx1, Cx1)
         """
         return
 
