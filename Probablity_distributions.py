@@ -867,8 +867,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         (Cx1, Cx1)
         """
 
-        log_prob = np.zeros((self.C, 1))
-        derivatives_log_prob = np.zeros((self.C, 1))
+        log_prob = np.zeros_like(x)
         in_range_index = x >= self.mu
         coef = self.b / (self.kappa + 1 / self.kappa)
 
@@ -877,8 +876,12 @@ class AsymmetricLaplace(ContinuousDistributions):
         log_prob[~in_range_index[:, 0], 0] = np.log(coef) + (
                 (self.b / self.kappa) * (x[~in_range_index[:, 0], 0] - self.mu))
 
-        derivatives_log_prob[in_range_index[:, 0], 0] = -self.b * self.kappa
-        derivatives_log_prob[~in_range_index[:, 0], 0] = (self.b / self.kappa)
+        if self.return_der_logpdf:
+            derivatives_log_prob = np.zeros_like(x)
+            derivatives_log_prob[in_range_index[:, 0], 0] = -self.b * self.kappa
+            derivatives_log_prob[~in_range_index[:, 0], 0] = (self.b / self.kappa)
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
