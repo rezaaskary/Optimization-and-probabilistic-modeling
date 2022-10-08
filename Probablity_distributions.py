@@ -1155,7 +1155,13 @@ class MyClass(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        return
+        log_pdf = np.ones_like(x) * -np.inf
+        if self.return_der_logpdf:
+            derivatives_log_pdf = np.ones_like(x) * -np.inf
+        else:
+            derivatives_log_pdf = None
+
+        return log_pdf, derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
