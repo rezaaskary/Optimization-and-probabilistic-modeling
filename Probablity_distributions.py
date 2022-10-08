@@ -607,8 +607,6 @@ class Kumaraswamy(ContinuousDistributions):
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
         :param beta:  exponent beta parameter (beta>0)
-        :param vectorized: boolean variable used to determine vectorized calculation
-        :param C: An integer variable indicating the number of chains 
         :return: None
         """
 
@@ -616,10 +614,6 @@ class Kumaraswamy(ContinuousDistributions):
             raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
-
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -629,36 +623,39 @@ class Kumaraswamy(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Kumaraswamy distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        x = np.clip(x, 0, 1)
+        x = np.clip(a=x, a_min=0, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = (1 - x ** self.alpha)
         prob = self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
-        derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 +\
-                           self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (x ** (self.alpha - 1)) *\
-                           ((1 - x ** self.alpha) ** (self.beta - 2))
+        if self.return_der_pdf:
+            derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 +\
+                               self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (x ** (self.alpha - 1)) *\
+                               ((1 - x ** self.alpha) ** (self.beta - 2))
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def Log_prob(self, x: float) -> float:
+
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Parallelized calculating the log (and its derivatives) of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        Parallelized calculating the log (and its derivatives) of the Kumaraswamy distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
         """
-        np.clip()
         x = np.clip(a=x, a_min=0, a_max=1)
         log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
             (1 - x ** self.alpha))
-        derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x ** (self.alpha - 1))) / (
-                1 - x ** self.alpha)
+        if self.return_der_logpdf:
+            derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x ** (self.alpha - 1))) / (
+                    1 - x ** self.alpha)
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
