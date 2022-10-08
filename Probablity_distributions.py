@@ -946,13 +946,15 @@ class StudentT(ContinuousDistributions):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability and derivatives of the log probability of the occurance of an independent variable (Cx1, Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable (Cx1, Cx1)
         """
         coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
         log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
-        derivatives_log_prob = (2 * (self.Lambda / self.nu) * (x - self.mu)) / (
-                1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
-
+        if self.return_der_logpdf:
+            derivatives_log_prob = (2 * (self.Lambda / self.nu) * (x - self.mu)) / (
+                    1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
+        else:
+            derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
