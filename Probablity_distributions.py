@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib.pyplot import plot, show, grid
 from mathmatics import Beta, Gamma, Erf
 
-
 class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
@@ -884,7 +883,7 @@ class AsymmetricLaplace(ContinuousDistributions):
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
 
-    def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Asymmetric Laplace distribution
         :param x: An array of the input variable (Cx1)
@@ -903,14 +902,14 @@ class AsymmetricLaplace(ContinuousDistributions):
 
 
 class StudentT(ContinuousDistributions):
-    def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(StudentT, self).__init__(nu=nu, mu=mu, Lambda=Lambda, vectorized=vectorized, C=C)
+    def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True) -> None:
+        super(StudentT, self).__init__(nu=nu, mu=mu, Lambda=Lambda, return_der_pdf=return_der_pdf,
+                                       return_der_logpdf=return_der_logpdf)
         """
         :param nu: 
         :param mu: 
         :param Lambda: 
-        :param vectorized: 
-        :param C: 
         :return: 
         """
         if self.nu <= 0:
@@ -921,9 +920,6 @@ class StudentT(ContinuousDistributions):
             raise Exception('The value of lambda should be positive (Student-t distribution)!')
 
         self.Gamma = Gamma
-        self.pdf = self.Prob
-        self.logpdf = self.Log_prob
-        self.cdf = self.CDF
 
     @property
     def statistics(self):
@@ -933,10 +929,10 @@ class StudentT(ContinuousDistributions):
         """
         return None
 
-    def Prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the probability of the Student_t distribution
-        :param x: An numpy array values determining the variable we are calculating its probablity distribution (Cx1)
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) *\
@@ -945,15 +941,12 @@ class StudentT(ContinuousDistributions):
         derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
                 1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
         return prob, derivatives_prob
-    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        return
-    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
-        return
-    def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
-        :param x: An integer array determining the variable we are calculating its probablity distribution (Cx1)
-        :return: The log probablity and derivatives of the log probablity of the occurance of an independent variable (Cx1, Cx1)
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurance of an independent variable (Cx1, Cx1)
         """
         coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
         log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
