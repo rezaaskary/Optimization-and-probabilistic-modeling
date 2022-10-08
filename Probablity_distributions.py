@@ -7,7 +7,7 @@ class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
                  a: float = None, b: float = None, vectorized: bool = True,
-                 chains: int = 1, beta: float = None, Lambda: float = None,
+                 beta: float = None, Lambda: float = None,
                  kappa: float = None, nu: float = None, gamma: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
@@ -51,13 +51,6 @@ class ContinuousDistributions:
             self.vectorized = False
         else:
             raise Exception('The type of calculation is not specified correctly!')
-
-        if isinstance(chains, int):
-            self.chains = chains
-        elif chains is None:
-            self.chains = 1
-        else:
-            raise Exception('The number of chains is not specified correctly!')
 
         if isinstance(mu, (float, int)):
             self.mu = mu
@@ -139,14 +132,12 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, a: float = None, b: float = None, vectorized: bool = False, chains: int = 1) -> None:
-        super(Uniform, self).__init__(a=a, b=b, vectorized=vectorized, chains=chains)
+    def __init__(self, a: float = None, b: float = None) -> None:
+        super(Uniform, self).__init__(a=a, b=b)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
         :param ub: the upper bound of the uniform distribution
-        :param vectorized: the type of calculating probability distributions
-        :param chains: Number of chains
         """
 
         if self.a >= self.b:
@@ -166,13 +157,19 @@ class Uniform(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
+
         in_range_index = (x > self.a) & (x < self.b)
-        prob = np.zeros((self.C, 1))
+        prob = np.zeros_like(x)
         prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
         return prob
 
     def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
-        derivatives_prob = np.zeros((self.C, 1))
+        """
+        Parallelized calculating the derivatives of the Uniform distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the occurrence of the given variable Cx1
+        """
+        derivatives_prob = np.zeros_like(x)
         return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> np.ndarray:
