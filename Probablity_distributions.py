@@ -175,7 +175,7 @@ class Uniform(ContinuousDistributions):
         derivatives_prob = np.zeros((self.C, 1))
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Uniform distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -187,7 +187,13 @@ class Uniform(ContinuousDistributions):
         derivatives_log_prob = np.ones((self.C, 1)) * (-np.inf)
         log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
         derivatives_log_prob[in_range_index[:, 0], 0] = 0
-        return log_prob, derivatives_log_prob
+        return log_prob
+
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        in_range_index = (x > self.a) & (x < self.b)
+        derivatives_log_prob = np.ones((self.C, 1)) * -np.inf
+        derivatives_log_prob[in_range_index[:, 0], 0] = 0
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -206,7 +212,6 @@ class Uniform(ContinuousDistributions):
         return cdf
 
 
-# =========================================================================================================
 class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, vectorized: bool = False,
                  C: int = 1) -> None:
@@ -241,7 +246,10 @@ class Normal(ContinuousDistributions):
         derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
             -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Normal distribution
@@ -321,7 +329,10 @@ class TruncatedNormal(ContinuousDistributions):
                 -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
 
         return prob, der_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Truncated Normal distribution
@@ -409,7 +420,10 @@ class HalfNormal(ContinuousDistributions):
             x[in_range_index[:, 0], 0]) * np.exp(-((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
 
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the ---- distribution
@@ -499,7 +513,10 @@ class SkewedNormal(ContinuousDistributions):
         derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
                 der_erf_value / (1 + erf_value))
         return log_prob, derivatives_log_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def CDF(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
@@ -509,9 +526,9 @@ class SkewedNormal(ContinuousDistributions):
         return None, None
 
 
-class Beta(ContinuousDistributions):
+class BetaPdf(ContinuousDistributions):
     def __init__(self, alpha: None, beta: None, vectorized: bool = False, C: int = 1) -> None:
-        super(Beta, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
+        super(BetaPdf, self).__init__(alpha=alpha, beta=beta, vectorized=vectorized, C=C)
         """
         Initializing beta distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -557,7 +574,10 @@ class Beta(ContinuousDistributions):
                 (1 - x) ** (self.beta - 2)) * term1)
 
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Beta distribution
@@ -622,7 +642,10 @@ class Kumaraswamy(ContinuousDistributions):
                            self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (x ** (self.alpha - 1)) *\
                            ((1 - x ** self.alpha) ** (self.beta - 2))
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: float) -> float:
         """
         Parallelized calculating the log (and its derivatives) of the ---- distribution
@@ -689,7 +712,10 @@ class Exponential(ContinuousDistributions):
             -self.Lambda * x[in_range_index[:, 0], 0])
 
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Exponential distribution
@@ -758,9 +784,11 @@ class Laplace(ContinuousDistributions):
         derivatives_prob[~right_index[:, 0], 0] = (1 / (2 * self.b ** 2)) * np.exp(
             (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu))
         prob = (1 / (2 * self.b)) * np.exp((-1 / self.b) * np.abs(x - self.mu))
-
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Laplace distribution
@@ -845,7 +873,10 @@ class AsymmetricLaplace(ContinuousDistributions):
         derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
             -self.b * self.kappa * (x[~in_range_index[:, 0], 0] - self.mu))
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Asymmetric Laplace distribution
@@ -930,7 +961,10 @@ class StudentT(ContinuousDistributions):
         derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
                 1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
@@ -996,7 +1030,10 @@ class HalfStudentT(ContinuousDistributions):
                 2 * x[in_range_index[:, 0], 0]) * ((1 + (1 / (self.nu * self.sigma ** 2)) * (
                 (x[in_range_index[:, 0], 0]) ** 2)) ** (-(self.nu + 1) / 2 - 1))
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the HalfStudentT distribution
@@ -1061,9 +1098,11 @@ class Cauchy(ContinuousDistributions):
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
         prob = (1 / (np.pi * self.gamma)) * (1 / denominator)
         derivatives_prob = (-2 / (np.pi * self.gamma ** 3)) * ((x - self.mu) / denominator ** 2)
-
         return prob, derivatives_prob
-
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        return
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def Log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
@@ -1114,8 +1153,15 @@ class MyClass(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         return
+    def d_dx_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivative of the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable Cx1
+        """
+        return
 
-    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -1123,7 +1169,8 @@ class MyClass(ContinuousDistributions):
          (Cx1, Cx1)
         """
         return
-
+    def d_dx_log_prob(self, x: np.ndarray) -> np.ndarray:
+        return
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
