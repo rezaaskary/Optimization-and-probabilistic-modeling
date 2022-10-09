@@ -206,10 +206,14 @@ class Uniform(ContinuousDistributions):
         """
 
         in_range_index = (x > self.a) & (x < self.b)
-        prob = np.zeros((len(x), 1))
-        prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
+        else:
+            prob = None
+
         if self.return_der_pdf:
-            derivatives_prob = np.zeros_like(x)
+            derivatives_prob = np.zeros((len(x), 1))
         else:
             derivatives_prob = None
         return prob, derivatives_prob
@@ -221,11 +225,14 @@ class Uniform(ContinuousDistributions):
         :return: The derivatives of the log probability of the occurrence of an independent variable Cx1
         """
         in_range_index = (x > self.a) & (x < self.b)
-        log_prob = -np.inf * np.ones_like(x)
-        log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
+        if self.return_log_pdf:
+            log_prob = -np.inf * np.ones((len(x), 1))
+            log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
+        else:
+            log_prob = None
 
         if self.return_der_logpdf:
-            derivatives_log_prob = -np.inf * np.ones_like(x)
+            derivatives_log_prob = -np.inf * np.ones((len(x), 1))
             derivatives_log_prob[in_range_index[:, 0], 0] = 0
         else:
             derivatives_log_prob = None
