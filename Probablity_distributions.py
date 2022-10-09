@@ -570,7 +570,7 @@ class SkewedNormal(ContinuousDistributions):
             derivatives_prob = None
         return prob, derivatives_prob
 
-    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Skewed Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -636,7 +636,11 @@ class BetaPdf(ContinuousDistributions):
         x = np.clip(a=x, a_min=0, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = ((1 - x) ** (self.beta - 1))
-        prob = (term1 * term2) / self.Beta(self.alpha, self.beta)
+        if self.return_pdf:
+            prob = (term1 * term2) / self.Beta(self.alpha, self.beta)
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = (1 / self.Beta(self.alpha, self.beta)) * (
                     ((self.alpha - 1) * x ** (self.alpha - 2)) * term2 - (self.beta - 1) * ((1 - x) ** (self.beta - 2))
@@ -653,8 +657,12 @@ class BetaPdf(ContinuousDistributions):
          (Cx1, Cx1)
         """
         x = np.clip(a=x, a_min=0, a_max=1)
-        log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
-                                                                                                     self.beta))
+        if self.return_log_pdf:
+            log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
+                                                                                                         self.beta))
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = ((self.alpha - 1) / x) - ((self.beta - 1) / (1 - x))
         else:
@@ -703,7 +711,11 @@ class Kumaraswamy(ContinuousDistributions):
         x = np.clip(a=x, a_min=0, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = (1 - x ** self.alpha)
-        prob = self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
+        if self.return_pdf:
+            prob = self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 + \
                                self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
@@ -721,8 +733,11 @@ class Kumaraswamy(ContinuousDistributions):
          (Cx1, Cx1)
         """
         x = np.clip(a=x, a_min=0, a_max=1)
-        log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
-            (1 - x ** self.alpha))
+        if self.return_log_pdf:
+            log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
+                (1 - x ** self.alpha))
+        else:
+            log_prob = None
         if self.return_der_logpdf:
             derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x ** (self.alpha - 1))) / (
                     1 - x ** self.alpha)
