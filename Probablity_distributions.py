@@ -1224,12 +1224,13 @@ class GammaDistribution(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        log_pdf = np.ones_like(x) * -np.inf
+        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        log_pdf = np.log(coefficient) + (self.alpha-1)*np.log(x) - self.beta*x
         if self.return_der_logpdf:
-            derivatives_log_pdf = np.ones_like(x) * -np.inf
+            derivatives_log_pdf = (self.alpha-1)/x - self.beta
         else:
             derivatives_log_pdf = None
-
         return log_pdf, derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
@@ -1238,7 +1239,9 @@ class GammaDistribution(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
+        x = np.clip(a=x, a_min=0, a_max=np.inf)
         cdf = np.zeros_like(x)
+
         return cdf
 
 

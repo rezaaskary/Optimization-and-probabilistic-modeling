@@ -1,6 +1,16 @@
 import numpy as np
 
 
+def lower_incomplete_gamma(s, x, method: str = 'numerical'):
+
+    if method == 'numerical':
+        t = np.linspace(0, x, 10000)
+        f = np.exp(-t) * t ** (s - 1)
+        deltat = t[1] - t[0]
+        gamma_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+    return gamma_value
+
+
 def Arctan(z, method: str = 'taylor'):
     if method == 'taylor':
         N = 10
