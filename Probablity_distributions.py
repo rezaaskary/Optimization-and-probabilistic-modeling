@@ -363,15 +363,15 @@ class TruncatedNormal(ContinuousDistributions):
         :return: The probability of the occurrence of the given variable Cx1
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
+        arg_r = (self.ub - self.mu) / self.sigma
+        arg_l = (self.lb - self.mu) / self.sigma
+
+        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+
         if self.return_pdf:
             prob = np.zeros((len(x), 1))
-            arg_r = (self.ub - self.mu) / self.sigma
-            arg_l = (self.lb - self.mu) / self.sigma
-
-            erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-            ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
-
-            normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
             normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
             prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
         else:
