@@ -1044,9 +1044,15 @@ class StudentT(ContinuousDistributions):
         """
         coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * \
                       np.sqrt(self.Lambda / (np.pi * self.nu))
-        prob = coefficient * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
-        derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
-                1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
+        if self.return_pdf:
+            prob = coefficient * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
+        else:
+            prob = None
+        if self.return_der_pdf:
+            derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
+                    1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
+        else:
+            derivatives_prob = None
         return prob, derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
