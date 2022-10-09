@@ -2,8 +2,6 @@ import numpy as np
 import scipy as sc
 from tqdm import tqdm
 
-
-#=================================================================================
 class Optimizer:
     def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
                  epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\

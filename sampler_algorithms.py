@@ -6,9 +6,19 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, iterations: int = None, x_init: np.ndarray = None, vectorized: bool = False,
+    def __init__(self, log_prop_fcn, iterations: int = None, x_init: np.ndarray = None, parallelized: bool = False,
                  chains: int = 1, take_derivatives: bool = False, progress_bar: bool = True):
-
+        """
+        Metropolis Hastings sampling algorithm
+        :param log_prop_fcn: Takes the log posteriori function
+        :param iterations: The number of iteration
+        :param x_init: The initialized value of parameters
+        :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
+        :param chains: the number of chains used for simulation
+        :param take_derivatives: A boolean variable temporarily used to activate receiving derivatives of posteriori
+         function
+        :param progress_bar: A boolean variable used to activate or deactivate the progress bar
+        """
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
             self.log_prop_fcn = log_prop_fcn
@@ -37,18 +47,18 @@ class MetropolisHastings:
                 f'----------------------------------------------------------------------------------------------------')
 
         # checking the correctness of the vectorized simulation
-        if isinstance(vectorized, bool):
-            self.vectorized = vectorized
-            if self.vectorized:
+        if isinstance(parallelized, bool):
+            self.parallelized = parallelized
+            if self.parallelized:
                 self.run = self.mh_vectorized_sampling
             else:
                 self.run = self.mh_non_vectorized_sampling
         else:
-            self.vectorized = False
+            self.parallelized = False
             self.run = self.mh_non_vectorized_sampling
             print(
                 f'---------------------------------------------------------------------------------------------------\n'
-                f'The default value of {self.vectorized} is selected for parallelized simulations\n'
+                f'The default value of {self.parallelized} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
         # checking the correctness of the progressbar
@@ -76,7 +86,7 @@ class MetropolisHastings:
         self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
         self.log_prop_values = np.zeros((self.n_chains, self.iterations))
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
-        self.log_prop_values[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
+        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init, Covariance=1)
         self.n_of_accept = np.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
