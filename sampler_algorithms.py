@@ -184,9 +184,10 @@ class MCMCHammer:
         else:
             self.Nchain = 1
             print(
-                f'------------------------------------------------------------------------------------------------------------------\n '
-                f'The number of chains is not an integer value. The default value of {self.Nchain} is selectd as the number of chains\n'
-                f'---------------------------------------------------------------------------------------------------------------------')
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The number of chains is not an integer value. '
+                f'The default value of {self.Nchain} is selected as the number of chains\n'
+                f'----------------------------------------------------------------------------------------------------')
 
 
 # logprop_fcn,
