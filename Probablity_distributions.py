@@ -862,7 +862,11 @@ class Laplace(ContinuousDistributions):
         """
 
         right_index = x >= self.mu
-        prob = (1 / (2 * self.b)) * np.exp((-1 / self.b) * np.abs(x - self.mu))
+        if self.return_pdf:
+            prob = (1 / (2 * self.b)) * np.exp((-1 / self.b) * np.abs(x - self.mu))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[right_index[:, 0], 0] = (-1 / (2 * self.b ** 2)) * np.exp(
