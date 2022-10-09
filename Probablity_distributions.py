@@ -1201,7 +1201,12 @@ class Cauchy(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
-        prob = (1 / (np.pi * self.gamma)) * (1 / denominator)
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[:, 0] = (1 / (np.pi * self.gamma)) * (1 / denominator)
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = (-2 / (np.pi * self.gamma ** 3)) * ((x - self.mu) / denominator ** 2)
         else:
@@ -1216,7 +1221,11 @@ class Cauchy(ContinuousDistributions):
          (Cx1, Cx1)
         """
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
-        log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
+        if self.return_log_pdf:
+            log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = ((-2 / self.gamma ** 2) * (x - self.mu)) / denominator
         else:
