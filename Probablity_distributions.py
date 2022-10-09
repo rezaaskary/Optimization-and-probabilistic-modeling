@@ -24,7 +24,6 @@ class ContinuousDistributions:
                  return_der_pdf: bool = True,
                  return_der_logpdf: bool = True) -> None:
 
-
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
 
@@ -147,8 +146,23 @@ class ContinuousDistributions:
                   f'Variant number of chains is activated .\n'
                   f'--------------------------------------------------------------------------------------------------')
 
+        if isinstance(return_pdf, bool):
+            self.return_pdf = return_pdf
+        else:
+            raise Exception('Returning pdf values is not specified correctly!')
+
+        if isinstance(return_log_pdf, bool):
+            self.return_log_pdf = return_log_pdf
+        else:
+            raise Exception('Returning pdf values is not specified correctly!')
+
         if isinstance(return_der_logpdf, bool):
             self.return_der_logpdf = return_der_logpdf
+            if self.return_der_logpdf and self.fixed_n_chains:
+                self.derivatives_log_prob_pdf_initialization = np.zeros((self.n_chains, 1))
+
+
+
         elif self.return_der_logpdf is None:
             self.return_der_logpdf = False
         else:
