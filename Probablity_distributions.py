@@ -1,4 +1,3 @@
-import numpy as np
 from matplotlib.pyplot import plot, show, grid
 from mathmatics import *
 
