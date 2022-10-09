@@ -1000,7 +1000,6 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         cdf = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
-
         cdf[in_range_index[:, 0], 0] = 1 - (1 / (1 + self.kappa ** 2)) * np.exp(
             -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
         cdf[~in_range_index[:, 0], 0] = (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp(
