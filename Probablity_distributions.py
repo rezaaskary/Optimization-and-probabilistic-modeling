@@ -179,8 +179,10 @@ class ContinuousDistributions:
 
 class Uniform(ContinuousDistributions):
     def __init__(self, a: float = None, b: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
-        super(Uniform, self).__init__(a=a, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+                 return_der_logpdf: bool = True, return_pdf: bool = True,
+                 return_log_pdf: bool = True) -> None:
+        super(Uniform, self).__init__(a=a, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
+                                      return_pdf=return_pdf, return_log_pdf=return_log_pdf)
         """
         The continuous uniform distribution
         :param lb: the lower bound of the uniform distribution
@@ -256,9 +258,11 @@ class Uniform(ContinuousDistributions):
 
 class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True,
+                 return_log_pdf: bool = True) -> None:
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, return_der_pdf=return_der_pdf,
-                                     return_der_logpdf=return_der_logpdf)
+                                     return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                     return_log_pdf=return_log_pdf)
         """
         The continuous gaussian distribution function
         :param mu: the center of the gaussian distribution
@@ -327,9 +331,11 @@ class Normal(ContinuousDistributions):
 
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
-                 mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+                 mu: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
+                 return_log_pdf: bool = True) -> None:
         super(TruncatedNormal, self).__init__(lb=lb, ub=ub, mu=mu, sigma=sigma, variance=variance,
-                                              return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+                                              return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
+                                              return_pdf=return_pdf, return_log_pdf=return_log_pdf)
 
         """
         The continuous truncated gaussian distribution function
@@ -441,9 +447,10 @@ class TruncatedNormal(ContinuousDistributions):
 
 class HalfNormal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(HalfNormal, self).__init__(sigma=sigma, variance=variance, return_der_pdf=return_der_pdf,
-                                         return_der_logpdf=return_der_logpdf)
+                                         return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                         return_log_pdf=return_log_pdf)
         """
         Half Normal distribution function
         :param sigma: the standard deviation of gaussian distribution
@@ -521,9 +528,11 @@ class HalfNormal(ContinuousDistributions):
 
 class SkewedNormal(ContinuousDistributions):
     def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
-                return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+                return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
+                return_log_pdf: bool = True) -> None:
         super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf)
+                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                           return_log_pdf=return_log_pdf)
 
         """
         The skewed continuous truncated gaussian distribution function
@@ -601,9 +610,11 @@ class SkewedNormal(ContinuousDistributions):
 
 
 class BetaPdf(ContinuousDistributions):
-    def __init__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+    def __init__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
+                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(BetaPdf, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                      return_der_logpdf=return_der_logpdf)
+                                      return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                      return_log_pdf=return_log_pdf)
         """
         Initializing beta distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -679,9 +690,11 @@ class BetaPdf(ContinuousDistributions):
 
 
 class Kumaraswamy(ContinuousDistributions):
-    def __int__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+    def __int__(self, alpha: None, beta: None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
+                return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                          return_der_logpdf=return_der_logpdf)
+                                          return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                          return_log_pdf=return_log_pdf)
         """
         Initializing Kumaraswamy distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -757,9 +770,11 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 class Exponential(ContinuousDistributions):
-    def __init__(self, Lambda: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+    def __init__(self, Lambda: None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
+                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(Exponential, self).__init__(Lambda=Lambda, return_der_pdf=return_der_pdf,
-                                          return_der_logpdf=return_der_logpdf)
+                                          return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                          return_log_pdf=return_log_pdf)
         """
         Initializing Exponential distribution continuous function
         :param Lambda: the rate of the change of the exponential term (Lambda>0)
@@ -833,8 +848,10 @@ class Exponential(ContinuousDistributions):
 
 
 class Laplace(ContinuousDistributions):
-    def __init__(self, mu: None, b: None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(Laplace, self).__init__(mu=mu, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+    def __init__(self, mu: None, b: None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
+                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+        super(Laplace, self).__init__(mu=mu, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
+                                      return_pdf=return_pdf, return_log_pdf=return_log_pdf)
         """
         Initializing Laplace distribution continuous function
         :param alpha: exponent alpha parameter (alpha>0)
@@ -915,9 +932,10 @@ class Laplace(ContinuousDistributions):
 
 class AsymmetricLaplace(ContinuousDistributions):
     def __init__(self, kappa: float = None, mu: float = None, b: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, return_der_pdf=return_der_pdf,
-                                                return_der_logpdf=return_der_logpdf)
+                                                return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                                return_log_pdf=return_log_pdf)
         """
         :param mu: The center of the distribution
         :param b : The rate of the change of the exponential term
@@ -1010,9 +1028,10 @@ class AsymmetricLaplace(ContinuousDistributions):
 
 class StudentT(ContinuousDistributions):
     def __init__(self, nu: float = None, mu: float = None, Lambda: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(StudentT, self).__init__(nu=nu, mu=mu, Lambda=Lambda, return_der_pdf=return_der_pdf,
-                                       return_der_logpdf=return_der_logpdf)
+                                       return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                       return_log_pdf=return_log_pdf)
         """
         :param nu: 
         :param mu: 
@@ -1086,9 +1105,10 @@ class StudentT(ContinuousDistributions):
 
 class HalfStudentT(ContinuousDistributions):
     def __init__(self, nu: float = None, sigma: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(HalfStudentT, self).__init__(nu=nu, sigma=sigma, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf)
+                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                           return_log_pdf=return_log_pdf)
         """
         
         :param nu: 
@@ -1174,9 +1194,10 @@ class HalfStudentT(ContinuousDistributions):
 
 class Cauchy(ContinuousDistributions):
     def __init__(self, gamma: float = None, mu: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(Cauchy, self).__init__(gamma=gamma, mu=mu, return_der_pdf=return_der_pdf,
-                                     return_der_logpdf=return_der_logpdf)
+                                     return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                     return_log_pdf=return_log_pdf)
         """
         :param vectorized: 
         :param C: 
@@ -1243,8 +1264,10 @@ class Cauchy(ContinuousDistributions):
 
 
 class HalfCauchy(ContinuousDistributions):
-    def __init__(self, beta: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
-        super(HalfCauchy, self).__init__(beta=beta, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+    def __init__(self, beta: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
+                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+        super(HalfCauchy, self).__init__(beta=beta, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
+                                         return_pdf=return_pdf, return_log_pdf=return_log_pdf)
 
         if self.beta <= 0:
             raise Exception('The value of beta should be positive (Half Couchy)!')
@@ -1319,9 +1342,10 @@ class HalfCauchy(ContinuousDistributions):
 
 class GammaDistribution(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(GammaDistribution, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                                return_der_logpdf=return_der_logpdf)
+                                                return_der_logpdf=return_der_logpdf,
+                                                return_pdf=return_pdf, return_log_pdf=return_log_pdf)
         """
         :param vectorized: A boolean variable used to activate vectorized calculation 
         :param C: The number of chains used for simulation
@@ -1392,9 +1416,10 @@ class GammaDistribution(ContinuousDistributions):
 
 class InverseGamma(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
         super(InverseGamma, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf)
+                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
+                                           return_log_pdf=return_log_pdf)
 
         if self.alpha <= 0:
             raise Exception('The value of alpha should be positive (InverseGamma)!')
@@ -1468,7 +1493,8 @@ class InverseGamma(ContinuousDistributions):
 #######################################################################################################################
 
 class MyClass(ContinuousDistributions):
-    def __init__(self, return_der_pdf: bool = True, return_der_logpdf: bool = True) -> None:
+    def __init__(self, return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
+                 return_log_pdf: bool = True) -> None:
         super(MyClass, self).__init__(return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
         """
         :param vectorized: A boolean variable used to activate vectorized calculation 
