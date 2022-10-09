@@ -1211,7 +1211,7 @@ class GammaDistribution(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        pdf = coefficient * (x ** self.alpha - 1) * (np.exp(-self.beta * x))
+        pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
 
         if self.return_der_pdf:
             derivatives_pdf = coefficient * ((self.alpha - 1) * (x ** (self.alpha - 2)) * np.exp(-self.beta * x)) + \
@@ -1271,6 +1271,10 @@ class InverseGamma(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
+        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
+
         pdf = np.zeros_like(x)
         if self.return_der_pdf:
             derivatives_pdf = np.zeros_like(x)
