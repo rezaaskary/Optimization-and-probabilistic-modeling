@@ -1367,7 +1367,11 @@ class GammaDistribution(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        log_pdf = np.log(coefficient) + (self.alpha - 1) * np.log(x) - self.beta * x
+        if self.return_log_pdf:
+            log_pdf = np.log(coefficient) + (self.alpha - 1) * np.log(x) - self.beta * x
+        else:
+            log_pdf = None
+
         if self.return_der_logpdf:
             derivatives_log_pdf = (self.alpha - 1) / x - self.beta
         else:
@@ -1415,7 +1419,11 @@ class InverseGamma(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
+        if self.return_pdf:
+            pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
+        else:
+            pdf = None
+
         if self.return_der_pdf:
             derivatives_pdf = coefficient * ((-self.alpha - 1) * (x ** (-self.alpha - 2)) * np.exp(-self.beta / x)) + \
                               coefficient * ((self.beta / x ** 2) * (x ** (-self.alpha - 1)) * np.exp(-self.beta / x))
@@ -1431,8 +1439,12 @@ class InverseGamma(ContinuousDistributions):
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
-        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
+        if self.return_log_pdf:
+            coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+            log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
+        else:
+            log_pdf = None
+
         if self.return_der_logpdf:
             derivatives_log_pdf = (-self.alpha - 1) / x + self.beta / x ** 2
         else:
