@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def lower_incomplete_gamma(s, x, method: str = 'numerical'):
+def lower_incomplete_gamma_fcn(s, x, method: str = 'numerical'):
 
     if method == 'numerical':
         t = np.linspace(0, x, 10000)
@@ -10,18 +10,17 @@ def lower_incomplete_gamma(s, x, method: str = 'numerical'):
         gamma_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
     return gamma_value
 
-
-def Arctan(z, method: str = 'taylor'):
+def arctan_fcn(z, method: str = 'taylor'):
     if method == 'taylor':
         N = 10
-        if z>=1:
+        if z >= 1:
             fcn_value = 0.5 * np.pi
             derivative_value = 0
             for n in range(N):
                 denom_value = ((2*n+1)*(z**(2*n+1)))
                 fcn_value += ((-1)**(n+1)) / denom_value
                 derivative_value += (((-1)**n) * (2*n+1) * (2*n+1) * z**(2*n)) /denom_value**2
-        elif z<=-1:
+        elif z <= -1:
             fcn_value = -0.5 * np.pi
             derivative_value = 0
             for n in range(N):
@@ -38,14 +37,12 @@ def Arctan(z, method: str = 'taylor'):
 
     return fcn_value, derivative_value
 
-def Gamma(z, method: str = 'numerical'):
+def gamma_fcn(z, method: str = 'numerical'):
     """
     calcualting the Gamma function for use in other probablity distribution
     :param z:
     :return:
     """
-    def gamma_kernel(z, t):
-        return np.exp(-t) * t ** (z - 1)
 
     if method == 'stirling':
         gamma_value = np.sqrt(2 * np.pi * z) * np.power(z, z - 1) * np.exp(-z) * (
@@ -54,20 +51,14 @@ def Gamma(z, method: str = 'numerical'):
 
     elif method == 'numerical':
         t = np.linspace(0, 100, 10000)
-        f = gamma_kernel(z, t)
+        f = np.exp(-t) * t ** (z - 1)
         deltat = t[1] - t[0]
         gamma_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
         return gamma_value
-
-    elif method == 'Weierstrass':   # for non-integer values
-        euler_constant = 0.57721566490153286060
-        t = np.arange(1, 20)
-        gamma_value = (np.exp(-euler_constant * z) / z) * ((1 / (1 + z / t)) * np.exp(z / n)).prod()
-        return gamma_value
     else:
         raise Exception('The method of calculating the Gamma function is not specified correctly!')
-#===============================================================================================================
-def Beta(x, y, method: str = 'numerical'):
+
+def beta_fcn(x, y, method: str = 'numerical'):
     """
     calculates the Beta function B(a,y)
     :param x: a float value such that 0<x<1
@@ -83,26 +74,19 @@ def Beta(x, y, method: str = 'numerical'):
         f = beta_kernel(x, y, t)
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
-#===============================================================================================================
-def Erf(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
+
+def erf_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     """
     The error function used to calculate the truncated gaussian distribution
     :param z: normalized input variable
     :return: the value of the error function
     """
-
     derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
-    Erf_function_value = z.copy()
-
-    def erf_kernel(t):
-        return (2/np.sqrt(np.pi)) * np.exp(-t**2)
-
     if method == 'fast':
         Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216)))
-
     elif method == 'numerical':
         t = np.linspace(0, z, 10000)
-        f = erf_kernel(t)
+        f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
         deltat = t[1] - t[0]
         Erf_function_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 
@@ -112,6 +96,6 @@ def Erf(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
             erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
         Erf_function_value = erf_val * (2/np.sqrt(np.pi))
     else:
-        raise Exception('The method for calcualting the Error function is not specified correctly!')
+        raise Exception('The method for calculating the Error function is not specified correctly!')
     return Erf_function_value, derivatives_Erf
-#===============================================================================================================
+

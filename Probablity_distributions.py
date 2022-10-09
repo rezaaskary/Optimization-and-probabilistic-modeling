@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib.pyplot import plot, show, grid
-from mathmatics import Beta, Gamma, Erf, Arctan
+from mathmatics import *
+    # beta_fcn, gamma_fcn, erf_fcn, arctan_fcn, lower_incomplete_gamma_fcn
 
 
 class ContinuousDistributions:
@@ -229,7 +230,7 @@ class Normal(ContinuousDistributions):
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
-        self.Erf = Erf
+        self.Erf = erf_fcn
 
     @property
     def statistics(self):
@@ -300,7 +301,7 @@ class TruncatedNormal(ContinuousDistributions):
             raise Exception(
                 'The value of either mean or standard deviation is not specified (Truncated Normal distribution)!')
 
-        self.Erf = Erf
+        self.Erf = erf_fcn
 
     @property
     def statistics(self):
@@ -400,7 +401,7 @@ class HalfNormal(ContinuousDistributions):
         :param C: Number of chains
         """
 
-        self.Erf = Erf
+        self.Erf = erf_fcn
 
     @property
     def statistics(self):
@@ -480,7 +481,7 @@ class SkewedNormal(ContinuousDistributions):
             raise Exception(
                 'The value of either mean or standard deviation is not specified (Skewed Normal distribution)!')
 
-        self.Erf = Erf
+        self.Erf = erf_fcn
 
     @property
     def statistics(self):
@@ -549,7 +550,7 @@ class BetaPdf(ContinuousDistributions):
         if self.beta <= 0:
             raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
 
-        self.Beta = Beta
+        self.Beta = beta_fcn
 
     @property
     def statistics(self):
@@ -925,7 +926,7 @@ class StudentT(ContinuousDistributions):
         if self.Lambda <= 0:
             raise Exception('The value of lambda should be positive (Student-t distribution)!')
 
-        self.Gamma = Gamma
+        self.Gamma = gamma_fcn
 
     @property
     def statistics(self):
@@ -986,7 +987,7 @@ class HalfStudentT(ContinuousDistributions):
         :param C: 
         :return: 
         """
-        self.Gamma = Gamma
+        self.Gamma = gamma_fcn
 
     @property
     def statistics(self):
@@ -1121,6 +1122,7 @@ class HalfCauchy(ContinuousDistributions):
 
         if self.beta <= 0:
             raise Exception('The value of beta should be positive (Half Couchy)!')
+        self.atan = arctan_fcn
 
     @property
     def statistics(self):
@@ -1176,7 +1178,7 @@ class HalfCauchy(ContinuousDistributions):
         """
         cdf = np.zeros_like(x)
         index_in_range = x >= 0
-        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * Arctan([index_in_range[:, 0], 0] / self.beta)
+        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan([index_in_range[:, 0], 0] / self.beta)
         return cdf
 
 
@@ -1190,7 +1192,8 @@ class GammaDistribution(ContinuousDistributions):
         :param C: The number of chains used for simulation
         :return: None
         """
-        self.Gamma = Gamma
+        self.LowerGamma = lower_incomplete_gamma_fcn
+        self.Gamma = gamma_fcn
 
     @property
     def statistics(self):
@@ -1241,7 +1244,7 @@ class GammaDistribution(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
         cdf = np.zeros_like(x)
-
+        self.LowerGamma(self.alpha, self.beta*x)/self.Gamma(self.alpha)
         return cdf
 
 
