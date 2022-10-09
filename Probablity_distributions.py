@@ -3,16 +3,13 @@ from matplotlib.pyplot import plot, show, grid
 from mathmatics import *
 
 
-# beta_fcn, gamma_fcn, erf_fcn, arctan_fcn, lower_incomplete_gamma_fcn
-
-
 class ContinuousDistributions:
     def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
                  lb: float = None, ub: float = None, alpha: float = None,
                  a: float = None, b: float = None, vectorized: bool = True,
                  beta: float = None, Lambda: float = None, return_der_pdf: bool = True,
                  return_der_logpdf: bool = True, kappa: float = None, nu: float = None,
-                 gamma: float = None) -> None:
+                 gamma: float = None, fixed_n_chains: bool = True, chains: int = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -126,6 +123,23 @@ class ContinuousDistributions:
         else:
             raise Exception('It is not specified whether to return the derivatives of pdf!')
 
+        if isinstance(fixed_n_chains, bool):
+            self.fixed_n_chains = fixed_n_chains
+        else:
+            raise Exception('Please specify whether the number of chains are fixed or not !')
+
+        if isinstance(chains, int):
+            if not self.fixed_n_chains:
+                raise Exception('The number of chains is specified while the variant number of chains are specified!')
+            else:
+                self.n_chains = chains
+        elif (not isinstance(chains, int)) and self.fixed_n_chains:
+            raise Exception('Please enter the number of chains(or the number of parallel evaluations) correctly!')
+        else:
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'Variant number of chains is activated .\n'
+                  f'--------------------------------------------------------------------------------------------------')
+
         if isinstance(return_der_logpdf, bool):
             self.return_der_logpdf = return_der_logpdf
         elif self.return_der_logpdf is None:
@@ -178,7 +192,7 @@ class Uniform(ContinuousDistributions):
         """
 
         in_range_index = (x > self.a) & (x < self.b)
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
         if self.return_der_pdf:
             derivatives_prob = np.zeros_like(x)
@@ -320,7 +334,7 @@ class TruncatedNormal(ContinuousDistributions):
         :return: The probability of the occurrence of the given variable Cx1
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
 
@@ -331,7 +345,7 @@ class TruncatedNormal(ContinuousDistributions):
         normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
         prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
         if self.return_der_pdf:
-            der_prob = np.zeros_like(x)
+            der_prob = np.zeros((len(x), 1))
             der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
                     -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
         else:
@@ -376,7 +390,7 @@ class TruncatedNormal(ContinuousDistributions):
 
         right_index = x > self.ub
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         cdf[right_index[:, 0], 0] = 1.0
 
         b = (self.ub - self.mu) / self.sigma
@@ -420,11 +434,11 @@ class HalfNormal(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         prob[in_range_index[:, 0], 0] = (np.sqrt(2 / np.pi) / self.sigma) * np.exp(
             -((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
         if self.return_der_pdf:
-            derivatives_prob = np.zeros_like(x)
+            derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = (- np.sqrt(2 / np.pi) / (self.sigma ** 3)) * (
                 x[in_range_index[:, 0], 0]) * np.exp(-((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
         else:
@@ -457,7 +471,7 @@ class HalfNormal(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         in_range_index = (x >= 0)
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         erf_value, _ = self.Erf(x[in_range_index[:, 0], 0] / (self.sigma * np.sqrt(2)))
         cdf[in_range_index[:, 0], 0] = erf_value
         return cdf
@@ -705,7 +719,7 @@ class Exponential(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         in_range_index = x >= 0
         prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
         if self.return_der_pdf:
@@ -1298,7 +1312,7 @@ class InverseGamma(ContinuousDistributions):
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
         log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
         if self.return_der_logpdf:
-            derivatives_log_pdf = (-self.alpha - 1) / x + self.beta/x**2
+            derivatives_log_pdf = (-self.alpha - 1) / x + self.beta / x ** 2
         else:
             derivatives_log_pdf = None
 
