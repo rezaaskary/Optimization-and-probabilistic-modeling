@@ -1264,10 +1264,16 @@ class HalfCauchy(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        pdf = np.zeros((len(x), 1))
+
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
-        pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
+
+        if self.return_pdf:
+            pdf = np.zeros((len(x), 1))
+            pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
+        else:
+            pdf = None
+
         if self.return_der_pdf:
             derivatives_pdf = np.zeros((len(x), 1))
             derivatives_pdf[index_in_range[:, 0], 0] = (-4 / ((self.beta ** 3) * np.pi)) * (
