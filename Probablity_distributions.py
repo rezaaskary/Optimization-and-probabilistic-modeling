@@ -122,13 +122,6 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of nu is not specified correctly!')
 
-        if isinstance(return_der_pdf, bool):
-            self.return_der_pdf = return_der_pdf
-        elif self.return_der_pdf is None:
-            self.return_der_pdf = False
-        else:
-            raise Exception('It is not specified whether to return the derivatives of pdf!')
-
         if isinstance(fixed_n_chains, bool):
             self.fixed_n_chains = fixed_n_chains
         else:
@@ -158,15 +151,15 @@ class ContinuousDistributions:
 
         if isinstance(return_der_logpdf, bool):
             self.return_der_logpdf = return_der_logpdf
-            if self.return_der_logpdf and self.fixed_n_chains:
-                self.derivatives_log_prob_pdf_initialization = np.zeros((self.n_chains, 1))
-
-
-
-        elif self.return_der_logpdf is None:
-            self.return_der_logpdf = False
         else:
             raise Exception('It is not specified whether to return the derivatives of logpdf!')
+
+        if isinstance(return_der_pdf, bool):
+            self.return_der_pdf = return_der_pdf
+        elif self.return_der_pdf is None:
+            self.return_der_pdf = False
+        else:
+            raise Exception('It is not specified whether to return the derivatives of pdf!')
 
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
