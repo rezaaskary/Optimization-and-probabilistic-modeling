@@ -579,7 +579,11 @@ class SkewedNormal(ContinuousDistributions):
         """
         z = (x - self.mu) / self.sigma
         erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
-        log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
+        if self.return_log_pdf:
+            log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
                     der_erf_value / (1 + erf_value))
