@@ -469,9 +469,13 @@ class HalfNormal(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
-        prob = np.zeros((len(x), 1))
-        prob[in_range_index[:, 0], 0] = (np.sqrt(2 / np.pi) / self.sigma) * np.exp(
-            -((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[in_range_index[:, 0], 0] = (np.sqrt(2 / np.pi) / self.sigma) * np.exp(
+                -((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = (- np.sqrt(2 / np.pi) / (self.sigma ** 3)) * (
@@ -489,9 +493,13 @@ class HalfNormal(ContinuousDistributions):
         """
 
         in_range_index = (x >= 0)
-        log_prob = np.ones((len(x), 1)) * -np.inf
-        log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
-                (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
+        if self.return_log_pdf:
+            log_prob = np.ones((len(x), 1)) * -np.inf
+            log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
+                    (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
