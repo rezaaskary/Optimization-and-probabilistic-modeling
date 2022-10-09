@@ -1062,8 +1062,12 @@ class StudentT(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
-        log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
+        if self.return_log_pdf:
+            coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
+            log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = (2 * (self.Lambda / self.nu) * (x - self.mu)) / (
                     1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
