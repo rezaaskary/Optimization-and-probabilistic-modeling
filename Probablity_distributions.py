@@ -21,7 +21,8 @@ class ContinuousDistributions:
                  gamma: float = None,
                  fixed_n_chains: bool = True,
                  chains: int = None,
-                 return_pdf: bool = True) -> None:
+                 return_pdf: bool = True,
+                 return_log_pdf: bool = True) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
