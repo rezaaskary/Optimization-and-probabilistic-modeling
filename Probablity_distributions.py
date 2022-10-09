@@ -1289,10 +1289,13 @@ class HalfCauchy(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        log_pdf = np.ones((len(x), 1)) * -np.inf
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
-        log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
+        if self.return_log_pdf:
+            log_pdf = np.ones((len(x), 1)) * -np.inf
+            log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
+        else:
+            log_pdf = None
 
         if self.return_der_logpdf:
             derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
@@ -1343,7 +1346,10 @@ class GammaDistribution(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
+        if self.return_pdf:
+            pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
+        else:
+            pdf = None
 
         if self.return_der_pdf:
             derivatives_pdf = coefficient * ((self.alpha - 1) * (x ** (self.alpha - 2)) * np.exp(-self.beta * x)) + \
