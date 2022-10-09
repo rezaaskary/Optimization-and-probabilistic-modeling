@@ -1113,18 +1113,20 @@ class HalfStudentT(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-
-        prob = np.zeros((len(x), 1))
         in_range_index = x >= 0
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
                 1 / (self.sigma * np.sqrt(np.pi * self.nu)))
-        prob[in_range_index[:, 0], 0] = coef * (
-                1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)) ** (-(self.nu + 1) / 2)
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[in_range_index[:, 0], 0] = coef * (
+                    1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)) ** (-(self.nu + 1) / 2)
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (
-                    1 / (self.nu * self.sigma ** 2)) * (
-                                                                2 * x[in_range_index[:, 0], 0]) * (
+                    1 / (self.nu * self.sigma ** 2)) * (2 * x[in_range_index[:, 0], 0]) * (
                                                                 (1 + (1 / (self.nu * self.sigma ** 2)) * (
                                                                         (x[in_range_index[:, 0], 0]) ** 2)) ** (
                                                                         -(self.nu + 1) / 2 - 1))
@@ -1139,13 +1141,18 @@ class HalfStudentT(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        log_prob = np.ones((len(x), 1)) * -np.inf
-        in_range_index = x >= 0
-        coefficient = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
-                1 / (self.sigma * np.sqrt(np.pi * self.nu)))
 
-        log_prob[in_range_index[:, 0], 0] = np.log(coefficient) - ((self.nu + 1) / 2) * np.log(
-            (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+        in_range_index = x >= 0
+        if self.return_log_pdf:
+            log_prob = np.ones((len(x), 1)) * -np.inf
+            coefficient = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
+                    1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+
+            log_prob[in_range_index[:, 0], 0] = np.log(coefficient) - ((self.nu + 1) / 2) * np.log(
+                (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
