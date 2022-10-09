@@ -40,64 +40,64 @@ class MetropolisHastings:
         if isinstance(vectorized, bool):
             self.vectorized = vectorized
             if self.vectorized:
-                self.run = self.MH_vectorized_sampling
+                self.run = self.mh_vectorized_sampling
             else:
-                self.run = self.MH_non_vectorized_sampling
+                self.run = self.mh_non_vectorized_sampling
         else:
             self.vectorized = False
-            self.run = self.MH_non_vectorized_sampling
+            self.run = self.mh_non_vectorized_sampling
             print(
-                f'------------------------------------------------------------------------------------------------------------------\n '
-                f'The default value of {self.vectorized} is selectd for vectorizing simulations\n'
-                f'---------------------------------------------------------------------------------------------------------------------')
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The default value of {self.vectorized} is selected for parallelized simulations\n'
+                f'----------------------------------------------------------------------------------------------------')
 
-        # checking the corectness of the progressbar
+        # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
             self.progress_bar = not progress_bar
         else:
             self.progress_bar = False
             print(
-                f'------------------------------------------------------------------------------------------------------------------\n '
+                f'---------------------------------------------------------------------------------------------------\n'
                 f'The progress bar is activated by default since the it is not entered by the user\n'
-                f'---------------------------------------------------------------------------------------------------------------------')
+                f'----------------------------------------------------------------------------------------------------')
 
         # checking the correctness of initial condition
         if isinstance(x_init, np.ndarray):
             dim1, dim2 = x_init.shape
-            if dim2 != self.Nchain:
+            if dim2 != self.n_chains:
                 raise Exception('The initial condition is not consistent with the number of chains!')
             else:
-                self.Ndim = dim1
-                self.x0 = x_init
+                self.ndim = dim1
+                self.x_init = x_init
         else:
             raise Exception('The initial condition is not selected properly!')
 
         # initializing all values
-        self.chains = np.zeros((self.Ndim, self.Nchain, self.iterations))
-        self.logprop = np.zeros((self.Nchain, self.iterations))
-        self.accept_rate = np.zeros((self.Nchain, self.iterations))
-        self.logprop[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
-        self.n_of_accept = np.zeros((self.Nchain, 1))
+        self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
+        self.log_prop_values = np.zeros((self.n_chains, self.iterations))
+        self.accept_rate = np.zeros((self.n_chains, self.iterations))
+        self.log_prop_values[:, 0] = self.logprop_fcn(self.x0, Covariance=1)
+        self.n_of_accept = np.zeros((self.n_chains, 1))
 
-    def random_walk_parameter_proposal(self, x_old, sigma: float = 0.01):
+    def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
         """
         :param x_old: the past values of adjustable parameters
         :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
         :return: new set of parameters (N)
         """
-        x_old += np.random.randn(self.Ndim, self.Nchain) * sigma
+        x_old += np.random.randn(self.ndim, self.n_chains) * sigma
         return x_old
 
-    def MH_non_vectorized_sampling(self):
+    def mh_non_vectorized_sampling(self):
         """
         non-vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
         # sampling from a uniform distribution
-        uniform_random_number = np.random.uniform(low = 0.0, high = 1.0, size=(self.Nchain, self.iterations))
+        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
-        for iter in tqdm(range(1, self.iterations), disable = self.progress_bar):       # sampling from the distribution
+        for iter in tqdm(range(1, self.iterations), disable=self.progress_bar):       # sampling from the distribution
             for ch in (range(self.Nchain)):                                             # sampling from each cahin
 
                 # generating the sample for each chain
