@@ -1261,6 +1261,8 @@ class InverseGamma(ContinuousDistributions):
         if self.beta <= 0:
             raise Exception('The value of beta should be positive (InverseGamma)!')
 
+        self.Gamma = gamma_fcn
+
     @property
     def statistics(self):
         """
@@ -1308,7 +1310,8 @@ class InverseGamma(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        cdf = np.zeros_like(x)
+        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        cdf = None
         return cdf
 
 
