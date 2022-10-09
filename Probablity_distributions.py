@@ -807,8 +807,12 @@ class Exponential(ContinuousDistributions):
          (Cx1, Cx1)
         """
         in_range_index = x >= 0
-        log_prob = np.ones((len(x), 1)) * -np.inf
-        log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:, 0], 0]
+        if self.return_log_pdf:
+            log_prob = np.ones((len(x), 1)) * -np.inf
+            log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:, 0], 0]
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
