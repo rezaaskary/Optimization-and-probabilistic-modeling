@@ -644,7 +644,7 @@ class BetaPdf(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
 
-        x = np.clip(a=x, a_min=0, a_max=1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = ((1 - x) ** (self.beta - 1))
         if self.return_pdf:
@@ -667,7 +667,7 @@ class BetaPdf(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        x = np.clip(a=x, a_min=0, a_max=1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         if self.return_log_pdf:
             log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
                                                                                                          self.beta))
@@ -721,7 +721,7 @@ class Kumaraswamy(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        x = np.clip(a=x, a_min=0, a_max=1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = (1 - x ** self.alpha)
         if self.return_pdf:
@@ -745,7 +745,7 @@ class Kumaraswamy(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        x = np.clip(a=x, a_min=0, a_max=1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         if self.return_log_pdf:
             log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
                 (1 - x ** self.alpha))
@@ -764,7 +764,7 @@ class Kumaraswamy(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        x = np.clip(x, 0, 1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         cdf = 1 - (1 - x ** self.alpha) ** self.beta
         return cdf
 
@@ -1368,7 +1368,7 @@ class GammaDistribution(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
         if self.return_pdf:
             pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
@@ -1389,7 +1389,7 @@ class GammaDistribution(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
         if self.return_log_pdf:
             log_pdf = np.log(coefficient) + (self.alpha - 1) * np.log(x) - self.beta * x
@@ -1408,7 +1408,7 @@ class GammaDistribution(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         cdf = np.zeros((len(x), 1))
         self.LowerGamma(self.alpha, self.beta * x) / self.Gamma(self.alpha)
         return cdf
@@ -1442,7 +1442,7 @@ class InverseGamma(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
         if self.return_pdf:
             pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
@@ -1463,7 +1463,7 @@ class InverseGamma(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         if self.return_log_pdf:
             coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
             log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
@@ -1483,7 +1483,7 @@ class InverseGamma(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         cdf = None
         return cdf
 
