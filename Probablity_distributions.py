@@ -4,12 +4,24 @@ from mathmatics import *
 
 
 class ContinuousDistributions:
-    def __init__(self, variance: float = None, sigma: float = None, mu: float = None,
-                 lb: float = None, ub: float = None, alpha: float = None,
-                 a: float = None, b: float = None, vectorized: bool = True,
-                 beta: float = None, Lambda: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, kappa: float = None, nu: float = None,
-                 gamma: float = None, fixed_n_chains: bool = True, chains: int = None) -> None:
+    def __init__(self, variance: float = None,
+                 sigma: float = None,
+                 mu: float = None,
+                 lb: float = None,
+                 ub: float = None,
+                 alpha: float = None,
+                 a: float = None,
+                 b: float = None,
+                 beta: float = None,
+                 Lambda: float = None,
+                 return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True,
+                 kappa: float = None,
+                 nu: float = None,
+                 gamma: float = None,
+                 fixed_n_chains: bool = True,
+                 chains: int = None,
+                 return_pdf: bool = True) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
