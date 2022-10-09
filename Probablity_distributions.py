@@ -394,7 +394,7 @@ class TruncatedNormal(ContinuousDistributions):
         """
 
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        log_prob = np.ones_like(x) * -np.inf
+        log_prob = np.ones((len(x), 1)) * -np.inf
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
         normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
@@ -406,7 +406,7 @@ class TruncatedNormal(ContinuousDistributions):
             2 * np.pi) - 0.5 * normal_argument ** 2
 
         if self.return_der_logpdf:
-            derivatives_log_prob = np.ones_like(x) * -np.inf
+            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (
                     x[in_range_index[:, 0], 0] - self.mu)
         else:
@@ -487,11 +487,11 @@ class HalfNormal(ContinuousDistributions):
         """
 
         in_range_index = (x >= 0)
-        log_prob = np.ones_like(x) * -np.inf
+        log_prob = np.ones((len(x), 1)) * -np.inf
         log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
                 (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
         if self.return_der_logpdf:
-            derivatives_log_prob = np.ones_like(x) * -np.inf
+            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
         else:
             derivatives_log_prob = None
@@ -771,10 +771,10 @@ class Exponential(ContinuousDistributions):
          (Cx1, Cx1)
         """
         in_range_index = x >= 0
-        log_prob = np.ones_like(x) * -np.inf
+        log_prob = np.ones((len(x), 1)) * -np.inf
         log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:, 0], 0]
         if self.return_der_logpdf:
-            derivatives_log_prob = np.ones_like(x) * -np.inf
+            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
         else:
             derivatives_log_prob = None
@@ -787,7 +787,7 @@ class Exponential(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         in_range_index = x >= 0
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         cdf[in_range_index[:, 0], 0] = 1 - np.exp(- self.Lambda * x[in_range_index[:, 0], 0])
         return cdf
 
@@ -824,7 +824,7 @@ class Laplace(ContinuousDistributions):
         right_index = x >= self.mu
         prob = (1 / (2 * self.b)) * np.exp((-1 / self.b) * np.abs(x - self.mu))
         if self.return_der_pdf:
-            derivatives_prob = np.zeros_like(x)
+            derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[right_index[:, 0], 0] = (-1 / (2 * self.b ** 2)) * np.exp(
                 (-1 / self.b) * (x[right_index[:, 0], 0] - self.mu))
             derivatives_prob[~right_index[:, 0], 0] = (1 / (2 * self.b ** 2)) * np.exp(
@@ -843,7 +843,7 @@ class Laplace(ContinuousDistributions):
         right_index = x >= self.mu
         log_prob = -np.log(2 * self.b) - (1 / self.b) * np.abs(x - self.mu)
         if self.return_der_logpdf:
-            derivatives_log_prob = np.zeros_like(x)
+            derivatives_log_prob = np.zeros((len(x), 1))
             derivatives_log_prob[right_index[:, 0], 0] = - (1 / self.b) * (x[right_index[:, 0], 0] - self.mu)
             derivatives_log_prob[~right_index[:, 0], 0] = (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu)
         else:
@@ -859,7 +859,7 @@ class Laplace(ContinuousDistributions):
         """
 
         right_index = x >= self.mu
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         cdf[right_index[:, 0], 0] = 1 - 0.5 * np.exp((-1 / self.b) * (x[right_index[:, 0], 0] - self.mu))
         cdf[~right_index[:, 0], 0] = 0.5 * np.exp((1 / self.b) * (x[~right_index[:, 0], 0] - self.mu))
         return cdf
@@ -896,7 +896,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
 
         coefficient = self.b / (self.kappa + 1 / self.kappa)
@@ -905,7 +905,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
                                                                                        self.mu))
         if self.return_der_pdf:
-            derivatives_prob = np.zeros_like(x)
+            derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
                 -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
             derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
@@ -922,7 +922,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         (Cx1, Cx1)
         """
 
-        log_prob = np.zeros_like(x)
+        log_prob = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
         coef = self.b / (self.kappa + 1 / self.kappa)
 
@@ -932,7 +932,7 @@ class AsymmetricLaplace(ContinuousDistributions):
                 (self.b / self.kappa) * (x[~in_range_index[:, 0], 0] - self.mu))
 
         if self.return_der_logpdf:
-            derivatives_log_prob = np.zeros_like(x)
+            derivatives_log_prob = np.zeros((len(x), 1))
             derivatives_log_prob[in_range_index[:, 0], 0] = -self.b * self.kappa
             derivatives_log_prob[~in_range_index[:, 0], 0] = (self.b / self.kappa)
         else:
@@ -946,7 +946,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable
         (Cx1, Cx1)
         """
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
 
         cdf[in_range_index[:, 0], 0] = 1 - (1 / (1 + self.kappa ** 2)) * np.exp(
@@ -1053,14 +1053,14 @@ class HalfStudentT(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
 
-        prob = np.zeros_like(x)
+        prob = np.zeros((len(x), 1))
         in_range_index = x >= 0
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
                 1 / (self.sigma * np.sqrt(np.pi * self.nu)))
         prob[in_range_index[:, 0], 0] = coef * (
                 1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)) ** (-(self.nu + 1) / 2)
         if self.return_der_pdf:
-            derivatives_prob = np.zeros_like(x)
+            derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (
                     1 / (self.nu * self.sigma ** 2)) * (
                                                                 2 * x[in_range_index[:, 0], 0]) * (
@@ -1078,7 +1078,7 @@ class HalfStudentT(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        log_prob = np.ones_like(x) * -np.inf
+        log_prob = np.ones((len(x), 1)) * -np.inf
         in_range_index = x >= 0
         coefficient = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
                 1 / (self.sigma * np.sqrt(np.pi * self.nu)))
@@ -1086,7 +1086,7 @@ class HalfStudentT(ContinuousDistributions):
         log_prob[in_range_index[:, 0], 0] = np.log(coefficient) - ((self.nu + 1) / 2) * np.log(
             (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
         if self.return_der_logpdf:
-            derivatives_log_prob = np.ones_like(x) * -np.inf
+            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
                     ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
                     1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
@@ -1187,12 +1187,12 @@ class HalfCauchy(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        pdf = np.zeros_like(x)
+        pdf = np.zeros((len(x), 1))
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
         pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
         if self.return_der_pdf:
-            derivatives_pdf = np.zeros_like(x)
+            derivatives_pdf = np.zeros((len(x), 1))
             derivatives_pdf[index_in_range[:, 0], 0] = (-4 / ((self.beta ** 3) * np.pi)) * (
                     (x[index_in_range[:, 0], 0]) /
                     denominator ** 2)
@@ -1206,13 +1206,13 @@ class HalfCauchy(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        log_pdf = np.ones_like(x) * -np.inf
+        log_pdf = np.ones((len(x), 1)) * -np.inf
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
         log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
 
         if self.return_der_logpdf:
-            derivatives_log_pdf = np.ones_like(x) * -np.inf
+            derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
             derivatives_log_pdf[index_in_range[:, 0], 0] = (-2 / self.beta ** 2) * (x[index_in_range[:, 0], 0] /
                                                                                     denominator)
         else:
@@ -1225,7 +1225,7 @@ class HalfCauchy(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         index_in_range = x >= 0
         cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan([index_in_range[:, 0], 0] / self.beta)
         return cdf
@@ -1292,7 +1292,7 @@ class GammaDistribution(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         x = np.clip(a=x, a_min=0, a_max=np.inf)
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         self.LowerGamma(self.alpha, self.beta * x) / self.Gamma(self.alpha)
         return cdf
 
@@ -1389,9 +1389,9 @@ class MyClass(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        pdf = np.zeros_like(x)
+        pdf = np.zeros((len(x), 1))
         if self.return_der_pdf:
-            derivatives_pdf = np.zeros_like(x)
+            derivatives_pdf = np.zeros((len(x), 1))
         else:
             derivatives_pdf = None
 
@@ -1403,9 +1403,9 @@ class MyClass(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
-        log_pdf = np.ones_like(x) * -np.inf
+        log_pdf = np.ones((len(x), 1)) * -np.inf
         if self.return_der_logpdf:
-            derivatives_log_pdf = np.ones_like(x) * -np.inf
+            derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
         else:
             derivatives_log_pdf = None
 
@@ -1417,7 +1417,7 @@ class MyClass(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
-        cdf = np.zeros_like(x)
+        cdf = np.zeros((len(x), 1))
         return cdf
 
 
