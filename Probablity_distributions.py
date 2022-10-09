@@ -14,15 +14,16 @@ class ContinuousDistributions:
                  b: float = None,
                  beta: float = None,
                  Lambda: float = None,
-                 return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True,
                  kappa: float = None,
                  nu: float = None,
                  gamma: float = None,
                  fixed_n_chains: bool = True,
                  chains: int = None,
                  return_pdf: bool = True,
-                 return_log_pdf: bool = True) -> None:
+                 return_log_pdf: bool = True,
+                 return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True) -> None:
+
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -58,13 +59,6 @@ class ContinuousDistributions:
             self.ub = None
         else:
             raise Exception('The upper bound is not specified correctly!')
-
-        if isinstance(vectorized, bool):
-            self.vectorized = vectorized
-        elif self.vectorized is None:
-            self.vectorized = False
-        else:
-            raise Exception('The type of calculation is not specified correctly!')
 
         if isinstance(mu, (float, int)):
             self.mu = mu
