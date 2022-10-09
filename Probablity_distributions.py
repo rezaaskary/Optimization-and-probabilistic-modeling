@@ -885,7 +885,11 @@ class Laplace(ContinuousDistributions):
          (Cx1, Cx1)
         """
         right_index = x >= self.mu
-        log_prob = -np.log(2 * self.b) - (1 / self.b) * np.abs(x - self.mu)
+        if self.return_log_pdf:
+            log_prob = -np.log(2 * self.b) - (1 / self.b) * np.abs(x - self.mu)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = np.zeros((len(x), 1))
             derivatives_log_prob[right_index[:, 0], 0] = - (1 / self.b) * (x[right_index[:, 0], 0] - self.mu)
@@ -940,14 +944,17 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
-
         coefficient = self.b / (self.kappa + 1 / self.kappa)
-        prob[in_range_index[:, 0], 0] = coefficient * np.exp(-self.b * self.kappa * (x[in_range_index[:, 0], 0] -
-                                                                                     self.mu))
-        prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
-                                                                                       self.mu))
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[in_range_index[:, 0], 0] = coefficient * np.exp(-self.b * self.kappa * (x[in_range_index[:, 0], 0] -
+                                                                                         self.mu))
+            prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
+                                                                                           self.mu))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
@@ -965,15 +972,16 @@ class AsymmetricLaplace(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
         (Cx1, Cx1)
         """
-
-        log_prob = np.zeros((len(x), 1))
         in_range_index = x >= self.mu
-        coef = self.b / (self.kappa + 1 / self.kappa)
-
-        log_prob[in_range_index[:, 0], 0] = np.log(coef) + (
-                -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
-        log_prob[~in_range_index[:, 0], 0] = np.log(coef) + (
-                (self.b / self.kappa) * (x[~in_range_index[:, 0], 0] - self.mu))
+        log_prob = np.zeros((len(x), 1))
+        if self.return_log_pdf:
+            coef = self.b / (self.kappa + 1 / self.kappa)
+            log_prob[in_range_index[:, 0], 0] = np.log(coef) + (
+                    -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
+            log_prob[~in_range_index[:, 0], 0] = np.log(coef) + (
+                    (self.b / self.kappa) * (x[~in_range_index[:, 0], 0] - self.mu))
+        else:
+            log_prob = None
 
         if self.return_der_logpdf:
             derivatives_log_prob = np.zeros((len(x), 1))
