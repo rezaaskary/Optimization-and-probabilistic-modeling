@@ -1176,8 +1176,8 @@ class HalfStudentT(ContinuousDistributions):
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
-                    ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
-                    1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+                        ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
+                            1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
         else:
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
@@ -1336,7 +1336,7 @@ class HalfCauchy(ContinuousDistributions):
         """
         cdf = np.zeros((len(x), 1))
         index_in_range = x >= 0
-        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan([index_in_range[:, 0], 0] / self.beta)
+        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan(x[index_in_range[:, 0], 0] / self.beta)
         return cdf
 
 
@@ -1495,7 +1495,8 @@ class InverseGamma(ContinuousDistributions):
 class MyClass(ContinuousDistributions):
     def __init__(self, return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
                  return_log_pdf: bool = True) -> None:
-        super(MyClass, self).__init__(return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf)
+        super(MyClass, self).__init__(return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
+                                      return_pdf=return_pdf, return_log_pdf=return_log_pdf)
         """
         :param vectorized: A boolean variable used to activate vectorized calculation 
         :param C: The number of chains used for simulation
