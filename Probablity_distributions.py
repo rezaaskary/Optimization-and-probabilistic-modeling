@@ -491,7 +491,6 @@ class HalfNormal(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-
         in_range_index = (x >= 0)
         if self.return_log_pdf:
             log_prob = np.ones((len(x), 1)) * -np.inf
@@ -558,8 +557,12 @@ class SkewedNormal(ContinuousDistributions):
         """
         z = (x - self.mu) / self.sigma
         erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
-        normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
-        prob = 2 * erf_part * normal_part
+        if self.return_pdf:
+            normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
+            prob = 2 * erf_part * normal_part
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
                     self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
