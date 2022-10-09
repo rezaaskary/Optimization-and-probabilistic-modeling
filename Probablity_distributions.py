@@ -247,7 +247,7 @@ class Uniform(ContinuousDistributions):
         left_index = x <= self.a
         right_index = x >= self.a
         in_range_index = (x > self.a) & (x < self.b)
-        cdf = np.ones_like(x)
+        cdf = np.ones((len(x), 1))
         cdf[left_index[:, 0], 0] = 0
         cdf[right_index[:, 0], 0] = 1
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a) / (self.b - self.a)
@@ -283,7 +283,11 @@ class Normal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable Cx1
         """
-        prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        if self.return_pdf:
+            prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
                 -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
@@ -298,7 +302,11 @@ class Normal(ContinuousDistributions):
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        if self.return_log_pdf:
+            log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        else:
+            log_prob = None
+
         if self.return_der_logpdf:
             derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
         else:
@@ -355,16 +363,20 @@ class TruncatedNormal(ContinuousDistributions):
         :return: The probability of the occurrence of the given variable Cx1
         """
         in_range_index = (x >= self.lb) & (x <= self.ub)
-        prob = np.zeros((len(x), 1))
-        arg_r = (self.ub - self.mu) / self.sigma
-        arg_l = (self.lb - self.mu) / self.sigma
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            arg_r = (self.ub - self.mu) / self.sigma
+            arg_l = (self.lb - self.mu) / self.sigma
 
-        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+            erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
+            ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
 
-        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
-        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
-        prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+            normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+            normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
+            prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        else:
+            prob = None
+
         if self.return_der_pdf:
             der_prob = np.zeros((len(x), 1))
             der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
