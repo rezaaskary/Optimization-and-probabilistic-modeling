@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib.pyplot import plot, show, grid
-from mathmatics import Beta, Gamma, Erf
+from mathmatics import Beta, Gamma, Erf, Arctan
 
 
 class ContinuousDistributions:
@@ -941,7 +941,7 @@ class StudentT(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) *\
+        coefficient = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * \
                       np.sqrt(self.Lambda / (np.pi * self.nu))
         prob = coefficient * (1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
         derivatives_prob = coefficient * (-(self.nu + 1)) * (x - self.mu) * (self.Lambda / self.nu) * (
@@ -1138,12 +1138,13 @@ class HalfCauchy(ContinuousDistributions):
         """
         pdf = np.zeros_like(x)
         index_in_range = x >= 0
-        denominator = (1+((x[index_in_range[:, 0], 0])/self.beta) ** 2)
-        pdf[index_in_range[:, 0], 0] = (2/(self.beta * np.pi)) * (1/denominator)
+        denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
+        pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
         if self.return_der_pdf:
             derivatives_pdf = np.zeros_like(x)
-            derivatives_pdf[index_in_range[:, 0], 0] = (-4/((self.beta**3) * np.pi)) * ((x[index_in_range[:, 0], 0]) /
-                                                                                        denominator ** 2)
+            derivatives_pdf[index_in_range[:, 0], 0] = (-4 / ((self.beta ** 3) * np.pi)) * (
+                        (x[index_in_range[:, 0], 0]) /
+                        denominator ** 2)
         else:
             derivatives_pdf = None
         return pdf, derivatives_pdf
@@ -1156,15 +1157,79 @@ class HalfCauchy(ContinuousDistributions):
         """
         log_pdf = np.ones_like(x) * -np.inf
         index_in_range = x >= 0
-        denominator = (1+((x[index_in_range[:, 0], 0])/self.beta) ** 2)
-        log_pdf[index_in_range[:, 0], 0] = np.log(2/(self.beta * np.pi)) - np.log(denominator)
+        denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
+        log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
 
         if self.return_der_logpdf:
             derivatives_log_pdf = np.ones_like(x) * -np.inf
-            derivatives_log_pdf[index_in_range[:, 0], 0] = (-2/self.beta ** 2) * (x[index_in_range[:, 0], 0] /
-                                                                                  denominator)
+            derivatives_log_pdf[index_in_range[:, 0], 0] = (-2 / self.beta ** 2) * (x[index_in_range[:, 0], 0] /
+                                                                                    denominator)
         else:
             derivatives_log_pdf = None
+        return log_pdf, derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the cumulative distribution function for ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
+        """
+        cdf = np.zeros_like(x)
+        index_in_range = x >= 0
+        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * Arctan([index_in_range[:, 0], 0] / self.beta)
+        return cdf
+
+
+class GammaDistribution(ContinuousDistributions):
+    def __init__(self, alpha: float = None, beta: float = None, return_der_pdf: bool = True,
+                 return_der_logpdf: bool = True) -> None:
+        super(GammaDistribution, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
+                                                return_der_logpdf=return_der_logpdf)
+        """
+        :param vectorized: A boolean variable used to activate vectorized calculation 
+        :param C: The number of chains used for simulation
+        :return: None
+        """
+        self.Gamma = Gamma
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        """
+        x = np.clip(a=x, a_min=0, a_max=np.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        pdf = coefficient * (x ** self.alpha - 1) * (np.exp(-self.beta * x))
+
+        if self.return_der_pdf:
+            derivatives_pdf = coefficient * ((self.alpha - 1) * (x ** (self.alpha - 2)) * np.exp(-self.beta * x)) + \
+                              coefficient * ((-self.beta) * (x ** (self.alpha - 1)) * np.exp(-self.beta * x))
+        else:
+            derivatives_pdf = None
+
+        return pdf, derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Parallelized calculating the log of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        """
+        log_pdf = np.ones_like(x) * -np.inf
+        if self.return_der_logpdf:
+            derivatives_log_pdf = np.ones_like(x) * -np.inf
+        else:
+            derivatives_log_pdf = None
+
         return log_pdf, derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):

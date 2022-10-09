@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def Arctan(z, method:str = 'taylor'):
+def Arctan(z, method: str = 'taylor'):
     if method == 'taylor':
         N = 10
         if z>=1:
@@ -27,10 +27,6 @@ def Arctan(z, method:str = 'taylor'):
                 derivative_value += ((-1) ** n) * z ** (2 * n)
 
     return fcn_value, derivative_value
-
-
-
-
 
 def Gamma(z, method: str = 'numerical'):
     """
