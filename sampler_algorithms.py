@@ -6,12 +6,12 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, logprop_fcn, iterations: int = None, x_init: np.ndarray = None, vectorized: bool = False,
+    def __init__(self, log_prop_fcn, iterations: int = None, x_init: np.ndarray = None, vectorized: bool = False,
                  chains: int = 1, take_derivatives: bool = False, progress_bar: bool = True):
 
         # checking the correctness of log probability function
-        if hasattr(logprop_fcn, "__call__"):
-            self.logprop_fcn = logprop_fcn
+        if hasattr(log_prop_fcn, "__call__"):
+            self.log_prop_fcn = log_prop_fcn
         else:
             raise Exception('The log probability function is not defined properly!')
 
