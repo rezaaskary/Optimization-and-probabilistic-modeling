@@ -784,11 +784,15 @@ class Exponential(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        prob = np.zeros((len(x), 1))
         in_range_index = x >= 0
-        prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
+        if self.return_pdf:
+            prob = np.zeros((len(x), 1))
+            prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
+        else:
+            prob = None
+
         if self.return_der_pdf:
-            derivatives_prob = np.zeros(x)
+            derivatives_prob = np.zeros((len(x), 1))
             derivatives_prob[in_range_index[:, 0], 0] = -(self.Lambda ** 2) * np.exp(
                 -self.Lambda * x[in_range_index[:, 0], 0])
         else:
