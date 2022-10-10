@@ -1628,8 +1628,8 @@ class LogNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = np.zeros((len(x), 1))
-
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        pdf = (1/(x*self.sigma*np.sqrt(2*np.pi))) * np.exp(-0.5*(1/self.sigma**2)*(np.log(x)-self.mu)**2)
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
