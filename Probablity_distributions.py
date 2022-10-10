@@ -1,3 +1,4 @@
+import numpy as np
 from matplotlib.pyplot import plot, show, grid
 from mathmatics import *
 
@@ -17,11 +18,7 @@ class ContinuousDistributions:
                  nu: float = None,
                  gamma: float = None,
                  fixed_n_chains: bool = True,
-                 chains: int = None,
-                 return_pdf: bool = True,
-                 return_log_pdf: bool = True,
-                 return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True) -> None:
+                 chains: int = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -135,30 +132,8 @@ class ContinuousDistributions:
             raise Exception('Please enter the number of chains(or the number of parallel evaluations) correctly!')
         else:
             print(f'-------------------------------------------------------------------------------------------------\n'
-                  f'Variant number of chains is activated .\n'
+                  f'Variant number of chains is activated .'
                   f'--------------------------------------------------------------------------------------------------')
-
-        if isinstance(return_pdf, bool):
-            self.return_pdf = return_pdf
-        else:
-            raise Exception('Returning pdf values is not specified correctly!')
-
-        if isinstance(return_log_pdf, bool):
-            self.return_log_pdf = return_log_pdf
-        else:
-            raise Exception('Returning pdf values is not specified correctly!')
-
-        if isinstance(return_der_logpdf, bool):
-            self.return_der_logpdf = return_der_logpdf
-        else:
-            raise Exception('It is not specified whether to return the derivatives of logpdf!')
-
-        if isinstance(return_der_pdf, bool):
-            self.return_der_pdf = return_der_pdf
-        elif self.return_der_pdf is None:
-            self.return_der_pdf = False
-        else:
-            raise Exception('It is not specified whether to return the derivatives of pdf!')
 
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
@@ -177,20 +152,12 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, a: float = None, b: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True,
-                 return_log_pdf: bool = True) -> None:
+    def __init__(self, a: float = None, b: float = None) -> None:
         """
-
         :param a:
         :param b:
-        :param return_der_pdf:
-        :param return_der_logpdf:
-        :param return_pdf:
-        :param return_log_pdf:
         """
-        super(Uniform, self).__init__(a=a, b=b, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
-                                      return_pdf=return_pdf, return_log_pdf=return_log_pdf)
+        super(Uniform, self).__init__(a=a, b=b)
 
         if self.a >= self.b:
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
@@ -203,7 +170,7 @@ class Uniform(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the Uniform distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -211,17 +178,12 @@ class Uniform(ContinuousDistributions):
         """
 
         in_range_index = (x > self.a) & (x < self.b)
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
-        else:
-            prob = None
+        prob = np.zeros((len(x), 1))
+        prob[in_range_index[:, 0], 0] = 1 / (self.b - self.a)
+        return prob
 
-        if self.return_der_pdf:
-            derivatives_prob = np.zeros((len(x), 1))
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return np.zeros((len(x), 1))
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
@@ -307,6 +269,9 @@ class Normal(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
 
     def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
         """
@@ -402,7 +367,8 @@ class TruncatedNormal(ContinuousDistributions):
         else:
             der_prob = None
         return prob, der_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Truncated Normal distribution
@@ -504,7 +470,8 @@ class HalfNormal(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Half Normal distribution
@@ -594,7 +561,8 @@ class SkewedNormal(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Skewed Normal distribution
@@ -678,7 +646,8 @@ class BetaPdf(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Beta distribution
@@ -760,7 +729,8 @@ class Kumaraswamy(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Kumaraswamy distribution
@@ -838,7 +808,8 @@ class Exponential(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Exponential distribution
@@ -920,7 +891,8 @@ class Laplace(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Laplace distribution
@@ -1014,7 +986,8 @@ class AsymmetricLaplace(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Asymmetric Laplace distribution
@@ -1110,7 +1083,8 @@ class StudentT(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
@@ -1192,7 +1166,8 @@ class HalfStudentT(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the HalfStudentT distribution
@@ -1276,7 +1251,8 @@ class Cauchy(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
@@ -1356,7 +1332,8 @@ class HalfCauchy(ContinuousDistributions):
         else:
             derivatives_pdf = None
         return pdf, derivatives_pdf
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the Half Cauchy distribution
@@ -1438,7 +1415,8 @@ class GammaDistribution(ContinuousDistributions):
             derivatives_pdf = None
 
         return pdf, derivatives_pdf
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the Gamma distribution
@@ -1521,7 +1499,8 @@ class InverseGamma(ContinuousDistributions):
             derivatives_pdf = None
 
         return pdf, derivatives_pdf
-
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        return derivatives_prob
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the ---- distribution
