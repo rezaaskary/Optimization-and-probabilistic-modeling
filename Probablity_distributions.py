@@ -1483,7 +1483,7 @@ class Weibull(ContinuousDistributions):
         index_in_range = x >= 0
         exp_term = np.exp(-(x[index_in_range[:, 0], 0]/self.Lambda)**self.kappa)
         polynomial_term = ((x[index_in_range[:, 0], 0]/self.Lambda) ** (self.kappa-1))
-        derivatives_pdf = (self.kappa / self.Lambda) * ((((self.kappa-1) / self.Lambda) * (x[index_in_range[:, 0], 0]/self.Lambda) ** (self.kappa-2)) * exp_term)\
+        derivatives_pdf[index_in_range[:, 0], 0] = (self.kappa / self.Lambda) * ((((self.kappa-1) / self.Lambda) * (x[index_in_range[:, 0], 0]/self.Lambda) ** (self.kappa-2)) * exp_term)\
                           - ((self.kappa / self.Lambda)**2) * (((x[index_in_range[:, 0], 0]/self.Lambda) ** (2*self.kappa-2))) * exp_term
 
         return derivatives_pdf
@@ -1495,6 +1495,12 @@ class Weibull(ContinuousDistributions):
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
         log_pdf = np.ones((len(x), 1)) * -np.inf
+        index_in_range = x >= 0
+
+        log_pdf[index_in_range[:, 0], 0] = np.log(self.kappa/self.Lambda) +\
+                                           (self.kappa-1)*np.log(x[index_in_range[:, 0], 0]/self.Lambda) -\
+                                           (x[index_in_range[:, 0], 0]/self.Lambda)**self.kappa
+
 
         return log_pdf
 
@@ -1505,6 +1511,11 @@ class Weibull(ContinuousDistributions):
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
         derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        index_in_range = x >= 0
+
+        derivatives_log_pdf[index_in_range[:, 0], 0] = (self.kappa-1)/x[index_in_range[:, 0], 0] -\
+                                                       (self.kappa * (1/self.Lambda)**self.kappa) *\
+                                                       (x[index_in_range[:, 0], 0])**(self.kappa-1)
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -1514,8 +1525,9 @@ class Weibull(ContinuousDistributions):
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
         cdf = np.zeros((len(x), 1))
+        index_in_range = x >= 0
+        cdf[index_in_range[:, 0], 0] = 1-np.exp(-(x[index_in_range[:, 0], 0]/self.Lambda)**self.kappa)
         return cdf
-
 
 
 
