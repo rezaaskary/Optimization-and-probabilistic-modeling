@@ -1822,7 +1822,9 @@ class Pareto(ContinuousDistributions):
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
         log_pdf = np.ones((len(x), 1)) * -np.inf
-
+        in_range_index = x >= self.xm
+        log_pdf[in_range_index[:, 0], 0] = np.log(self.alpha * (self.xm ** self.alpha)) -\
+                                           (self.alpha+1)*np.log(x[in_range_index[:, 0], 0])
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1832,6 +1834,8 @@ class Pareto(ContinuousDistributions):
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
         derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        in_range_index = x >= self.xm
+        derivatives_log_pdf[in_range_index[:, 0], 0] = -(self.alpha+1)/x[in_range_index[:, 0], 0]
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
