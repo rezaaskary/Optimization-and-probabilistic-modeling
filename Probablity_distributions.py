@@ -1871,6 +1871,7 @@ class ExModifiedGaussian(ContinuousDistributions):
             raise Exception('The value of variance should be positive (Exponentially modified Gaussian distribution)!')
 
         self.Erfc = erfc_fcn
+        self.LogErfc = log_erfc
 
     @property
     def statistics(self):
@@ -1915,8 +1916,10 @@ class ExModifiedGaussian(ContinuousDistributions):
         """
 
         arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
+        erfc_val, _ = self.Erfc(arg_erfc)
+
         log_pdf = np.log(0.5*self.Lambda) + 0.5*self.Lambda*(2 * self.mu + self.Lambda * (self.sigma ** 2) - 2 * x) +\
-        np.log(self.Erfc(arg_erfc))
+        np.log(erfc_val)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1925,7 +1928,9 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
-
+        arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
+        erfc_val, erfc_val_diff = self.Erfc(arg_erfc)
+        derivatives_log_pdf = self.Lambda * x - (1/(self.sigma*np.sqrt(2))) * (erfc_val_diff/erfc_val)
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -1934,7 +1939,13 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
-        cdf = np.zeros((len(x), 1))
+
+        arg_exp = 2 * self.mu + self.Lambda * (self.sigma ** 2) - 2 * x
+        arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
+        erfc_val, _ = self.Erfc(arg_erfc)
+        z = (x - self.mu) / (self.sigma * np.sqrt(2))
+        erf_value, _ = self.Erf(z)
+        cdf = erf_value - 0.5 * np.exp(0.5 * self.Lambda * arg_exp)*erfc_val
         return cdf
 
 

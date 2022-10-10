@@ -156,3 +156,13 @@ def log_erf(z, method: str = 'fast'):
     derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
     log_erf_diff = derivatives_Erf / Erf_function_value
     return log_erf_value, log_erf_diff
+
+
+def log_erfc(z, method: str = 'fast'):
+    Erfc_function_value = 1 - ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
+                                                    (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
+                                                    (z ** 15 / 75600)))
+    log_erf_value = np.log(Erfc_function_value)
+    derivatives_Erfc = -(2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+    log_erf_diff = derivatives_Erfc / Erfc_function_value
+    return log_erf_value, log_erf_diff
