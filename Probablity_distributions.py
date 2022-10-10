@@ -186,7 +186,7 @@ class Uniform(ContinuousDistributions):
 
         return np.zeros((len(x), 1))
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Uniform distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -221,9 +221,7 @@ class Uniform(ContinuousDistributions):
 
 
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True,
-                 return_log_pdf: bool = True) -> None:
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None) -> None:
         """
 
         :param sigma:
@@ -234,9 +232,7 @@ class Normal(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, return_der_pdf=return_der_pdf,
-                                     return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                     return_log_pdf=return_log_pdf)
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu)
 
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
@@ -257,38 +253,26 @@ class Normal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable Cx1
         """
-        if self.return_pdf:
-            prob = (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            derivatives_prob = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(
-                -((x - self.mu) ** 2) / (2 * self.sigma ** 2))
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        return derivatives_prob
 
-    def log_prob(self, x: float) -> (np.ndarray, np.ndarray):
+        return (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) /
+                                                                                      (2 * self.sigma ** 2))
+
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        if self.return_log_pdf:
-            log_prob = -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
-        else:
-            log_prob = None
+        return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = -(x - self.mu) / (self.sigma ** 2)
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        return -(x - self.mu) / (self.sigma ** 2)
+
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
