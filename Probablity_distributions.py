@@ -755,18 +755,26 @@ class Exponential(ContinuousDistributions):
          (Cx1, Cx1)
         """
         in_range_index = x >= 0
-        if self.return_log_pdf:
-            log_prob = np.ones((len(x), 1)) * -np.inf
-            log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:, 0], 0]
-        else:
-            log_prob = None
+        log_prob = np.ones((len(x), 1)) * -np.inf
+        log_prob[in_range_index[:, 0], 0] = np.log(self.Lambda) - self.Lambda * x[in_range_index[:, 0], 0]
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
-            derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+        return log_prob
+
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log (and its derivatives) of the Exponential distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
+        """
+        in_range_index = x >= 0
+        derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_prob[in_range_index[:, 0], 0] = - self.Lambda
+        return derivatives_log_prob
+
+
+
+
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
