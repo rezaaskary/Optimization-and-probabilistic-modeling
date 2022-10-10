@@ -143,3 +143,16 @@ def erfinv_fcn(z, method: str = 'fast'):
     else:
         raise Exception('The method of calculating the inversion of Erf is not specified correctly!')
     return erfinv
+
+
+def log_erf(z, method: str = 'fast'):
+    Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
+                                                    (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
+                                                    (z ** 15 / 75600)))
+
+    log_erf_value = np.log(2 / (np.sqrt(np.pi))) + np.log((z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
+                                                    (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
+                                                    (z ** 15 / 75600)))
+    derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+    log_erf_diff = derivatives_Erf / Erf_function_value
+    return log_erf_value, log_erf_diff

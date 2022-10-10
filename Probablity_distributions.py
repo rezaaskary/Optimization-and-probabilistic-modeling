@@ -1925,7 +1925,7 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
-        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
