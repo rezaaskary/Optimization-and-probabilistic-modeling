@@ -1749,7 +1749,12 @@ class Wald (ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
-        cdf = np.zeros((len(x), 1))
+        def normal_fcn(z):
+            return (1/np.sqrt(2*np.pi))*np.exp(-0.5*z**2)
+
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        cdf = normal_fcn(np.sqrt(self.Lambda/x)*(x/self.mu-1)) + np.exp((2*self.Lambda)/self.mu)*\
+              normal_fcn(-np.sqrt(self.Lambda/x)*(x/self.mu+1))
         return cdf
 
 #######################################################################################################################
