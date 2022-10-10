@@ -13,6 +13,7 @@ class ContinuousDistributions:
                  alpha: float = None,
                  a: float = None,
                  b: float = None,
+                 c: float = None,
                  beta: float = None,
                  Lambda: float = None,
                  kappa: float = None,
@@ -91,6 +92,15 @@ class ContinuousDistributions:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
+
+        if isinstance(c, (float, int)):
+            self.c = c
+        elif c is None:
+            self.c = None
+        else:
+            raise Exception('The value of c is not specified correctly!')
+
+
 
         if isinstance(b, (float, int)):
             self.b = b
@@ -1947,6 +1957,76 @@ class ExModifiedGaussian(ContinuousDistributions):
         erf_value, _ = self.Erf(z)
         cdf = erf_value - 0.5 * np.exp(0.5 * self.Lambda * arg_exp)*erfc_val
         return cdf
+
+
+class Triangular(ContinuousDistributions):
+    def __init__(self, a:float = None, b:float = None, c:float = None) -> None:
+        """
+
+        :param a:
+        :param b:
+        :param c:
+        """
+        super(Triangular, self).__init__(a=a, b=b, c=c)
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
+        """
+        pdf = np.zeros((len(x), 1))
+
+        return pdf
+
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the  ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability distribution (Cx1)
+        """
+        derivatives_pdf = np.zeros((len(x), 1))
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log probablity of ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of ---- distribution (Cx1)
+        """
+        log_pdf = np.ones((len(x), 1)) * -np.inf
+
+        return log_pdf
+
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the log of the ---- distribution
+        :param x: An input array of the probability distribution function(Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
+        """
+        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        return derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the cumulative distribution function of ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function of ---- distribution (Cx1)
+        """
+        cdf = np.zeros((len(x), 1))
+        return cdf
+
+
+
 
 
 #######################################################################################################################
