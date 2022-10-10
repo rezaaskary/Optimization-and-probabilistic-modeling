@@ -2019,8 +2019,11 @@ class Triangular(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
+        x = np.clip(a=x, a_min=self.a, a_max=self.b)
         log_pdf = np.ones((len(x), 1)) * -np.inf
 
+        log_pdf[left_index[:, 0], 0] = np.log(2) + np.log((x[[left_index[:, 0], 0], 0] - self.a)) - np.log(self.b - self.a) - np.log(self.c - self.a)
+        log_pdf[right_index[:, 0], 0] = np.log(2) + np.log(self.b - x[[right_index[:, 0], 0], 0]) - np.log(self.b - self.a) - np.log(self.b - self.c)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
