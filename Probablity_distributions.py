@@ -521,6 +521,7 @@ class SkewedNormal(ContinuousDistributions):
         derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
                 self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Skewed Normal distribution
@@ -530,17 +531,21 @@ class SkewedNormal(ContinuousDistributions):
         """
         z = (x - self.mu) / self.sigma
         erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
-        if self.return_log_pdf:
-            log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
-        else:
-            log_prob = None
+        log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
-                    der_erf_value / (1 + erf_value))
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        z = (x - self.mu) / self.sigma
+        erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
+
+        derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
+                der_erf_value / (1 + erf_value))
+
+        return derivatives_log_prob
+
+
+
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
