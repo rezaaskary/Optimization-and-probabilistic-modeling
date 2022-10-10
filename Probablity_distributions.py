@@ -846,19 +846,7 @@ class Laplace(ContinuousDistributions):
         derivatives_log_prob = np.zeros((len(x), 1))
         derivatives_log_prob[right_index[:, 0], 0] = - (1 / self.b) * (x[right_index[:, 0], 0] - self.mu)
         derivatives_log_prob[~right_index[:, 0], 0] = (1 / self.b) * (x[~right_index[:, 0], 0] - self.mu)
-
         return derivatives_log_prob
-
-
-
-
-
-
-
-
-
-
-
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -876,21 +864,14 @@ class Laplace(ContinuousDistributions):
 
 
 class AsymmetricLaplace(ContinuousDistributions):
-    def __init__(self, kappa: float = None, mu: float = None, b: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, kappa: float = None, mu: float = None, b: float = None) -> None:
         """
 
         :param kappa:
         :param mu:
         :param b:
-        :param return_der_pdf:
-        :param return_der_logpdf:
-        :param return_pdf:
-        :param return_log_pdf:
         """
-        super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b, return_der_pdf=return_der_pdf,
-                                                return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                                return_log_pdf=return_log_pdf)
+        super(AsymmetricLaplace, self).__init__(kappa=kappa, mu=mu, b=b)
 
         if self.kappa <= 0:
             raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
@@ -914,26 +895,22 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         in_range_index = x >= self.mu
         coefficient = self.b / (self.kappa + 1 / self.kappa)
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            prob[in_range_index[:, 0], 0] = coefficient * np.exp(-self.b * self.kappa * (x[in_range_index[:, 0], 0] -
-                                                                                         self.mu))
-            prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
-                                                                                           self.mu))
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            derivatives_prob = np.zeros((len(x), 1))
-            derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
-                -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
-            derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
-                -self.b * self.kappa * (x[~in_range_index[:, 0], 0] - self.mu))
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+        prob = np.zeros((len(x), 1))
+        prob[in_range_index[:, 0], 0] = coefficient * np.exp(-self.b * self.kappa * (x[in_range_index[:, 0], 0] -
+                                                                                     self.mu))
+        prob[~in_range_index[:, 0], 0] = coefficient * np.exp((self.b / self.kappa) * (x[~in_range_index[:, 0], 0] -
+                                                                                       self.mu))
+        return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+
+        in_range_index = x >= self.mu
+        coefficient = self.b / (self.kappa + 1 / self.kappa)
+        derivatives_prob = np.zeros((len(x), 1))
+        derivatives_prob[in_range_index[:, 0], 0] = coefficient * (-self.b * self.kappa) * np.exp(
+            -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
+        derivatives_prob[~in_range_index[:, 0], 0] = coefficient * (self.b / self.kappa) * np.exp(
+            -self.b * self.kappa * (x[~in_range_index[:, 0], 0] - self.mu))
         return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
