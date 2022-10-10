@@ -19,7 +19,8 @@ class ContinuousDistributions:
                  nu: float = None,
                  gamma: float = None,
                  fixed_n_chains: bool = True,
-                 chains: int = None) -> None:
+                 chains: int = None,
+                 xm: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -135,6 +136,13 @@ class ContinuousDistributions:
             print(f'-------------------------------------------------------------------------------------------------\n'
                   f'Variant number of chains is activated .'
                   f'--------------------------------------------------------------------------------------------------')
+
+        if isinstance(xm, (float, int)):
+            self.xm = xm
+        elif xm is None:
+            self.xm = None
+        else:
+            raise Exception('The type of xm is not entered correctly!')
 
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
@@ -1759,10 +1767,20 @@ class Wald (ContinuousDistributions):
 
 
 
-class MyClass(ContinuousDistributions):
-    def __init__(self) -> None:
-        super(MyClass, self).__init__()
+class Pareto(ContinuousDistributions):
+    def __init__(self, xm: float = None, alpha: float = None) -> None:
+        """
 
+        :param xm:
+        :param alpha:
+        """
+        super(MyClass, self).__init__(xm=xm, alpha=alpha)
+
+        if self.xm <= 0 :
+            raise Exception('The value of xm should be positive (Pareto distribution)!')
+
+        if self.alpha <= 0 :
+            raise Exception('The value of alpha should be positive (Pareto distribution)!')
 
     @property
     def statistics(self):
