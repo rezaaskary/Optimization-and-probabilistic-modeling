@@ -440,7 +440,7 @@ class HalfNormal(ContinuousDistributions):
             x[in_range_index[:, 0], 0]) * np.exp(-((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Half Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -448,19 +448,17 @@ class HalfNormal(ContinuousDistributions):
          (Cx1, Cx1)
         """
         in_range_index = (x >= 0)
-        if self.return_log_pdf:
-            log_prob = np.ones((len(x), 1)) * -np.inf
-            log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
-                    (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
-        else:
-            log_prob = None
+        log_prob = np.ones((len(x), 1)) * -np.inf
+        log_prob[in_range_index[:, 0], 0] = 0.5 * np.log(2 / np.pi) - np.log(self.sigma) - (
+                (x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2)
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
-            derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        in_range_index = (x >= 0)
+        derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
