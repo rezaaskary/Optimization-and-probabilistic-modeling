@@ -665,7 +665,7 @@ class Kumaraswamy(ContinuousDistributions):
         term1 = (x ** (self.alpha - 1))
         term2 = (1 - x ** self.alpha)
         derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 + \
-                                self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
+                           self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
                                    x ** (self.alpha - 1)) * \
                            ((1 - x ** self.alpha) ** (self.beta - 2))
         return derivatives_prob
@@ -815,7 +815,6 @@ class Laplace(ContinuousDistributions):
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-
         right_index = x >= self.mu
         derivatives_prob = np.zeros((len(x), 1))
         derivatives_prob[right_index[:, 0], 0] = (-1 / (2 * self.b ** 2)) * np.exp(
@@ -1090,7 +1089,7 @@ class HalfStudentT(ContinuousDistributions):
                                                                     -(self.nu + 1) / 2 - 1))
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the HalfStudentT distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -1099,24 +1098,26 @@ class HalfStudentT(ContinuousDistributions):
         """
 
         in_range_index = x >= 0
-        if self.return_log_pdf:
-            log_prob = np.ones((len(x), 1)) * -np.inf
-            coefficient = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
-                    1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+        log_prob = np.ones((len(x), 1)) * -np.inf
+        coefficient = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
+                1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+        log_prob[in_range_index[:, 0], 0] = np.log(coefficient) - ((self.nu + 1) / 2) * np.log(
+            (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+        return log_prob
 
-            log_prob[in_range_index[:, 0], 0] = np.log(coefficient) - ((self.nu + 1) / 2) * np.log(
-                (1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
-        else:
-            log_prob = None
-
-        if self.return_der_logpdf:
-            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
-            derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
-                    ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
-                    1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log (and its derivatives) of the HalfStudentT distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
+        """
+        in_range_index = x >= 0
+        derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
+                ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
+                1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
