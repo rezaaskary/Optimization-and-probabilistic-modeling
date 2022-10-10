@@ -105,3 +105,22 @@ def erf_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
         raise Exception('The method for calculating the Error function is not specified correctly!')
     return Erf_function_value, derivatives_Erf
 
+
+def erfc_rcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
+    derivatives_erfc = - (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+    if method == 'fast':
+        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216)))
+    elif method == 'numerical':
+        t = np.linspace(0, z, 10000)
+        f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
+        deltat = t[1] - t[0]
+        Erf_function_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+
+    elif method == 'taylor':
+        erf_val = 0
+        for n in range(terms):
+            erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
+        Erf_function_value = erf_val * (2/np.sqrt(np.pi))
+    else:
+        raise Exception('The method for calculating the Error function is not specified correctly!')
+    return 1 - Erf_function_value, derivatives_erfc
