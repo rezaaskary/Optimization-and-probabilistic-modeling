@@ -695,16 +695,6 @@ class Kumaraswamy(ContinuousDistributions):
 
         return derivatives_log_prob
 
-
-
-
-
-
-
-
-
-
-
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Kumaraswamy distribution
@@ -717,8 +707,7 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 class Exponential(ContinuousDistributions):
-    def __init__(self, Lambda: None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
-                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, Lambda: None) -> None:
         """
 
         :param Lambda:
@@ -727,9 +716,7 @@ class Exponential(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(Exponential, self).__init__(Lambda=Lambda, return_der_pdf=return_der_pdf,
-                                          return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                          return_log_pdf=return_log_pdf)
+        super(Exponential, self).__init__(Lambda=Lambda)
 
         if self.Lambda <= 0:
             raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
@@ -749,21 +736,15 @@ class Exponential(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         in_range_index = x >= 0
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            derivatives_prob = np.zeros((len(x), 1))
-            derivatives_prob[in_range_index[:, 0], 0] = -(self.Lambda ** 2) * np.exp(
-                -self.Lambda * x[in_range_index[:, 0], 0])
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+        prob = np.zeros((len(x), 1))
+        prob[in_range_index[:, 0], 0] = self.Lambda * np.exp(-self.Lambda * x[in_range_index[:, 0], 0])
+        return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        in_range_index = x >= 0
+        derivatives_prob = np.zeros((len(x), 1))
+        derivatives_prob[in_range_index[:, 0], 0] = -(self.Lambda ** 2) * np.exp(
+            -self.Lambda * x[in_range_index[:, 0], 0])
         return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
