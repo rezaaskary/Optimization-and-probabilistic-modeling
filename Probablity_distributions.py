@@ -1445,15 +1445,9 @@ class InverseGamma(ContinuousDistributions):
 #######################################################################################################################
 
 class MyClass(ContinuousDistributions):
-    def __init__(self, return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
-                 return_log_pdf: bool = True) -> None:
-        super(MyClass, self).__init__(return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
-                                      return_pdf=return_pdf, return_log_pdf=return_log_pdf)
-        """
-        :param vectorized: A boolean variable used to activate vectorized calculation 
-        :param C: The number of chains used for simulation
-        :return: None
-        """
+    def __init__(self) -> None:
+        super(MyClass, self).__init__()
+
 
     @property
     def statistics(self):
@@ -1463,35 +1457,45 @@ class MyClass(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         pdf = np.zeros((len(x), 1))
-        if self.return_der_pdf:
-            derivatives_pdf = np.zeros((len(x), 1))
-        else:
-            derivatives_pdf = None
 
-        return pdf, derivatives_pdf
+        return pdf
 
-    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        """
+        derivatives_pdf = np.zeros((len(x), 1))
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
         log_pdf = np.ones((len(x), 1)) * -np.inf
-        if self.return_der_logpdf:
-            derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
-        else:
-            derivatives_log_pdf = None
 
-        return log_pdf, derivatives_log_pdf
+        return log_pdf
 
-    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        """
+        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        return derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
         :param x: An array of the input variable (Cx1)
@@ -1501,4 +1505,4 @@ class MyClass(ContinuousDistributions):
         return cdf
 
 
-ts = Uniform(a=1, b=2, return_der_pdf=True, return_der_logpdf=True)
+ts = Uniform(a=1, b=2)
