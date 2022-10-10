@@ -1130,8 +1130,7 @@ class HalfStudentT(ContinuousDistributions):
 
 
 class Cauchy(ContinuousDistributions):
-    def __init__(self, gamma: float = None, mu: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, gamma: float = None, mu: float = None) -> None:
         """
 
         :param gamma:
@@ -1141,9 +1140,7 @@ class Cauchy(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(Cauchy, self).__init__(gamma=gamma, mu=mu, return_der_pdf=return_der_pdf,
-                                     return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                     return_log_pdf=return_log_pdf)
+        super(Cauchy, self).__init__(gamma=gamma, mu=mu)
 
         if self.gamma <= 0:
             raise Exception('The value of the gamma should be positive!')
@@ -1163,22 +1160,15 @@ class Cauchy(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            prob[:, 0] = (1 / (np.pi * self.gamma)) * (1 / denominator)
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            derivatives_prob = (-2 / (np.pi * self.gamma ** 3)) * ((x - self.mu) / denominator ** 2)
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+        prob = (1 / (np.pi * self.gamma)) * (1 / denominator)
+        return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
+        derivatives_prob = (-2 / (np.pi * self.gamma ** 3)) * ((x - self.mu) / denominator ** 2)
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -1186,16 +1176,19 @@ class Cauchy(ContinuousDistributions):
          (Cx1, Cx1)
         """
         denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
-        if self.return_log_pdf:
-            log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
-        else:
-            log_prob = None
+        log_prob = -np.log(np.pi * self.gamma) - np.log(denominator)
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = ((-2 / self.gamma ** 2) * (x - self.mu)) / denominator
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
+        """
+        denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
+        derivatives_log_prob = ((-2 / self.gamma ** 2) * (x - self.mu)) / denominator
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
