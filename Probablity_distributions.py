@@ -183,6 +183,7 @@ class Uniform(ContinuousDistributions):
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+
         return np.zeros((len(x), 1))
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
@@ -192,18 +193,16 @@ class Uniform(ContinuousDistributions):
         :return: The derivatives of the log probability of the occurrence of an independent variable Cx1
         """
         in_range_index = (x > self.a) & (x < self.b)
-        if self.return_log_pdf:
-            log_prob = -np.inf * np.ones((len(x), 1))
-            log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
-        else:
-            log_prob = None
+        log_prob = -np.inf * np.ones((len(x), 1))
+        log_prob[in_range_index[:, 0], 0] = -np.log(self.b - self.a)
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = -np.inf * np.ones((len(x), 1))
-            derivatives_log_prob[in_range_index[:, 0], 0] = 0
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        in_range_index = (x > self.a) & (x < self.b)
+        derivatives_log_prob = -np.inf * np.ones((len(x), 1))
+        derivatives_log_prob[in_range_index[:, 0], 0] = 0
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
