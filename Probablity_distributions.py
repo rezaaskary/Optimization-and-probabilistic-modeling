@@ -2008,6 +2008,8 @@ class Triangular(ContinuousDistributions):
         :return: The derivative of the probability distribution (Cx1)
         """
         x = np.clip(a=x, a_min=self.a, a_max=self.b)
+        left_index = (self.a <= x) & (x <= self.c)
+        right_index = (self.c < x) & (x <= self.b)
         derivatives_pdf = np.zeros((len(x), 1))
         derivatives_pdf[left_index[:, 0], 0] = 2 / ((self.b - self.a) * (self.c - self.a))
         derivatives_pdf[right_index[:, 0], 0] = -2 / ((self.b - self.a) * (self.b - self.c))
@@ -2020,6 +2022,8 @@ class Triangular(ContinuousDistributions):
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
         x = np.clip(a=x, a_min=self.a, a_max=self.b)
+        left_index = (self.a <= x) & (x <= self.c)
+        right_index = (self.c < x) & (x <= self.b)
         log_pdf = np.ones((len(x), 1)) * -np.inf
 
         log_pdf[left_index[:, 0], 0] = np.log(2) + np.log((x[[left_index[:, 0], 0], 0] - self.a)) - np.log(self.b - self.a) - np.log(self.c - self.a)
@@ -2032,7 +2036,12 @@ class Triangular(ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
+        x = np.clip(a=x, a_min=self.a, a_max=self.b)
+        left_index = (self.a <= x) & (x <= self.c)
+        right_index = (self.c < x) & (x <= self.b)
         derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_pdf[left_index[:, 0], 0] = 1/(x[[left_index[:, 0], 0], 0] - self.a)
+        derivatives_log_pdf[right_index[:, 0], 0] = -1/(self.b - x[[right_index[:, 0], 0], 0])
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
