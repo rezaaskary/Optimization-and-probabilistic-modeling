@@ -1678,10 +1678,19 @@ class LogNormal(ContinuousDistributions):
         return cdf
 
 
-class MyClass(ContinuousDistributions):
-    def __init__(self) -> None:
-        super(MyClass, self).__init__()
+class Wald (ContinuousDistributions):
+    def __init__(self, mu: float = None, Lambda: float = None) -> None:
+        """
 
+        :param mu:
+        :param Lambda:
+        """
+        super(Wald, self).__init__(mu=mu, Lambda=Lambda)
+        if self.Lambda <= 0 :
+            raise Exception('The value of lambda should be positive (Wald distribution)!')
+
+        if self.mu <= 0 :
+            raise Exception('The value of mean should be positive (Log Normal distribution)!')
 
     @property
     def statistics(self):
@@ -1697,8 +1706,8 @@ class MyClass(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = np.zeros((len(x), 1))
-
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        pdf = np.sqrt(self.Lambda/(2*np.pi* x ** 3)) * np.exp((-self.Lambda/(2*x*self.mu**2))*(x-self.mu)**2)
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1707,7 +1716,11 @@ class MyClass(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The derivative of the probability distribution (Cx1)
         """
-        derivatives_pdf = np.zeros((len(x), 1))
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        exp_term =  np.exp((-self.Lambda/(2*x*self.mu**2))*(x-self.mu)**2)
+        coefficient =  np.sqrt(self.Lambda/(2*np))
+        derivatives_pdf = -1.5 * coefficient * (x ** -2.5) * exp_term + coefficient * (x ** -1.5) * exp_term *\
+                          (-self.Lambda/(2*self.mu**2)) * (2*(1-self.mu/x)-(1-self.mu/x)**2)
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
@@ -1716,8 +1729,8 @@ class MyClass(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
-        log_pdf = np.ones((len(x), 1)) * -np.inf
-
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        log_pdf =  0.5 * np.log(self.Lambda / (2 * np.pi * x ** 3)) + ((-self.Lambda / (2 * x * self.mu ** 2)) * (x - self.mu) ** 2)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1726,7 +1739,8 @@ class MyClass(ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
-        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        derivatives_log_pdf = (-1.5/x) + (-self.Lambda/(2*self.mu**2)) * (2*(1-self.mu/x)-(1-self.mu/x)**2)
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
