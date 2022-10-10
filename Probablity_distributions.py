@@ -1201,18 +1201,15 @@ class Cauchy(ContinuousDistributions):
 
 
 class HalfCauchy(ContinuousDistributions):
-    def __init__(self, beta: float = None, return_der_pdf: bool = True, return_der_logpdf: bool = True,
-                 return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, beta: float = None) -> None:
         """
-
         :param beta:
         :param return_der_pdf:
         :param return_der_logpdf:
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(HalfCauchy, self).__init__(beta=beta, return_der_pdf=return_der_pdf, return_der_logpdf=return_der_logpdf,
-                                         return_pdf=return_pdf, return_log_pdf=return_log_pdf)
+        super(HalfCauchy, self).__init__(beta=beta)
 
         if self.beta <= 0:
             raise Exception('The value of beta should be positive (Half Couchy)!')
@@ -1226,7 +1223,7 @@ class HalfCauchy(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -1235,26 +1232,22 @@ class HalfCauchy(ContinuousDistributions):
 
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
+        pdf = np.zeros((len(x), 1))
+        pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
 
-        if self.return_pdf:
-            pdf = np.zeros((len(x), 1))
-            pdf[index_in_range[:, 0], 0] = (2 / (self.beta * np.pi)) * (1 / denominator)
-        else:
-            pdf = None
-
-        if self.return_der_pdf:
-            derivatives_pdf = np.zeros((len(x), 1))
-            derivatives_pdf[index_in_range[:, 0], 0] = (-4 / ((self.beta ** 3) * np.pi)) * (
-                    (x[index_in_range[:, 0], 0]) /
-                    denominator ** 2)
-        else:
-            derivatives_pdf = None
-        return pdf, derivatives_pdf
+        return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        return derivatives_prob
 
-    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        index_in_range = x >= 0
+        denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
+        derivatives_pdf = np.zeros((len(x), 1))
+        derivatives_pdf[index_in_range[:, 0], 0] = (-4 / ((self.beta ** 3) * np.pi)) * (
+                (x[index_in_range[:, 0], 0]) /
+                denominator ** 2)
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log of the Half Cauchy distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -1262,19 +1255,23 @@ class HalfCauchy(ContinuousDistributions):
         """
         index_in_range = x >= 0
         denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
-        if self.return_log_pdf:
-            log_pdf = np.ones((len(x), 1)) * -np.inf
-            log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
-        else:
-            log_pdf = None
+        log_pdf = np.ones((len(x), 1)) * -np.inf
+        log_pdf[index_in_range[:, 0], 0] = np.log(2 / (self.beta * np.pi)) - np.log(denominator)
 
-        if self.return_der_logpdf:
-            derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
-            derivatives_log_pdf[index_in_range[:, 0], 0] = (-2 / self.beta ** 2) * (x[index_in_range[:, 0], 0] /
-                                                                                    denominator)
-        else:
-            derivatives_log_pdf = None
-        return log_pdf, derivatives_log_pdf
+        return log_pdf
+
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log of the Half Cauchy distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        """
+        index_in_range = x >= 0
+        denominator = (1 + ((x[index_in_range[:, 0], 0]) / self.beta) ** 2)
+        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_pdf[index_in_range[:, 0], 0] = (-2 / self.beta ** 2) * (x[index_in_range[:, 0], 0] /
+                                                                                denominator)
+        return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -1289,8 +1286,7 @@ class HalfCauchy(ContinuousDistributions):
 
 
 class GammaDistribution(ContinuousDistributions):
-    def __init__(self, alpha: float = None, beta: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, alpha: float = None, beta: float = None) -> None:
         """
 
         :param alpha:
@@ -1300,9 +1296,7 @@ class GammaDistribution(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(GammaDistribution, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                                return_der_logpdf=return_der_logpdf,
-                                                return_pdf=return_pdf, return_log_pdf=return_log_pdf)
+        super(GammaDistribution, self).__init__(alpha=alpha, beta=beta)
 
         self.LowerGamma = lower_incomplete_gamma_fcn
         self.Gamma = gamma_fcn
@@ -1323,21 +1317,16 @@ class GammaDistribution(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        if self.return_pdf:
-            pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
-        else:
-            pdf = None
-
-        if self.return_der_pdf:
-            derivatives_pdf = coefficient * ((self.alpha - 1) * (x ** (self.alpha - 2)) * np.exp(-self.beta * x)) + \
-                              coefficient * ((-self.beta) * (x ** (self.alpha - 1)) * np.exp(-self.beta * x))
-        else:
-            derivatives_pdf = None
-
-        return pdf, derivatives_pdf
+        pdf = coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
+        return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        return derivatives_prob
+
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        derivatives_pdf = coefficient * ((self.alpha - 1) * (x ** (self.alpha - 2)) * np.exp(-self.beta * x)) + \
+                          coefficient * ((-self.beta) * (x ** (self.alpha - 1)) * np.exp(-self.beta * x))
+        return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
