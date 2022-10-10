@@ -1440,6 +1440,94 @@ class InverseGamma(ContinuousDistributions):
         return cdf
 
 
+
+class Weibull(ContinuousDistributions):
+    def __init__(self, kappa: float = None, Lambda: float = None) -> None:
+        super(Weibull, self).__init__(kappa=kappa, Lambda=Lambda)
+
+        if self.kappa <= 0:
+            raise  Exception('The value of kappa should be positive (Weibull distribution)!')
+
+        if self.Lambda <= 0:
+            raise  Exception('The value of lambda should be positive (Weibull distribution)!')
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
+        """
+        # x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        pdf = np.zeros((len(x), 1))
+        index_in_range = x >= 0
+        pdf[index_in_range[:, 0], 0] = (self.kappa/self.Lambda) *\
+                                       ((x[index_in_range[:, 0], 0]/self.Lambda)**(self.kappa-1)) *\
+                                       np.exp(-(x[index_in_range[:, 0], 0]/self.Lambda)**self.kappa)
+        return pdf
+
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the  ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability distribution (Cx1)
+        """
+        derivatives_pdf = np.zeros((len(x), 1))
+        index_in_range = x >= 0
+        exp_term = np.exp(-(x[index_in_range[:, 0], 0]/self.Lambda)**self.kappa)
+        polynomial_term = ((x[index_in_range[:, 0], 0]/self.Lambda) ** (self.kappa-1))
+        derivatives_pdf = (self.kappa / self.Lambda) * ((((self.kappa-1) / self.Lambda) * (x[index_in_range[:, 0], 0]/self.Lambda) ** (self.kappa-2)) * exp_term)\
+                          - ((self.kappa / self.Lambda)**2) * (((x[index_in_range[:, 0], 0]/self.Lambda) ** (2*self.kappa-2))) * exp_term
+
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log probablity of ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of ---- distribution (Cx1)
+        """
+        log_pdf = np.ones((len(x), 1)) * -np.inf
+
+        return log_pdf
+
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the log of the ---- distribution
+        :param x: An input array of the probability distribution function(Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
+        """
+        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        return derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the cumulative distribution function of ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function of ---- distribution (Cx1)
+        """
+        cdf = np.zeros((len(x), 1))
+        return cdf
+
+
+
+
+
+
+
+
+
+
+
+
+
 #######################################################################################################################
 ########################################################################################################################
 #######################################################################################################################
@@ -1478,9 +1566,9 @@ class MyClass(ContinuousDistributions):
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the log probablity of of the ---- distribution
+        Parallelized calculating the log probablity of ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        :return: The log probability of the log probability of ---- distribution (Cx1)
         """
         log_pdf = np.ones((len(x), 1)) * -np.inf
 
@@ -1488,18 +1576,18 @@ class MyClass(ContinuousDistributions):
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the log of the ---- distribution
-        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
-        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        Parallelized calculating the derivatives of the log of the ---- distribution
+        :param x: An input array of the probability distribution function(Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
         derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the cumulative distribution function for ---- distribution
+        Parallelized calculating the cumulative distribution function of ---- distribution
         :param x: An array of the input variable (Cx1)
-        :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
+        :return: The cumulative distribution function of ---- distribution (Cx1)
         """
         cdf = np.zeros((len(x), 1))
         return cdf
