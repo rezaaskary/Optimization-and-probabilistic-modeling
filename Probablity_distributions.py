@@ -1008,27 +1008,30 @@ class StudentT(ContinuousDistributions):
                 1 + (self.Lambda / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2 - 1)
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
          (Cx1, Cx1)
         """
-        if self.return_log_pdf:
-            coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
-            log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
-        else:
-            log_prob = None
+        coef = (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * np.sqrt(self.Lambda / (np.pi * self.nu))
+        log_prob = np.log(coef) - ((self.nu + 1) / 2) * np.log(1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = (2 * (self.Lambda / self.nu) * (x - self.mu)) / (
-                    1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+        return log_prob
 
-    def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log (and its derivatives) of the Student_t distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability and derivatives of the log probability of the occurrence of an independent variable
+         (Cx1, Cx1)
+        """
+        derivatives_log_prob = (2 * (self.Lambda / self.nu) * (x - self.mu)) / (
+                1 + (self.Lambda / self.nu) * (x - self.mu) ** 2)
+        return derivatives_log_prob
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the cumulative distribution function for Student_t distribution
         :param x: An array of the input variable (Cx1)
@@ -1038,8 +1041,7 @@ class StudentT(ContinuousDistributions):
 
 
 class HalfStudentT(ContinuousDistributions):
-    def __init__(self, nu: float = None, sigma: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, nu: float = None, sigma: float = None) -> None:
         """
 
         :param nu:
@@ -1049,9 +1051,7 @@ class HalfStudentT(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(HalfStudentT, self).__init__(nu=nu, sigma=sigma, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                           return_log_pdf=return_log_pdf)
+        super(HalfStudentT, self).__init__(nu=nu, sigma=sigma)
 
         self.Gamma = gamma_fcn
 
@@ -1072,25 +1072,22 @@ class HalfStudentT(ContinuousDistributions):
         in_range_index = x >= 0
         coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
                 1 / (self.sigma * np.sqrt(np.pi * self.nu)))
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            prob[in_range_index[:, 0], 0] = coef * (
-                    1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)) ** (-(self.nu + 1) / 2)
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            derivatives_prob = np.zeros((len(x), 1))
-            derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (
-                    1 / (self.nu * self.sigma ** 2)) * (2 * x[in_range_index[:, 0], 0]) * (
-                                                                (1 + (1 / (self.nu * self.sigma ** 2)) * (
-                                                                        (x[in_range_index[:, 0], 0]) ** 2)) ** (
-                                                                        -(self.nu + 1) / 2 - 1))
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
+        prob = np.zeros((len(x), 1))
+        prob[in_range_index[:, 0], 0] = coef * (
+                1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)) ** (-(self.nu + 1) / 2)
+        return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+
+        in_range_index = x >= 0
+        coef = 2 * (self.Gamma((self.nu + 1) / 2) / self.Gamma(self.nu / 2)) * (
+                1 / (self.sigma * np.sqrt(np.pi * self.nu)))
+        derivatives_prob = np.zeros((len(x), 1))
+        derivatives_prob[in_range_index[:, 0], 0] = coef * (-(self.nu + 1) / 2) * (
+                1 / (self.nu * self.sigma ** 2)) * (2 * x[in_range_index[:, 0], 0]) * (
+                                                            (1 + (1 / (self.nu * self.sigma ** 2)) * (
+                                                                    (x[in_range_index[:, 0], 0]) ** 2)) ** (
+                                                                    -(self.nu + 1) / 2 - 1))
         return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
