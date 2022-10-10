@@ -183,7 +183,6 @@ class Uniform(ContinuousDistributions):
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-
         return np.zeros((len(x), 1))
 
     def log_prob(self, x: np.ndarray) -> np.ndarray:
@@ -198,7 +197,6 @@ class Uniform(ContinuousDistributions):
         return log_prob
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
-
         in_range_index = (x > self.a) & (x < self.b)
         derivatives_log_prob = -np.inf * np.ones((len(x), 1))
         derivatives_log_prob[in_range_index[:, 0], 0] = 0
@@ -256,7 +254,6 @@ class Normal(ContinuousDistributions):
         return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-
         return (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) /
                                                                                       (2 * self.sigma ** 2))
 
@@ -270,7 +267,6 @@ class Normal(ContinuousDistributions):
         return -np.log(self.sigma * np.sqrt(2 * np.pi)) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
-
         return -(x - self.mu) / (self.sigma ** 2)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -433,7 +429,6 @@ class HalfNormal(ContinuousDistributions):
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-
         in_range_index = (x >= 0)
         derivatives_prob = np.zeros((len(x), 1))
         derivatives_prob[in_range_index[:, 0], 0] = (- np.sqrt(2 / np.pi) / (self.sigma ** 3)) * (
@@ -454,7 +449,6 @@ class HalfNormal(ContinuousDistributions):
         return log_prob
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
-
         in_range_index = (x >= 0)
         derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
         derivatives_log_prob[in_range_index[:, 0], 0] = -x[in_range_index[:, 0], 0] / self.sigma ** 2
@@ -535,7 +529,6 @@ class SkewedNormal(ContinuousDistributions):
         return log_prob
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
-
         z = (x - self.mu) / self.sigma
         erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
         derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
@@ -611,17 +604,15 @@ class BetaPdf(ContinuousDistributions):
          (Cx1, Cx1)
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
-        if self.return_log_pdf:
-            log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
-                                                                                                         self.beta))
-        else:
-            log_prob = None
+        log_prob = (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(1 - x) - np.log(self.Beta(self.alpha,
+                                                                                                     self.beta))
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = ((self.alpha - 1) / x) - ((self.beta - 1) / (1 - x))
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
+        derivatives_log_prob = ((self.alpha - 1) / x) - ((self.beta - 1) / (1 - x))
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -639,15 +630,9 @@ class Kumaraswamy(ContinuousDistributions):
 
         :param alpha:
         :param beta:
-        :param return_der_pdf:
-        :param return_der_logpdf:
-        :param return_pdf:
-        :param return_log_pdf:
         :return:
         """
-        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                          return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                          return_log_pdf=return_log_pdf)
+        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta)
 
         if self.alpha <= 0:
             raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
@@ -662,7 +647,7 @@ class Kumaraswamy(ContinuousDistributions):
         """
         return None
 
-    def prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the Kumaraswamy distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -671,21 +656,20 @@ class Kumaraswamy(ContinuousDistributions):
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
         term1 = (x ** (self.alpha - 1))
         term2 = (1 - x ** self.alpha)
-        if self.return_pdf:
-            prob = self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
-        else:
-            prob = None
+        prob = self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
+        return prob
 
-        if self.return_der_pdf:
-            derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 + \
-                               self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
-                                       x ** (self.alpha - 1)) * \
-                               ((1 - x ** self.alpha) ** (self.beta - 2))
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
-    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+    def prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
+        term1 = (x ** (self.alpha - 1))
+        term2 = (1 - x ** self.alpha)
+        derivatives_prob = self.beta * self.alpha * (self.alpha - 1) * (x ** (self.alpha - 2)) * term2 + \
+                                self.beta * self.alpha * term1 * (self.beta - 1) * (-self.alpha) * (
+                                   x ** (self.alpha - 1)) * \
+                           ((1 - x ** self.alpha) ** (self.beta - 2))
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Kumaraswamy distribution
@@ -694,17 +678,32 @@ class Kumaraswamy(ContinuousDistributions):
          (Cx1, Cx1)
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
-        if self.return_log_pdf:
-            log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
-                (1 - x ** self.alpha))
-        else:
-            log_prob = None
-        if self.return_der_logpdf:
-            derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x ** (self.alpha - 1))) / (
-                    1 - x ** self.alpha)
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+        log_prob = np.log(self.alpha * self.beta) + (self.alpha - 1) * np.log(x) + (self.beta - 1) * np.log(
+            (1 - x ** self.alpha))
+
+        return log_prob
+
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+
+        :param x:
+        :return:
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1)
+        derivatives_log_prob = (self.alpha - 1) / x + ((self.beta - 1) * (-self.alpha * x ** (self.alpha - 1))) / (
+                1 - x ** self.alpha)
+
+        return derivatives_log_prob
+
+
+
+
+
+
+
+
+
+
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -763,8 +762,10 @@ class Exponential(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Exponential distribution
@@ -846,8 +847,10 @@ class Laplace(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Laplace distribution
@@ -941,8 +944,10 @@ class AsymmetricLaplace(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Asymmetric Laplace distribution
@@ -1038,8 +1043,10 @@ class StudentT(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Student_t distribution
@@ -1121,8 +1128,10 @@ class HalfStudentT(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the HalfStudentT distribution
@@ -1145,8 +1154,8 @@ class HalfStudentT(ContinuousDistributions):
         if self.return_der_logpdf:
             derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
             derivatives_log_prob[in_range_index[:, 0], 0] = - ((self.nu + 1) / 2) * (
-                        ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
-                            1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
+                    ((2 * x[in_range_index[:, 0], 0]) / (self.nu * self.sigma ** 2)) / (
+                    1 + (1 / self.nu) * ((x[in_range_index[:, 0], 0] / self.sigma) ** 2)))
         else:
             derivatives_log_prob = None
         return log_prob, derivatives_log_prob
@@ -1206,8 +1215,10 @@ class Cauchy(ContinuousDistributions):
         else:
             derivatives_prob = None
         return prob, derivatives_prob
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log (and its derivatives) of the Cauchy  distribution
@@ -1287,8 +1298,10 @@ class HalfCauchy(ContinuousDistributions):
         else:
             derivatives_pdf = None
         return pdf, derivatives_pdf
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the Half Cauchy distribution
@@ -1370,8 +1383,10 @@ class GammaDistribution(ContinuousDistributions):
             derivatives_pdf = None
 
         return pdf, derivatives_pdf
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the Gamma distribution
@@ -1454,8 +1469,10 @@ class InverseGamma(ContinuousDistributions):
             derivatives_pdf = None
 
         return pdf, derivatives_pdf
+
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         return derivatives_prob
+
     def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the log of the ---- distribution
