@@ -2103,8 +2103,8 @@ class Gumbel (ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
-        log_pdf = np.ones((len(x), 1)) * -np.inf
-
+        z = (x - self.mu) / self.beta
+        log_pdf = -np.log(self.beta) -z-np.exp(-z)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -2113,7 +2113,8 @@ class Gumbel (ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
-        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        z = (x - self.mu) / self.beta
+        derivatives_log_pdf = (1/self.beta) * (np.exp(-z)-1)
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -2122,7 +2123,7 @@ class Gumbel (ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
-        cdf = np.zeros((len(x), 1))
+        cdf = np.exp(-np.exp(-(x-self.mu)/ self.beta))
         return cdf
 
 
