@@ -1963,12 +1963,20 @@ class Triangular(ContinuousDistributions):
     def __init__(self, a:float = None, b:float = None, c:float = None) -> None:
         """
 
-        :param a:
-        :param b:
-        :param c:
+        :param a: left hand side location
+        :param b: upper limit of the triangle
+        :param c: the mode of the triangle
         """
         super(Triangular, self).__init__(a=a, b=b, c=c)
 
+        if self.a >= self.b:
+            raise Exception('The value of a should be lower than b (Triangular distribution)!')
+
+        if self.a > self.c:
+            raise Exception('The value of a should be lower/equal than c (Triangular distribution)!')
+
+        if self.c > self.b:
+            raise Exception('The value of b should be higher/equal than c (Triangular distribution)!')
 
     @property
     def statistics(self):
@@ -1984,8 +1992,13 @@ class Triangular(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = np.zeros((len(x), 1))
 
+        x = np.clip(a=x, a_min=self.a, a_max=self.b)
+        pdf = np.zeros((len(x), 1))
+        left_index = (self.a <= x) & (x <= self.c)
+        right_index = (self.c < x) & (x <= self.b)
+        pdf[left_index[:, 0], 0] = 2 * ((x[[left_index[:, 0], 0], 0] - self.a)/((self.b-self.a)*(self.c-self.a)))
+        pdf[right_index[:, 0], 0] = 2 * ((self.b-x[[right_index[:, 0], 0], 0]) / ((self.b - self.a) * (self.b - self.c)))
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1994,7 +2007,10 @@ class Triangular(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The derivative of the probability distribution (Cx1)
         """
+        x = np.clip(a=x, a_min=self.a, a_max=self.b)
         derivatives_pdf = np.zeros((len(x), 1))
+        derivatives_pdf[left_index[:, 0], 0] = 2 / ((self.b - self.a) * (self.c - self.a))
+        derivatives_pdf[right_index[:, 0], 0] = -2 / ((self.b - self.a) * (self.b - self.c))
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
