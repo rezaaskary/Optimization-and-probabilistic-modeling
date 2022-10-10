@@ -166,3 +166,13 @@ def log_erfc(z, method: str = 'fast'):
     derivatives_Erfc = -(2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
     log_erf_diff = derivatives_Erfc / Erfc_function_value
     return log_erf_value, log_erf_diff
+
+
+def bessel_I_s(z: np.ndarray, s):
+    N = 10
+    I_s = 0
+    for m in range(N):
+        I_s += ((0.5*z)**(2*m+s)) / (np.math.factorial(m) * gamma_fcn(m+s+1))
+
+    return I_s
+
