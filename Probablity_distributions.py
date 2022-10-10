@@ -1757,6 +1757,70 @@ class Wald (ContinuousDistributions):
               normal_fcn(-np.sqrt(self.Lambda/x)*(x/self.mu+1))
         return cdf
 
+
+
+class MyClass(ContinuousDistributions):
+    def __init__(self) -> None:
+        super(MyClass, self).__init__()
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
+        """
+        pdf = np.zeros((len(x), 1))
+
+        return pdf
+
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the  ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability distribution (Cx1)
+        """
+        derivatives_pdf = np.zeros((len(x), 1))
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log probablity of ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of ---- distribution (Cx1)
+        """
+        log_pdf = np.ones((len(x), 1)) * -np.inf
+
+        return log_pdf
+
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the log of the ---- distribution
+        :param x: An input array of the probability distribution function(Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
+        """
+        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        return derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the cumulative distribution function of ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function of ---- distribution (Cx1)
+        """
+        cdf = np.zeros((len(x), 1))
+        return cdf
+
+
+
 #######################################################################################################################
 ########################################################################################################################
 #######################################################################################################################
