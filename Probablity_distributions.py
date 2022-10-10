@@ -1461,7 +1461,7 @@ class MyClass(ContinuousDistributions):
         """
         Parallelized calculating the probability of the ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
         pdf = np.zeros((len(x), 1))
 
@@ -1469,16 +1469,16 @@ class MyClass(ContinuousDistributions):
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the probability of the ----- distribution
+        Parallelized calculating the derivatives of the  ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        :return: The derivative of the probability distribution (Cx1)
         """
         derivatives_pdf = np.zeros((len(x), 1))
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
-        Parallelized calculating the log of the ---- distribution
+        Parallelized calculating the log probablity of of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
