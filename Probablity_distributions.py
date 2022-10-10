@@ -1614,6 +1614,8 @@ class LogNormal(ContinuousDistributions):
         if self.variance <= 0 :
             raise Exception('The value of variance should be positive (Log Normal distribution)!')
 
+        self.erf = erf_fcn
+
     @property
     def statistics(self):
         """
@@ -1630,6 +1632,73 @@ class LogNormal(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         pdf = (1/(x*self.sigma*np.sqrt(2*np.pi))) * np.exp(-0.5*(1/self.sigma**2)*(np.log(x)-self.mu)**2)
+        return pdf
+
+    def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the  ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The derivative of the probability distribution (Cx1)
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        derivatives_pdf = (-1/x**2) * (1/(self.sigma*np.sqrt(2*np.pi))) *\
+                      np.exp(-0.5*(1/self.sigma**2)*(np.log(x)-self.mu)**2) *\
+                      (1 +(1/(self.sigma**2))*(np.log(x)-self.mu))
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log probablity of ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of ---- distribution (Cx1)
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        log_pdf = -np.log((x * self.sigma * np.sqrt(2 * np.pi))) - 0.5 * ((1 / self.sigma ** 2) * ((np.log(x) - self.mu) ** 2))
+        return log_pdf
+
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the derivatives of the log of the ---- distribution
+        :param x: An input array of the probability distribution function(Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        derivatives_log_pdf = (-1/x)*(1+(1 / (self.sigma ** 2)) * (np.log(x) - self.mu))
+        return derivatives_log_pdf
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the cumulative distribution function of ---- distribution
+        :param x: An array of the input variable (Cx1)
+        :return: The cumulative distribution function of ---- distribution (Cx1)
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        input_argument = (np.log(x)-self.mu)/(self.sigma*np.sqrt(2))
+        cdf = 0.5*(1+self.erf(input_argument))
+        return cdf
+
+
+class MyClass(ContinuousDistributions):
+    def __init__(self) -> None:
+        super(MyClass, self).__init__()
+
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the probability of the ----- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
+        """
+        pdf = np.zeros((len(x), 1))
+
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1668,8 +1737,6 @@ class LogNormal(ContinuousDistributions):
         """
         cdf = np.zeros((len(x), 1))
         return cdf
-
-
 
 #######################################################################################################################
 ########################################################################################################################
