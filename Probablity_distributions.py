@@ -318,7 +318,7 @@ class TruncatedNormal(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the Truncated Normal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -331,21 +331,10 @@ class TruncatedNormal(ContinuousDistributions):
         erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
         ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
         normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
-
-        if self.return_pdf:
-            prob = np.zeros((len(x), 1))
-            normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
-            prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
-        else:
-            prob = None
-
-        if self.return_der_pdf:
-            der_prob = np.zeros((len(x), 1))
-            der_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
-                    -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
-        else:
-            der_prob = None
-        return prob, der_prob
+        prob = np.zeros((len(x), 1))
+        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
+        prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
 
@@ -360,7 +349,7 @@ class TruncatedNormal(ContinuousDistributions):
                 -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
         return derivatives_prob
 
-    def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def log_prob(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log (and its derivatives) of the Truncated Normal distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
@@ -375,20 +364,20 @@ class TruncatedNormal(ContinuousDistributions):
 
         erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
         ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
-        if self.return_log_pdf:
-            log_prob = np.ones((len(x), 1)) * -np.inf
-            log_prob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
-                2 * np.pi) - 0.5 * normal_argument ** 2
-        else:
-            log_prob = None
+        log_prob = np.ones((len(x), 1)) * -np.inf
+        log_prob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
+            2 * np.pi) - 0.5 * normal_argument ** 2
+        return log_prob
 
-        if self.return_der_logpdf:
-            derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
-            derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (
-                    x[in_range_index[:, 0], 0] - self.mu)
-        else:
-            derivatives_log_prob = None
-        return log_prob, derivatives_log_prob
+    def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
+
+        in_range_index = (x >= self.lb) & (x <= self.ub)
+        arg_r = (self.ub - self.mu) / self.sigma
+        arg_l = (self.lb - self.mu) / self.sigma
+        derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
+        derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (
+                x[in_range_index[:, 0], 0] - self.mu)
+        return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """
