@@ -474,9 +474,7 @@ class HalfNormal(ContinuousDistributions):
 
 
 class SkewedNormal(ContinuousDistributions):
-    def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
-                return_der_pdf: bool = True, return_der_logpdf: bool = True, return_pdf: bool = True,
-                return_log_pdf: bool = True) -> None:
+    def __int__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None) -> None:
         """
 
         :param mu:
@@ -489,9 +487,7 @@ class SkewedNormal(ContinuousDistributions):
         :param return_log_pdf:
         :return:
         """
-        super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                           return_log_pdf=return_log_pdf)
+        super(SkewedNormal, self).__init__(mu=mu, alpha=alpha, sigma=sigma)
 
         if self.mu is None or self.sigma is None:
             raise Exception(
@@ -515,19 +511,15 @@ class SkewedNormal(ContinuousDistributions):
         """
         z = (x - self.mu) / self.sigma
         erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
-        if self.return_pdf:
-            normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
-            prob = 2 * erf_part * normal_part
-        else:
-            prob = None
+        normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
+        prob = 2 * erf_part * normal_part
+        return prob
 
-        if self.return_der_pdf:
-            derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
-                    self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
-        else:
-            derivatives_prob = None
-        return prob, derivatives_prob
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        z = (x - self.mu) / self.sigma
+        erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
+        derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
+                self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
         return derivatives_prob
     def log_prob(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
