@@ -1845,6 +1845,8 @@ class Pareto(ContinuousDistributions):
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
         cdf = np.zeros((len(x), 1))
+        in_range_index = x >= self.xm
+        cdf[in_range_index[:, 0], 0] = 1 - (self.xm /x[in_range_index[:, 0], 0]) ** self.alpha
         return cdf
 
 
