@@ -89,7 +89,9 @@ def erf_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     """
     derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
     if method == 'fast':
-        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216)))
+        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
+                                                        (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
+                                                        (z ** 15 / 75600)))
     elif method == 'numerical':
         t = np.linspace(0, z, 10000)
         f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
@@ -106,10 +108,12 @@ def erf_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     return Erf_function_value, derivatives_Erf
 
 
-def erfc_rcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
+def erfc_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     derivatives_erfc = - (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
     if method == 'fast':
-        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) + (z ** 9 / 216)))
+        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
+                                                        (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
+                                                        (z ** 15 / 75600)))
     elif method == 'numerical':
         t = np.linspace(0, z, 10000)
         f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
@@ -124,3 +128,18 @@ def erfc_rcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
     else:
         raise Exception('The method for calculating the Error function is not specified correctly!')
     return 1 - Erf_function_value, derivatives_erfc
+
+def erfinv_fcn(z, method: str = 'fast'):
+    """
+    The inversion of error function
+    :param z:
+    :param method:
+    :return:
+    """
+    if method == 'fast':
+        erfinv = 0.5 * np.sqrt(np.pi) * (z + (np.pi/12)*(x**3) + (((np.pi**2)*7)/480)*(x**5) +
+                                     (((np.pi**3)*127)/40320)*(x**7) +
+                                     (((np.pi**4)*4369)/5806080)*(x**9) + (((np.pi**5)*34807)/182476800)*(x**11))
+    else:
+        raise Exception('The method of calculating the inversion of Erf is not specified correctly!')
+    return erfinv

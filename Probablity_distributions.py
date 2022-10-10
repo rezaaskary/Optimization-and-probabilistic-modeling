@@ -1852,6 +1852,12 @@ class Pareto(ContinuousDistributions):
 
 class ExModifiedGaussian(ContinuousDistributions):
     def __init__(self, sigma: float = None, mu: float = None, Lambda: float = None) -> None:
+        """
+
+        :param sigma:
+        :param mu:
+        :param Lambda:
+        """
         super(ExModifiedGaussian, self).__init__(sigma=sigma, mu=mu, Lambda=Lambda)
 
 
@@ -1863,6 +1869,8 @@ class ExModifiedGaussian(ContinuousDistributions):
 
         if self.variance <= 0 :
             raise Exception('The value of variance should be positive (Exponentially modified Gaussian distribution)!')
+
+        self.Erfc = erfc_fcn
 
     @property
     def statistics(self):
@@ -1878,8 +1886,10 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = np.zeros((len(x), 1))
-
+        arg_exp = 2*self.mu+self.Lambda*(self.sigma**2)-2*x
+        arg_erfc = (self.mu+self.Lambda*(self.sigma**2)-x)/(self.sigma*np.sqrt(2))
+        erfc_val, erfc_diff_val = self.Erfc(arg_erfc)
+        pdf = 0.5 * self.Lambda * np.exp(0.5 * self.Lambda * arg_exp) * erfc_val
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1888,7 +1898,13 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The derivative of the probability distribution (Cx1)
         """
-        derivatives_pdf = np.zeros((len(x), 1))
+        arg_exp = 2 * self.mu + self.Lambda * (self.sigma ** 2) - 2 * x
+        arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
+        erfc_val, erfc_diff_val = self.Erfc(arg_erfc)
+
+        derivatives_pdf = -0.5 * (self.Lambda**2) * np.exp(0.5 * self.Lambda * arg_exp) * erfc_val +\
+                          0.5 * self.Lambda *np.exp(0.5 * self.Lambda * arg_exp) * (-1 / (self.sigma * np.sqrt(2))) *\
+                          erfc_diff_val
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
