@@ -1349,10 +1349,6 @@ class GammaDistribution(ContinuousDistributions):
         derivatives_log_pdf = (self.alpha - 1) / x - self.beta
         return derivatives_log_pdf
 
-
-
-
-
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Parallelized calculating the cumulative distribution function for ---- distribution
@@ -1366,8 +1362,7 @@ class GammaDistribution(ContinuousDistributions):
 
 
 class InverseGamma(ContinuousDistributions):
-    def __init__(self, alpha: float = None, beta: float = None, return_der_pdf: bool = True,
-                 return_der_logpdf: bool = True, return_pdf: bool = True, return_log_pdf: bool = True) -> None:
+    def __init__(self, alpha: float = None, beta: float = None) -> None:
         """
 
         :param alpha:
@@ -1377,9 +1372,7 @@ class InverseGamma(ContinuousDistributions):
         :param return_pdf:
         :param return_log_pdf:
         """
-        super(InverseGamma, self).__init__(alpha=alpha, beta=beta, return_der_pdf=return_der_pdf,
-                                           return_der_logpdf=return_der_logpdf, return_pdf=return_pdf,
-                                           return_log_pdf=return_log_pdf)
+        super(InverseGamma, self).__init__(alpha=alpha, beta=beta)
 
         if self.alpha <= 0:
             raise Exception('The value of alpha should be positive (InverseGamma)!')
@@ -1396,7 +1389,7 @@ class InverseGamma(ContinuousDistributions):
         """
         return None
 
-    def pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the probability of the ----- distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
@@ -1404,41 +1397,37 @@ class InverseGamma(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        if self.return_pdf:
-            pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
-        else:
-            pdf = None
-
-        if self.return_der_pdf:
-            derivatives_pdf = coefficient * ((-self.alpha - 1) * (x ** (-self.alpha - 2)) * np.exp(-self.beta / x)) + \
-                              coefficient * ((self.beta / x ** 2) * (x ** (-self.alpha - 1)) * np.exp(-self.beta / x))
-        else:
-            derivatives_pdf = None
-
-        return pdf, derivatives_pdf
+        pdf = coefficient * (x ** (-self.alpha - 1)) * (np.exp(-self.beta / x))
+        return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        return derivatives_prob
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        derivatives_pdf = coefficient * ((-self.alpha - 1) * (x ** (-self.alpha - 2)) * np.exp(-self.beta / x)) + \
+                          coefficient * ((self.beta / x ** 2) * (x ** (-self.alpha - 1)) * np.exp(-self.beta / x))
 
-    def log_pdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
+        return derivatives_pdf
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Parallelized calculating the log of the ---- distribution
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable Cx1
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
-        if self.return_log_pdf:
-            coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-            log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
-        else:
-            log_pdf = None
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        log_pdf = np.log(coefficient) + (-self.alpha - 1) * np.log(x) - self.beta / x
+        return log_pdf
 
-        if self.return_der_logpdf:
-            derivatives_log_pdf = (-self.alpha - 1) / x + self.beta / x ** 2
-        else:
-            derivatives_log_pdf = None
-
-        return log_pdf, derivatives_log_pdf
+    def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
+        """
+        Parallelized calculating the log of the ---- distribution
+        :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
+        :return: The log probability of the log probability of the occurrence of an independent variable Cx1
+        """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        derivatives_log_pdf = (-self.alpha - 1) / x + self.beta / x ** 2
+        return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> (np.ndarray, np.ndarray):
         """
