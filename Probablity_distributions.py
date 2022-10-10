@@ -1796,7 +1796,10 @@ class Pareto(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
+
         pdf = np.zeros((len(x), 1))
+        in_range_index = x >= self.xm
+        pdf[in_range_index[:, 0], 0] = (self.alpha/(x[in_range_index[:, 0], 0]** (self.alpha+1))) * (self.xm ** self.alpha)
 
         return pdf
 
@@ -1807,6 +1810,9 @@ class Pareto(ContinuousDistributions):
         :return: The derivative of the probability distribution (Cx1)
         """
         derivatives_pdf = np.zeros((len(x), 1))
+        in_range_index = x >= self.xm
+        pdf[in_range_index[:, 0], 0] = -((self.alpha**2+self.alpha) * (self.xm ** self.alpha))/\
+                                       (x[in_range_index[:, 0], 0]** (self.alpha+2))
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
