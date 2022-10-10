@@ -2050,12 +2050,15 @@ class Triangular(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
+        x = np.clip(a=x, a_min=self.a, a_max=self.b)
+        left_index = (self.a <= x) & (x <= self.c)
+        right_index = (self.c < x) & (x <= self.b)
+        the_most_right_index = x > self.b
         cdf = np.zeros((len(x), 1))
+        cdf[left_index[:, 0], 0] = ((x[[left_index[:, 0], 0], 0] - self.a)**2)/((self.b - self.a)*(self.c - self.a))
+        cdf[right_index[:, 0], 0] = 1- ((self.b - x[[right_index[:, 0], 0], 0])**2)/((self.b - self.a)*(self.b - self.c))
+        cdf[the_most_right_index[:, 0], 0] = 1.0
         return cdf
-
-
-
-
 
 #######################################################################################################################
 ########################################################################################################################
