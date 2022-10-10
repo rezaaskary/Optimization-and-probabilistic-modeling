@@ -1913,8 +1913,10 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
-        log_pdf = np.ones((len(x), 1)) * -np.inf
 
+        arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
+        log_pdf = np.log(0.5*self.Lambda) + 0.5*self.Lambda*(2 * self.mu + self.Lambda * (self.sigma ** 2) - 2 * x) +\
+        np.log(self.Erfc(arg_erfc))
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
