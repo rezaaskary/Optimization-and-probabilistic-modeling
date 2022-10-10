@@ -2,7 +2,13 @@ import numpy as np
 
 
 def lower_incomplete_gamma_fcn(s, x, method: str = 'numerical'):
-
+    """
+    calculating the lower incomplete Gamma function used for calculating various pdf
+    :param s:
+    :param x:
+    :param method:
+    :return:
+    """
     if method == 'numerical':
         t = np.linspace(0, x, 10000)
         f = np.exp(-t) * t ** (s - 1)

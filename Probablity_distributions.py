@@ -1540,7 +1540,7 @@ class ChiSquared(ContinuousDistributions):
             raise Exception('The degree of freedom should be positive integer (Chi Squared distribution)!')
 
         self.Gamma = gamma_fcn
-
+        self.ligf = lower_incomplete_gamma_fcn
     @property
     def statistics(self):
         """
@@ -1598,7 +1598,8 @@ class ChiSquared(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
-        cdf = np.zeros((len(x), 1))
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        cdf = self.ligf(self.kappa/2, 0.5*x)/self.Gamma(self.kappa/2)
         return cdf
 
 
