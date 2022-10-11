@@ -2157,8 +2157,9 @@ class Logistic(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = np.zeros((len(x), 1))
-
+        z = (x-self.mu)/self.sigma
+        exp_term = np.exp(-z)
+        pdf = exp_term /(self.sigma*(1 + exp_term)**2)
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
