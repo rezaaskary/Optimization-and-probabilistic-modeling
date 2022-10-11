@@ -121,24 +121,6 @@ class ErfcFcn:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def lower_incomplete_gamma_fcn(s, x, method: str = 'numerical'):
     """
     calculating the lower incomplete Gamma function used for calculating various pdf

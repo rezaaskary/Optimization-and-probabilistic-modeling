@@ -7,14 +7,14 @@ RNG = np.random.default_rng(20)
 
 class ContinuousDistributions:
     def __init__(self,
-                 variance: float = None,
-                 sigma: float = None,
-                 mu: float = None,
-                 lb: float = None,
-                 ub: float = None,
+                 variance: np.ndarray = None,
+                 sigma: np.ndarray = None,
+                 mu: np.ndarray = None,
+                 lb: np.ndarray = None,
+                 ub: np.ndarray = None,
                  alpha: float = None,
-                 a: float = None,
-                 b: float = None,
+                 a: np.ndarray = None,
+                 b: np.ndarray = None,
                  c: float = None,
                  beta: float = None,
                  Lambda: float = None,
@@ -22,20 +22,20 @@ class ContinuousDistributions:
                  nu: float = None,
                  gamma: float = None,
                  fixed_n_chains: bool = True,
-                 chains: int = 1,
+                 chains: int = None,
                  xm: float = None) -> None:
 
-        if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
+        if isinstance(sigma, np.ndarray) and isinstance(variance, np.ndarray):
             raise Exception('Please Enter either variance or standard deviation!')
 
-        if isinstance(sigma, (float, int)) and not isinstance(variance, (float, int)):
+        if isinstance(sigma, np.ndarray) and not isinstance(variance, np.ndarray):
             if sigma > 0:
                 self.sigma = sigma
                 self.variance = sigma ** 2
             else:
                 raise Exception('The standard deviation should be a positive value!')
 
-        if not isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
+        if not isinstance(sigma, np.ndarray) and isinstance(variance, np.ndarray):
             if variance > 0:
                 self.sigma = np.sqrt(variance)
                 self.variance = variance
@@ -46,84 +46,84 @@ class ContinuousDistributions:
             self.sigma = None
             self.variance = None
 
-        if isinstance(lb, (float, int)):
+        if isinstance(lb, np.ndarray):
             self.lb = lb
         elif lb is None:
             self.lb = None
         else:
             raise Exception('The lower bound is not specified correctly!')
 
-        if isinstance(ub, (float, int)):
+        if isinstance(ub, np.ndarray):
             self.ub = ub
         elif ub is None:
             self.ub = None
         else:
             raise Exception('The upper bound is not specified correctly!')
 
-        if isinstance(mu, (float, int)):
+        if isinstance(mu, np.ndarray):
             self.mu = mu
         elif mu is None:
             self.mu = None
         else:
             raise Exception('The value of mu is not specified correctly!')
 
-        if isinstance(alpha, (float, int)):
+        if isinstance(alpha, np.ndarray):
             self.alpha = alpha
         elif alpha is None:
             self.alpha = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(beta, (float, int)):
+        if isinstance(beta, np.ndarray):
             self.beta = beta
         elif beta is None:
             self.beta = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(Lambda, (float, int)):
+        if isinstance(Lambda, np.ndarray):
             self.Lambda = Lambda
         elif Lambda is None:
             self.Lambda = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
 
-        if isinstance(a, (float, int)):
+        if isinstance(a, np.ndarray):
             self.a = a
         elif a is None:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
 
-        if isinstance(c, (float, int)):
+        if isinstance(c, np.ndarray):
             self.c = c
         elif c is None:
             self.c = None
         else:
             raise Exception('The value of c is not specified correctly!')
 
-        if isinstance(b, (float, int)):
+        if isinstance(b, np.ndarray):
             self.b = b
         elif b is None:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
 
-        if isinstance(kappa, (float, int)):
+        if isinstance(kappa, np.ndarray):
             self.kappa = kappa
         elif kappa is None:
             self.kappa = None
         else:
             raise Exception('The value of kappa is not specified correctly!')
 
-        if isinstance(nu, (float, int)):
+        if isinstance(nu, np.ndarray):
             self.nu = nu
         elif nu is None:
             self.nu = None
         else:
             raise Exception('The value of nu is not specified correctly!')
 
-        if isinstance(gamma, (float, int)):
+        if isinstance(gamma, np.ndarray):
             self.gamma = gamma
         elif gamma is None:
             self.gamma = None
@@ -179,7 +179,7 @@ class Uniform(ContinuousDistributions):
         """
         super(Uniform, self).__init__(a=a, b=b)
 
-        if self.a >= self.b:
+        if any(self.a >= self.b):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
     @property
