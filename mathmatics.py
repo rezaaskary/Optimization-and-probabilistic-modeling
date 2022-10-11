@@ -247,12 +247,10 @@ class GammaFcn:
         :param s:
         :return:
         """
-
-        t = (np.linspace(0, 100, terms))[:, :, 0]
+        t = np.linspace(np.finfo(float).eps, 100, self.intervals)
         f = np.exp(-t) * t ** (s - 1)
-        deltat = t[1:2, :] - t[0:1, :]
-        integral = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
-
+        deltat = t[1:2] - t[0:1]
+        integral = deltat * (f[:, 1:-1]).sum(axis=1) + 0.5 * deltat * (f[:, 0:1] + f[:, -1:])
         return integral
 
     def simpson(self, z: np.ndarray = None, s: np.ndarray = None) -> np.ndarray:
@@ -262,13 +260,14 @@ class GammaFcn:
         :param s:
         :return:
         """
-        t = (np.linspace(0, z, terms))[:, :, 0]
+
+        t = (np.linspace(np.finfo(float).eps, 100, self.intervals))
         f = np.exp(-t) * t ** (s - 1)
-        t_m = 0.5 * (t[1:, :] + t[:-1, :])
+        t_m = 0.5 * (t[1:] + t[:-1])
         f_m = np.exp(-t_m) * t_m ** (s - 1)
-        deltat = t[1:2, :] - t[0:1, :]
-        integral = (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
-                deltat * (2 / 3)) * f_m.sum(axis=0)
+        deltat = t[1:2] - t[0:1]
+        integral = (deltat / 6) * (f[:, 0:1] + f[:, -1:]) + (deltat / 3) * (f[:, 1:-1]).sum(axis=1) + (
+                deltat * (2 / 3)) * f_m.sum(axis=1)
         return integral
 
 
