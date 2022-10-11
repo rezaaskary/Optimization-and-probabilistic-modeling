@@ -2220,6 +2220,7 @@ class LogitNormal(ContinuousDistributions):
         if self.variance <= 0:
             raise Exception('The value of variance should be positive (Logistic distribution)!')
 
+        self.Erf = erf_fcn
     @property
     def statistics(self):
         """
@@ -2235,11 +2236,8 @@ class LogitNormal(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1-np.finfo(float).eps)
-        pdf = np.zeros((len(x), 1))
-
-
-
-
+        logit = np.log(x/(1-x))
+        pdf = (1/(self.sigma*np.sqrt(2*np.pi))) * (1/(x*(1-x))) * np.exp((-0.5/self.sigma**2)*(logit-self.mu)**2)
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -2248,7 +2246,10 @@ class LogitNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The derivative of the probability distribution (Cx1)
         """
-        derivatives_pdf = np.zeros((len(x), 1))
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        logit = np.log(x / (1 - x))
+        coef = (1/(self.sigma*np.sqrt(2*np.pi))) * np.exp((-0.5/self.sigma**2) * (logit-self.mu)**2) * (1/((x**2)*(1-x)**2))
+        derivatives_pdf = coef * ((2*x-1) - (1/self.sigma**2) * (logit-self.mu))
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
@@ -2257,8 +2258,9 @@ class LogitNormal(ContinuousDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
-        log_pdf = np.ones((len(x), 1)) * -np.inf
-
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        logit = np.log(x / (1 - x))
+        log_pdf = -np.log(self.sigma*np.sqrt(2*np.pi)) - np.log(x*(1-x)) - ((0.5/self.sigma**2) * (logit-self.mu)**2)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -2267,7 +2269,9 @@ class LogitNormal(ContinuousDistributions):
         :param x: An input array of the probability distribution function(Cx1)
         :return: The log probability of the log probability of the occurrence of an independent variable (Cx1)
         """
-        derivatives_log_pdf = np.ones((len(x), 1)) * -np.inf
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        logit = np.log(x / (1 - x))
+        derivatives_log_pdf = (1/(x-x**2))*((2*x-1) - (1/self.sigma**2)*(logit-self.mu))
         return derivatives_log_pdf
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -2276,7 +2280,10 @@ class LogitNormal(ContinuousDistributions):
         :param x: An array of the input variable (Cx1)
         :return: The cumulative distribution function of ---- distribution (Cx1)
         """
-        cdf = np.zeros((len(x), 1))
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        logit = np.log(x / (1 - x))
+        input_argument = (logit - self.mu)/(self.sigma*np.sqrt(2))
+        cdf = 0.5 * (1+ self.Erf(input_argument))
         return cdf
 
 
