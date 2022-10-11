@@ -176,30 +176,28 @@ class LowerIncompleteGamma:
 
 
 
+class ArcTangent:
+    def __int__(self, terms: int = 10):
 
+        if isinstance(terms, int):
+            self.terms = terms
+        else:
+            raise Exception('Please correctly enter the number of terms (ArcTangent function)!')
 
+    def fcn_value(self, z: np.ndarray = None) -> np.ndarray:
+        Lindex = z <= -1
+        Rindex = z >= 1
+        Mindex = (x>-1) & (x<1)
 
+        fcn_value = np.zeros(len(z), 1)
+        fcn_value[Rindex[:, 0], 0] = 0.5 * np.pi
+        fcn_value[Lindex[:, 0], 0] = -0.5 * np.pi
 
+        for n in range(self.terms):
+            fcn_value[Rindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Rindex[:, 0], 0] ** (2 * n + 1)))
+            fcn_value[Mindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Mindex[:, 0], 0] ** (2 * n + 1)))
+            fcn_value[Lindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Lindex[:, 0], 0] ** (2 * n + 1)))
 
-
-
-
-
-
-def lower_incomplete_gamma_fcn(s, x, method: str = 'numerical'):
-    """
-    calculating the lower incomplete Gamma function used for calculating various pdf
-    :param s:
-    :param x:
-    :param method:
-    :return:
-    """
-    if method == 'numerical':
-        t = np.linspace(0, x, 10000)
-        f = np.exp(-t) * t ** (s - 1)
-        deltat = t[1] - t[0]
-        gamma_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
-    return gamma_value
 
 def arctan_fcn(z, method: str = 'taylor'):
     if method == 'taylor':
