@@ -258,7 +258,7 @@ class Normal(ContinuousDistributions, ErfFcn):
 
         # self.Erf = ErfFcn(method='simpson', intervals=10000)
         self.erf = ErfFcn(method='simpson', intervals=10000)
-        self
+
 
     @property
     def statistics(self):
