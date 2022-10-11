@@ -14,7 +14,7 @@ class ErfFcn(object):
         else:
             raise Exception('Please correctly enter the method of integration (Error function)!')
 
-        if isinstance(method, int):
+        if isinstance(intervals, int):
             self.intervals = intervals
         else:
             raise Exception('Please correctly enter the number of intervals (Error function)!')
@@ -33,7 +33,7 @@ class ErfFcn(object):
         :return:
         """
 
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
         deltat = t[1:2, :] - t[0:1, :]
         return deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
@@ -44,7 +44,7 @@ class ErfFcn(object):
         :param z:
         :return:
         """
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
         t_m = 0.5 * (t[1:, :] + t[:-1, :])
         f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
