@@ -3,6 +3,7 @@ from matplotlib.pyplot import plot, show, grid, hist, figure, subplot
 import matplotlib.pyplot as plt
 from mathmatics import *
 
+
 RNG = np.random.default_rng(20)
 
 class ContinuousDistributions:
@@ -22,20 +23,20 @@ class ContinuousDistributions:
                  nu: np.ndarray = None,
                  gamma: np.ndarray = None,
                  fixed_n_chains: bool = True,
-                 chains: int = None,
+                 chains: int = 1,
                  xm: float = None) -> None:
 
-        if isinstance(sigma, np.ndarray) and isinstance(variance, np.ndarray):
+        if isinstance(sigma, (np.ndarray,float,int)) and isinstance(variance, (np.ndarray,float,int)):
             raise Exception('Please Enter either variance or standard deviation!')
 
-        if isinstance(sigma, np.ndarray) and not isinstance(variance, np.ndarray):
+        if isinstance(sigma, (np.ndarray,float,int)) and not isinstance(variance, (np.ndarray,float,int)):
             if sigma > 0:
                 self.sigma = sigma
                 self.variance = sigma ** 2
             else:
                 raise Exception('The standard deviation should be a positive value!')
 
-        if not isinstance(sigma, np.ndarray) and isinstance(variance, np.ndarray):
+        if not isinstance(sigma, (np.ndarray,float,int)) and isinstance(variance, (np.ndarray,float,int)):
             if variance > 0:
                 self.sigma = np.sqrt(variance)
                 self.variance = variance
@@ -46,84 +47,84 @@ class ContinuousDistributions:
             self.sigma = None
             self.variance = None
 
-        if isinstance(lb, np.ndarray):
+        if isinstance(lb, (np.ndarray,float,int)):
             self.lb = lb
         elif lb is None:
             self.lb = None
         else:
             raise Exception('The lower bound is not specified correctly!')
 
-        if isinstance(ub, np.ndarray):
+        if isinstance(ub, (np.ndarray,float,int)):
             self.ub = ub
         elif ub is None:
             self.ub = None
         else:
             raise Exception('The upper bound is not specified correctly!')
 
-        if isinstance(mu, np.ndarray):
+        if isinstance(mu, (np.ndarray,float,int)):
             self.mu = mu
         elif mu is None:
             self.mu = None
         else:
             raise Exception('The value of mu is not specified correctly!')
 
-        if isinstance(alpha, np.ndarray):
+        if isinstance(alpha, (np.ndarray,float,int)):
             self.alpha = alpha
         elif alpha is None:
             self.alpha = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(beta, np.ndarray):
+        if isinstance(beta, (np.ndarray,float,int)):
             self.beta = beta
         elif beta is None:
             self.beta = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(Lambda, np.ndarray):
+        if isinstance(Lambda, (np.ndarray,float,int)):
             self.Lambda = Lambda
         elif Lambda is None:
             self.Lambda = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
 
-        if isinstance(a, np.ndarray):
+        if isinstance(a, (np.ndarray,float,int)):
             self.a = a
         elif a is None:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
 
-        if isinstance(c, np.ndarray):
+        if isinstance(c, (np.ndarray,float,int)):
             self.c = c
         elif c is None:
             self.c = None
         else:
             raise Exception('The value of c is not specified correctly!')
 
-        if isinstance(b, np.ndarray):
+        if isinstance(b, (np.ndarray,float,int)):
             self.b = b
         elif b is None:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
 
-        if isinstance(kappa, np.ndarray):
+        if isinstance(kappa, (np.ndarray,float,int)):
             self.kappa = kappa
         elif kappa is None:
             self.kappa = None
         else:
             raise Exception('The value of kappa is not specified correctly!')
 
-        if isinstance(nu, np.ndarray):
+        if isinstance(nu, (np.ndarray,float,int)):
             self.nu = nu
         elif nu is None:
             self.nu = None
         else:
             raise Exception('The value of nu is not specified correctly!')
 
-        if isinstance(gamma, np.ndarray):
+        if isinstance(gamma, (np.ndarray,float,int)):
             self.gamma = gamma
         elif gamma is None:
             self.gamma = None
@@ -242,7 +243,7 @@ class Uniform(ContinuousDistributions):
         return sample
 
 
-class Normal(ContinuousDistributions):
+class Normal(ContinuousDistributions, ErfFcn):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None) -> None:
         """
         Normal distribution function
@@ -255,7 +256,9 @@ class Normal(ContinuousDistributions):
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
-        self.Erf = erf_fcn
+        # self.Erf = ErfFcn(method='simpson', intervals=10000)
+        self.erf = ErfFcn(method='simpson', intervals=10000)
+        self
 
     @property
     def statistics(self):
@@ -297,7 +300,7 @@ class Normal(ContinuousDistributions):
         (Cx1, Cx1)
         """
         z = (x - self.mu) / (self.sigma * np.sqrt(2))
-        erf_value, _ = self.Erf(z)
+        erf_value = self.Erf.fcn_value(z)
         return erf_value
 
     def sample(self, size:int = 100):

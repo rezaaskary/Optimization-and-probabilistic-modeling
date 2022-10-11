@@ -1,8 +1,8 @@
 import numpy as np
 
 
-class ErfFcn:
-    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+class ErfFcn(object):
+    def __init__(self, method: str = 'simpson', intervals: int = 10000):
         """
 
         :param method:
@@ -62,7 +62,7 @@ class ErfFcn:
 
 
 class ErfcFcn:
-    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+    def __init__(self, method: str = 'simpson', intervals: int = 10000):
         if isinstance(method, str):
             self.method = method
         else:
@@ -119,7 +119,7 @@ class ErfcFcn:
 
 
 class LowerIncompleteGamma:
-    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+    def __init__(self, method: str = 'simpson', intervals: int = 10000):
         """
 
         :param method:
@@ -177,7 +177,7 @@ class LowerIncompleteGamma:
 
 
 class ArcTangent:
-    def __int__(self, terms: int = 10):
+    def __init__(self, terms: int = 10):
 
         if isinstance(terms, int):
             self.terms = terms
