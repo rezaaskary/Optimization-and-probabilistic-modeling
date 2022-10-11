@@ -172,7 +172,7 @@ class LowerIncompleteGamma:
         deltat = t[1:2, :] - t[0:1, :]
         integral = (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
                 deltat * (2 / 3)) * f_m.sum(axis=0)
-        return
+        return integral
 
 
 
@@ -197,34 +197,23 @@ class ArcTangent:
             fcn_value[Rindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Rindex[:, 0], 0] ** (2 * n + 1)))
             fcn_value[Mindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Mindex[:, 0], 0] ** (2 * n + 1)))
             fcn_value[Lindex[:, 0], 0] += ((-1) ** (n + 1)) / ((2 * n + 1) * (z[Lindex[:, 0], 0] ** (2 * n + 1)))
+        return fcn_value
+
+    def derivatives(self, z: np.ndarray = None) -> np.ndarray:
+        Lindex = z <= -1
+        Rindex = z >= 1
+        Mindex = (x > -1) & (x < 1)
+        derivative_value = np.zeros(len(z), 1)
+        for n in range(self.terms):
+            derivative_value[Rindex[:, 0], 0] += (((-1)**n) * (2*n+1) * (2*n+1) * ([Rindex[:, 0], 0])**(2*n)) /\
+                                                 ((2*n+1)*((z[Rindex[:, 0], 0])**(2*n+1)))**2
+            derivative_value[Mindex[:, 0], 0] += ((-1) ** n) * ([Mindex[:, 0], 0]) ** (2 * n)
+            derivative_value[Lindex[:, 0], 0] += (((-1) ** n) * (2 * n + 1) * (2 * n + 1) *
+                                                  (z[Lindex[:, 0], 0]) ** (2*n)) / ((2 * n + 1) *
+                                                                            ((z[Lindex[:, 0], 0]) ** (2 * n + 1)))**2
+        return derivative_value
 
 
-def arctan_fcn(z, method: str = 'taylor'):
-    if method == 'taylor':
-        N = 10
-        if z >= 1:
-            fcn_value = 0.5 * np.pi
-            derivative_value = 0
-            for n in range(N):
-                denom_value = ((2*n+1)*(z**(2*n+1)))
-                fcn_value += ((-1)**(n+1)) / denom_value
-                derivative_value += (((-1)**n) * (2*n+1) * (2*n+1) * z**(2*n)) /denom_value**2
-        elif z <= -1:
-            fcn_value = -0.5 * np.pi
-            derivative_value = 0
-            for n in range(N):
-                denom_value = ((2 * n + 1) * (z ** (2 * n + 1)))
-                fcn_value += ((-1) ** (n + 1)) / denom_value
-                derivative_value += (((-1) ** n) * (2 * n + 1) * (2 * n + 1) * z ** (2*n)) / denom_value ** 2
-        else:
-            fcn_value = 0
-            derivative_value = 0
-            for n in range(N):
-                denom_value = ((2 * n + 1) * (z ** (2 * n + 1)))
-                fcn_value += (((-1) ** n) * (z ** (2 * n + 1)) ) / (2 * n + 1)
-                derivative_value += ((-1) ** n) * z ** (2 * n)
-
-    return fcn_value, derivative_value
 
 def gamma_fcn(z, method: str = 'numerical'):
     """
