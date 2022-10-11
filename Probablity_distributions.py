@@ -1,5 +1,6 @@
 import numpy as np
-from matplotlib.pyplot import plot, show, grid
+from matplotlib.pyplot import plot, show, grid, hist, figure, subplot
+import matplotlib.pyplot as plt
 from mathmatics import *
 
 RNG = np.random.default_rng(20)
@@ -21,7 +22,7 @@ class ContinuousDistributions:
                  nu: float = None,
                  gamma: float = None,
                  fixed_n_chains: bool = True,
-                 chains: int = None,
+                 chains: int = 1,
                  xm: float = None) -> None:
 
         if isinstance(sigma, (float, int)) and isinstance(variance, (float, int)):
@@ -100,8 +101,6 @@ class ContinuousDistributions:
             self.c = None
         else:
             raise Exception('The value of c is not specified correctly!')
-
-
 
         if isinstance(b, (float, int)):
             self.b = b
@@ -230,7 +229,7 @@ class Uniform(ContinuousDistributions):
         :return: The cumulative distribution function (and its derivatives) with respect to the input variable Cx1
         """
         left_index = x <= self.a
-        right_index = x >= self.a
+        right_index = x >= self.b
         in_range_index = (x > self.a) & (x < self.b)
         cdf = np.ones((len(x), 1))
         cdf[left_index[:, 0], 0] = 0
@@ -239,20 +238,17 @@ class Uniform(ContinuousDistributions):
         return cdf
 
     def sample(self, size:int = 100):
-        sample = RNG.uniform(low=self.)
+        sample = RNG.uniform(low=self.a, high=self.b, size=size)
+        return sample
 
 
 class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None) -> None:
         """
-
-        :param sigma:
-        :param variance:
-        :param mu:
-        :param return_der_pdf:
-        :param return_der_logpdf:
-        :param return_pdf:
-        :param return_log_pdf:
+        Normal distribution function
+        :param sigma: The standard deviation of the Normal distribution (sigma>0)
+        :param variance: The variance of the Normal distribution (variance>0)
+        :param mu: The mean of the Normal distribution
         """
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu)
 
@@ -2358,4 +2354,58 @@ class MyClass(ContinuousDistributions):
         return cdf
 
 
-ts = Uniform(a=1, b=2)
+
+###################################################################################################
+x = (np.random.uniform(low = -2, high=5, size=10000)).reshape((-1,1))
+ts = Normal(sigma=4,mu=7)
+pdf_val = ts.pdf(x)
+der_pdf =ts.pdf_diff(x)
+log_pdf_val =ts.log_prob(x)
+der_log_ = ts.log_prob_diff(x)
+cdf_val = ts.cdf(x)
+samples = ts.sample(size=50000)
+
+if any(np.isnan(pdf_val)):
+    print('there is NAN in pdf')
+
+if any(np.isnan(der_pdf)):
+    print('there is NAN in diffpdf')
+
+if any(np.isnan(log_pdf_val)):
+    print('there is NAN in log pdf')
+
+if any(np.isnan(der_log_)):
+    print('there is NAN in diff log pdf')
+
+if any(np.isnan(cdf_val)):
+    print('there is NAN in cdf')
+
+if any(np.isnan(samples)):
+    print('there is NAN in samples')
+
+
+
+fig, ((ax1, ax2,ax3),  (ax4,ax5,ax6)) = plt.subplots(2, 3)
+
+ax1.plot(x,pdf_val,'*')
+ax1.set_title('PDF values')
+
+ax4.plot(x,log_pdf_val,'*')
+ax4.set_title('derivatives of PDF ')
+
+ax2.plot(x,log_pdf_val,'*')
+ax2.set_title('LOG of PDF values')
+
+ax5.plot(x,der_log_,'*')
+ax5.set_title('derivatives of LOG of PDF ')
+
+ax3.plot(x,cdf_val,'*')
+ax3.set_title('CDF ')
+
+ax6.hist(samples,bins=20)
+ax6.set_title('samples ')
+
+show()
+
+x
+
