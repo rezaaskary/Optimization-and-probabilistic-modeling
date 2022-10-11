@@ -118,6 +118,71 @@ class ErfcFcn:
 
 
 
+class LowerIncompleteGamma:
+    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+        """
+
+        :param method:
+        :param intervals:
+        :return:
+        """
+
+        if isinstance(method, str):
+            self.method = method
+        else:
+            raise Exception('Please correctly enter the method of integration (Complementary Error function)!')
+
+        if isinstance(method, int):
+            self.intervals = intervals
+        else:
+            raise Exception('Please correctly enter the number of intervals (Complementary Error function)!')
+
+        if self.method == 'simpson':
+            self.fcn_value = self.simpson
+        elif self.method == 'trap':
+            self.fcn_value = self.trapezoidal
+        else:
+            raise Exception('The entered methode is unknown (Complementary Error function)!')
+
+    def trapezoidal(self, z: np.ndarray = None, s: np.ndarray = None) -> np.ndarray:
+        """
+
+        :param z:
+        :param s:
+        :return:
+        """
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = np.exp(-t) * t ** (s - 1)
+        deltat = t[1:2, :] - t[0:1, :]
+        integral = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
+
+        return integral
+
+    def simpson(self, z: np.ndarray = None, s: np.ndarray = None) -> np.ndarray:
+        """
+
+        :param z:
+        :param s:
+        :return:
+        """
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = np.exp(-t) * t ** (s - 1)
+        t_m = 0.5 * (t[1:, :] + t[:-1, :])
+        f_m = np.exp(-t_m) * t_m ** (s - 1)
+        deltat = t[1:2, :] - t[0:1, :]
+        integral = (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
+                deltat * (2 / 3)) * f_m.sum(axis=0)
+        return
+
+
+
+
+
+
+
+
+
+
 
 
 

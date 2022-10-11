@@ -56,7 +56,8 @@ class Binomial(DiscreteDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
-        pdf = (factorial(self.n) / (factorial(self.n-self.x)*factorial(self.x))) * (self.p ** x) * ((1-self.p) ** (self.n-x))
+        pdf = (factorial(self.n) / (factorial(self.n - self.x) * factorial(self.x))) * (self.p ** x) * \
+              ((1 - self.p) ** (self.n - x))
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -74,10 +75,9 @@ class Binomial(DiscreteDistributions):
         :param x: An integer array determining the variable we are calculating its probability distribution (Cx1)
         :return: The log probability of the log probability of ---- distribution (Cx1)
         """
-        log_pdf =
 
-
-
+        log_pdf = np.log((factorial(self.n) / (factorial(self.n - self.x) * factorial(self.x)))) + \
+                  x * np.log(self.p) + (self.n - self.x) * np.log(1 - self.p)
         return log_pdf
 
     def log_pdf_diff(self, x: np.ndarray) -> np.ndarray:
