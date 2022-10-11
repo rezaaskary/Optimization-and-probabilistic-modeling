@@ -300,6 +300,9 @@ class Normal(ContinuousDistributions):
         erf_value, _ = self.Erf(z)
         return erf_value
 
+    def sample(self, size:int = 100):
+        uniform_dis = RNG.uniform(low=0.0, high=1.0, size=size)
+        return uniform_dis
 
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
@@ -2356,7 +2359,7 @@ class MyClass(ContinuousDistributions):
 
 
 ###################################################################################################
-x = (np.random.uniform(low = -2, high=5, size=10000)).reshape((-1,1))
+x = (np.random.uniform(low = -200, high=200, size=10000)).reshape((-1,1))
 ts = Normal(sigma=4,mu=7)
 pdf_val = ts.pdf(x)
 der_pdf =ts.pdf_diff(x)

@@ -81,53 +81,38 @@ def beta_fcn(x, y, method: str = 'numerical'):
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 
-def erf_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
+def erf_fcn(z, method: str = 'simpson', terms:int = 10000)->(np.ndarray, np.ndarray):
     """
-    The error function used to calculate the truncated gaussian distribution
+    The Error function calculated numerically
     :param z: normalized input variable
     :return: the value of the error function
     """
     derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
-    if method == 'fast':
-        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
-                                                        (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
-                                                        (z ** 15 / 75600)))
-    elif method == 'numerical':
-        t = np.linspace(0, z, 10000)
+    if method == 'trap':
+        t = (np.linspace(0, z, terms))[:, :, 0]
         f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
-        deltat = t[1] - t[0]
-        Erf_function_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
+        deltat = t[1:2, :] - t[0:1, :]
+        Erf_function_value = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
 
-    elif method == 'taylor':
-        erf_val = 0
-        for n in range(terms):
-            erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
-        Erf_function_value = erf_val * (2/np.sqrt(np.pi))
+    elif method == 'simpson':
+        t = (np.linspace(0, z, terms))[:,:,0]
+        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
+        t_m = 0.5*(t[1:, :]+t[:-1, :])
+        f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
+        deltat = t[1:2, :] - t[0:1, :]
+        Erf_function_value = (deltat/6)*(f[0:1, :] + f[-1:, :]) + (deltat/3)*(f[1:-1, :]).sum(axis=0) + (deltat*(2/3))*f_m.sum(axis=0)
     else:
         raise Exception('The method for calculating the Error function is not specified correctly!')
     return Erf_function_value, derivatives_Erf
 
 
-def erfc_fcn(z, method: str = 'fast', terms:int = 20)->(np.ndarray, np.ndarray):
-    derivatives_erfc = - (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
-    if method == 'fast':
-        Erf_function_value = ((2 / (np.sqrt(np.pi))) * (z - (z ** 3 / 3) + (z ** 5 / 10) - (z ** 7 / 42) +
-                                                        (z ** 9 / 216) - (z ** 11 / 1320) + (z ** 13 / 9360) +
-                                                        (z ** 15 / 75600)))
-    elif method == 'numerical':
-        t = np.linspace(0, z, 10000)
-        f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
-        deltat = t[1] - t[0]
-        Erf_function_value = deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
-
-    elif method == 'taylor':
-        erf_val = 0
-        for n in range(terms):
-            erf_val += (((-1)**n) * (z**(2 * n + 1))) / (np.math.factorial(n) * (2*n+1))
-        Erf_function_value = erf_val * (2/np.sqrt(np.pi))
+def erfc_fcn(z, method: str = 'simpson', terms:int = 10000)->(np.ndarray, np.ndarray):
+    if method == 'trap' or method == 'simpson':
+        erf_value, diff_erf = erf_fcn(z=z, method=method, terms=terms)
     else:
         raise Exception('The method for calculating the Error function is not specified correctly!')
-    return 1 - Erf_function_value, derivatives_erfc
+    return 1 - erf_value, -diff_erf
+
 
 def erfinv_fcn(z, method: str = 'fast'):
     """
@@ -176,3 +161,15 @@ def bessel_I_s(z: np.ndarray, s):
 
     return I_s
 
+
+import math
+
+# (np.random.uniform(low=-20, high=20, size=10000)).reshape((-1, 1))
+# dd=np.random.default_rng(12345)
+# T=dd.uniform(low=0, high=1,size=10).reshape((-1,1))
+# V = erf_fcn(T, method='trap',terms=10000)
+# V1 = erf_fcn(T,method='simpson',terms=10000)
+#
+# V2 =math.erf(ff)
+# print(V2-V)
+# V
