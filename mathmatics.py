@@ -1,6 +1,144 @@
 import numpy as np
 
 
+class ErfFcn:
+    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+        """
+
+        :param method:
+        :param intervals:
+        :return:
+        """
+        if isinstance(method, str):
+            self.method = method
+        else:
+            raise Exception('Please correctly enter the method of integration (Error function)!')
+
+        if isinstance(method, int):
+            self.intervals = intervals
+        else:
+            raise Exception('Please correctly enter the number of intervals (Error function)!')
+
+        if self.method == 'simpson':
+            self.fcn_value = self.simpson
+        elif self.method == 'trap':
+            self.fcn_value = self.trapezoidal
+        else:
+            raise Exception('The entered methode is unknown (Error function)!')
+
+    def trapezoidal(self,z: np.ndarray = None)->np.ndarray:
+        """
+
+        :param z:
+        :return:
+        """
+
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
+        deltat = t[1:2, :] - t[0:1, :]
+        return deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
+
+    def simpson(self, z: np.ndarray = None) -> np.ndarray:
+        """
+
+        :param z:
+        :return:
+        """
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
+        t_m = 0.5 * (t[1:, :] + t[:-1, :])
+        f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
+        deltat = t[1:2, :] - t[0:1, :]
+        return (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
+                    deltat * (2 / 3)) * f_m.sum(axis=0)
+
+    def derivatives(self, z: np.ndarray = None) -> np.ndarray:
+        """
+        :param z:
+        :return:
+        """
+        return (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+
+
+
+class ErfcFcn:
+    def __int__(self, method: str = 'simpson', intervals: int = 10000):
+        if isinstance(method, str):
+            self.method = method
+        else:
+            raise Exception('Please correctly enter the method of integration (Complementary Error function)!')
+
+        if isinstance(method, int):
+            self.intervals = intervals
+        else:
+            raise Exception('Please correctly enter the number of intervals (Complementary Error function)!')
+
+        if self.method == 'simpson':
+            self.fcn_value = self.simpson
+        elif self.method == 'trap':
+            self.fcn_value = self.trapezoidal
+        else:
+            raise Exception('The entered methode is unknown (Complementary Error function)!')
+
+    def trapezoidal(self,z: np.ndarray = None)->np.ndarray:
+        """
+
+        :param z:
+        :return:
+        """
+
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
+        deltat = t[1:2, :] - t[0:1, :]
+        integral = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
+        return 1-integral
+
+    def simpson(self, z: np.ndarray = None) -> np.ndarray:
+        """
+
+        :param z:
+        :return:
+        """
+        t = (np.linspace(0, z, terms))[:, :, 0]
+        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
+        t_m = 0.5 * (t[1:, :] + t[:-1, :])
+        f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
+        deltat = t[1:2, :] - t[0:1, :]
+        integral = (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
+                    deltat * (2 / 3)) * f_m.sum(axis=0)
+        return 1-integral
+
+    def derivatives(self, z: np.ndarray = None) -> np.ndarray:
+        """
+
+        :param z:
+        :return:
+        """
+        return -(2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def lower_incomplete_gamma_fcn(s, x, method: str = 'numerical'):
     """
     calculating the lower incomplete Gamma function used for calculating various pdf
@@ -81,29 +219,7 @@ def beta_fcn(x, y, method: str = 'numerical'):
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
 
-def erf_fcn(z, method: str = 'simpson', terms:int = 10000)->(np.ndarray, np.ndarray):
-    """
-    The Error function calculated numerically
-    :param z: normalized input variable
-    :return: the value of the error function
-    """
-    derivatives_Erf = (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
-    if method == 'trap':
-        t = (np.linspace(0, z, terms))[:, :, 0]
-        f = (2/np.sqrt(np.pi)) * np.exp(-t**2)
-        deltat = t[1:2, :] - t[0:1, :]
-        Erf_function_value = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
 
-    elif method == 'simpson':
-        t = (np.linspace(0, z, terms))[:,:,0]
-        f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
-        t_m = 0.5*(t[1:, :]+t[:-1, :])
-        f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
-        deltat = t[1:2, :] - t[0:1, :]
-        Erf_function_value = (deltat/6)*(f[0:1, :] + f[-1:, :]) + (deltat/3)*(f[1:-1, :]).sum(axis=0) + (deltat*(2/3))*f_m.sum(axis=0)
-    else:
-        raise Exception('The method for calculating the Error function is not specified correctly!')
-    return Erf_function_value, derivatives_Erf
 
 
 def erfc_fcn(z, method: str = 'simpson', terms:int = 10000)->(np.ndarray, np.ndarray):
