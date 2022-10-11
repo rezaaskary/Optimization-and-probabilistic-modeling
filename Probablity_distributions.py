@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib.pyplot import plot, show, grid
 from mathmatics import *
 
+RNG = np.random.default_rng(20)
 
 class ContinuousDistributions:
     def __init__(self,
@@ -173,8 +174,9 @@ class ContinuousDistributions:
 class Uniform(ContinuousDistributions):
     def __init__(self, a: float = None, b: float = None) -> None:
         """
-        :param a:
-        :param b:
+        Continuous uniform distribution
+        :param a: The lower limit of uniform distribution
+        :param b: The upper limit of uniform distribution
         """
         super(Uniform, self).__init__(a=a, b=b)
 
@@ -235,6 +237,9 @@ class Uniform(ContinuousDistributions):
         cdf[right_index[:, 0], 0] = 1
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a) / (self.b - self.a)
         return cdf
+
+    def sample(self, size:int = 100):
+        sample = RNG.uniform(low=self.)
 
 
 class Normal(ContinuousDistributions):
