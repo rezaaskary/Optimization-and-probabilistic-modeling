@@ -2205,10 +2205,20 @@ class Logistic(ContinuousDistributions):
         return cdf
 
 
-class MyClass(ContinuousDistributions):
-    def __init__(self) -> None:
-        super(MyClass, self).__init__()
+class LogitNormal(ContinuousDistributions):
+    def __init__(self, mu: float = None, sigma: float = None, variance: float = None) -> None:
+        """
 
+        :param mu:
+        :param sigma:
+        :param variance:
+        """
+        super(LogitNormal, self).__init__(mu=mu, sigma=sigma, variance=variance)
+        if self.sigma <= 0:
+            raise Exception('The value of sigma should be positive (Logistic distribution)!')
+
+        if self.variance <= 0:
+            raise Exception('The value of variance should be positive (Logistic distribution)!')
 
     @property
     def statistics(self):
@@ -2224,7 +2234,11 @@ class MyClass(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1)
         """
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1-np.finfo(float).eps)
         pdf = np.zeros((len(x), 1))
+
+
+
 
         return pdf
 
