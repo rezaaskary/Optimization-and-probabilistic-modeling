@@ -237,7 +237,7 @@ class Uniform(ContinuousDistributions):
         cdf[in_range_index[:, 0], 0] = (x[in_range_index[:, 0], 0] - self.a) / (self.b - self.a)
         return cdf
 
-    def sample(self, size:int = 100):
+    def sample(self, size: int = 100):
         sample = RNG.uniform(low=self.a, high=self.b, size=size)
         return sample
 
@@ -258,7 +258,6 @@ class Normal(ContinuousDistributions, ErfFcn):
         # self.Erf = ErfFcn(method='simpson', intervals=10000)
         self.erf = ErfFcn(method='simpson', intervals=10000)
 
-
     @property
     def statistics(self):
         """
@@ -276,8 +275,9 @@ class Normal(ContinuousDistributions, ErfFcn):
         return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        return (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) /
+        diff_pdf = (-1 / (self.sigma ** 3)) * np.sqrt(2 / np.pi) * (x - self.mu) * np.exp(-((x - self.mu) ** 2) /
                                                                                       (2 * self.sigma ** 2))
+        return diff_pdf
 
     def log_prob(self, x: np.ndarray) -> np.ndarray:
         """

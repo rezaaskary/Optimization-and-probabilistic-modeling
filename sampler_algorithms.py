@@ -32,7 +32,7 @@ class MetropolisHastings:
             self.iterations = 1000
             print(f'-------------------------------------------------------------------------------------------------\n'
                   f'The iteration is not an integer value.\n'
-                  f' The default value of {self.iterations} is selectd as the number of iterations\n'
+                  f' The default value of {self.iterations} is selected as the number of iterations\n'
                   f'--------------------------------------------------------------------------------------------------')
 
         # checking the correctness of the iteration
@@ -43,7 +43,7 @@ class MetropolisHastings:
             print(
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The number of chains is not an integer value.\n'
-                f' The default value of {self.Nchain} is selectd as the number of chains\n'
+                f' The default value of {self.Nchain} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
         # checking the correctness of the vectorized simulation
@@ -111,7 +111,8 @@ class MetropolisHastings:
             for ch in (range(self.Nchain)):                                             # sampling from each cahin
 
                 # generating the sample for each chain
-                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration-1:iteration].copy(), sigma=0.1)
+                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration-1:iteration].copy(),
+                                                                    sigma=0.1)
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
                 # calculating the hasting ratio
@@ -127,16 +128,9 @@ class MetropolisHastings:
                     self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
                     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
 
-        # T1 = self.chains[0, 0, :]
-        # plt.plot(T1)
-        # plt.show()
-        # plt.figure()
-        # plt.plot(self.accept_rate.ravel())
-        # plt.show()
-        # T
         return self.chains, self.accept_rate
 
-    def MH_vectorized_sampling(self):
+    def mhh_vectorized_sampling(self):
         """
         vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
         :returns: chains: The chains of samples drawn from the posteriori distribution
@@ -149,7 +143,6 @@ class MetropolisHastings:
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
             # generating the sample for each chain
             self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(), sigma=0.1)
-
             # calculating the log of the posteriori function
             Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
             # calculating the hasting ratio
