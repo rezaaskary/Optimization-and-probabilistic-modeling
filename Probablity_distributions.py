@@ -2288,7 +2288,7 @@ class LogitNormal(ContinuousDistributions):
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
         logit = np.log(x / (1 - x))
         input_argument = (logit - self.mu)/(self.sigma*np.sqrt(2))
-        cdf = 0.5 * (1+ self.Erf(input_argument))
+        cdf = 0.5 * (1 + self.Erf(input_argument))
         return cdf
 
 
