@@ -1223,7 +1223,7 @@ class Cauchy(ContinuousDistributions):
         return
 
 
-class HalfCauchy(ContinuousDistributions):
+class HalfCauchy(ContinuousDistributions, ArcTangent):
     def __init__(self, beta: float = None) -> None:
         """
         :param beta:
@@ -1236,7 +1236,7 @@ class HalfCauchy(ContinuousDistributions):
 
         if self.beta <= 0:
             raise Exception('The value of beta should be positive (Half Couchy)!')
-        self.atan = arctan_fcn
+        self.atan = ArcTangent(terms=10)
 
     @property
     def statistics(self):
@@ -1304,7 +1304,7 @@ class HalfCauchy(ContinuousDistributions):
         """
         cdf = np.zeros((len(x), 1))
         index_in_range = x >= 0
-        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan(x[index_in_range[:, 0], 0] / self.beta)
+        cdf[index_in_range[:, 0], 0] = (2 / np.pi) * self.atan.fcn_value(x[index_in_range[:, 0], 0] / self.beta)
         return cdf
 
 
@@ -1321,7 +1321,7 @@ class GammaDistribution(ContinuousDistributions):
         """
         super(GammaDistribution, self).__init__(alpha=alpha, beta=beta)
 
-        self.LowerGamma = lower_incomplete_gamma_fcn
+        self.LowerGamma = LowerIncompleteGamma(method='simpson', intervals=10000)
         self.Gamma = gamma_fcn
 
     @property
@@ -1563,7 +1563,7 @@ class ChiSquared(ContinuousDistributions):
             raise Exception('The degree of freedom should be positive integer (Chi Squared distribution)!')
 
         self.Gamma = gamma_fcn
-        self.ligf = lower_incomplete_gamma_fcn
+        self.ligf = LowerIncompleteGamma(method='simpson', intervals=10000)
 
     @property
     def statistics(self):
@@ -1637,7 +1637,7 @@ class LogNormal(ContinuousDistributions):
         if self.variance <= 0 :
             raise Exception('The value of variance should be positive (Log Normal distribution)!')
 
-        self.erf = erf_fcn
+        self.erf = ErfFcn(method='simpson', intervals=10000)
 
     @property
     def statistics(self):
@@ -1697,7 +1697,7 @@ class LogNormal(ContinuousDistributions):
         """
         x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
         input_argument = (np.log(x)-self.mu)/(self.sigma*np.sqrt(2))
-        cdf = 0.5*(1+self.erf(input_argument))
+        cdf = 0.5*(1+self.erf.fcn_value(input_argument))
         return cdf
 
 
@@ -1814,8 +1814,8 @@ class Pareto(ContinuousDistributions):
 
         pdf = np.zeros((len(x), 1))
         in_range_index = x >= self.xm
-        pdf[in_range_index[:, 0], 0] = (self.alpha/(x[in_range_index[:, 0], 0]** (self.alpha+1))) * (self.xm ** self.alpha)
-
+        pdf[in_range_index[:, 0], 0] = (self.alpha/(x[in_range_index[:, 0], 0] ** (self.alpha+1))) *\
+                                       (self.xm ** self.alpha)
         return pdf
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
@@ -1825,9 +1825,9 @@ class Pareto(ContinuousDistributions):
         :return: The derivative of the probability distribution (Cx1)
         """
         derivatives_pdf = np.zeros((len(x), 1))
-        in_range_index = x >= self.xm
-        pdf[in_range_index[:, 0], 0] = -((self.alpha**2+self.alpha) * (self.xm ** self.alpha))/\
-                                       (x[in_range_index[:, 0], 0]** (self.alpha+2))
+        ind = x >= self.xm
+        derivatives_pdf[ind[:, 0], 0] = -((self.alpha**2+self.alpha) * (self.xm ** self.alpha))/\
+                                       (x[ind[:, 0], 0] ** (self.alpha+2))
         return derivatives_pdf
 
     def log_pdf(self, x: np.ndarray) -> np.ndarray:
