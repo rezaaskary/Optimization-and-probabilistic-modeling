@@ -2411,5 +2411,4 @@ ax6.set_title('samples ')
 
 show()
 
-x
 
