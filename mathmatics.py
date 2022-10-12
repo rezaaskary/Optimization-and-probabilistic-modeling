@@ -184,7 +184,7 @@ class ArcTangent:
     def fcn_value(self, z: np.ndarray = None) -> np.ndarray:
         Lindex = z <= -1
         Rindex = z >= 1
-        Mindex = (z > -1) & ( z < 1)
+        Mindex = (z > -1) & (z < 1)
 
         fcn_value = np.zeros(len(z), 1)
         fcn_value[Rindex[:, 0], 0] = 0.5 * np.pi
@@ -199,7 +199,7 @@ class ArcTangent:
     def derivatives(self, z: np.ndarray = None) -> np.ndarray:
         Lindex = z <= -1
         Rindex = z >= 1
-        Mindex = (x > -1) & (x < 1)
+        Mindex = (z > -1) & (z < 1)
         derivative_value = np.zeros(len(z), 1)
         for n in range(self.terms):
             derivative_value[Rindex[:, 0], 0] += (((-1)**n) * (2*n+1) * (2*n+1) * ([Rindex[:, 0], 0])**(2*n)) /\
@@ -318,16 +318,6 @@ def beta_fcn(x, y, method: str = 'numerical'):
         f = beta_kernel(x, y, t)
         deltat = t[1] - t[0]
         return deltat * (f[1:-1]).sum() + 0.5 * deltat * (f[0] + f[-1])
-
-
-
-
-def erfc_fcn(z, method: str = 'simpson', terms:int = 10000)->(np.ndarray, np.ndarray):
-    if method == 'trap' or method == 'simpson':
-        erf_value, diff_erf = erf_fcn(z=z, method=method, terms=terms)
-    else:
-        raise Exception('The method for calculating the Error function is not specified correctly!')
-    return 1 - erf_value, -diff_erf
 
 
 def erfinv_fcn(z, method: str = 'fast'):
