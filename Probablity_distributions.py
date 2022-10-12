@@ -306,6 +306,7 @@ class Normal(ContinuousDistributions, ErfFcn):
         uniform_dis = RNG.uniform(low=0.0, high=1.0, size=size)
         return uniform_dis
 
+
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lb: float = None, ub: float = None, sigma: float = None, variance: float = None,
                  mu: float = None) -> None:
@@ -316,10 +317,6 @@ class TruncatedNormal(ContinuousDistributions):
         :param sigma:
         :param variance:
         :param mu:
-        :param return_der_pdf:
-        :param return_der_logpdf:
-        :param return_pdf:
-        :param return_log_pdf:
         """
         super(TruncatedNormal, self).__init__(lb=lb, ub=ub, mu=mu, sigma=sigma, variance=variance)
 
@@ -378,24 +375,24 @@ class TruncatedNormal(ContinuousDistributions):
          (Cx1, Cx1)
         """
 
-        in_range_index = (x >= self.lb) & (x <= self.ub)
+        ind = (x >= self.lb) & (x <= self.ub)
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
-        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+        normal_argument = (x[ind[:, 0], 0] - self.mu) / self.sigma
 
-        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
+        erf_r = 0.5 * (1 + self.Erf.fcn_value(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf.fcn_value(arg_l / np.sqrt(2)))
         log_prob = np.ones((len(x), 1)) * -np.inf
-        log_prob[in_range_index[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
+        log_prob[ind[:, 0], 0] = -np.log(self.sigma) - np.log(erf_r - ert_l) - 0.5 * np.log(
             2 * np.pi) - 0.5 * normal_argument ** 2
         return log_prob
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
 
-        in_range_index = (x >= self.lb) & (x <= self.ub)
+        ind = (x >= self.lb) & (x <= self.ub)
         derivatives_log_prob = np.ones((len(x), 1)) * -np.inf
-        derivatives_log_prob[in_range_index[:, 0], 0] = (-1 / self.sigma ** 2) * (
-                x[in_range_index[:, 0], 0] - self.mu)
+        derivatives_log_prob[ind[:, 0], 0] = (-1 / self.sigma ** 2) * (
+                x[ind[:, 0], 0] - self.mu)
         return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
@@ -406,18 +403,18 @@ class TruncatedNormal(ContinuousDistributions):
         (Cx1, Cx1)
         """
 
-        right_index = x > self.ub
+        ind = x > self.ub
         in_range_index = (x >= self.lb) & (x <= self.ub)
         cdf = np.zeros((len(x), 1))
-        cdf[right_index[:, 0], 0] = 1.0
+        cdf[ind[:, 0], 0] = 1.0
 
         b = (self.ub - self.mu) / self.sigma
         a = (self.lb - self.mu) / self.sigma
         xi = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
 
-        erf_r = 0.5 * (1 + self.Erf(b / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(a / np.sqrt(2)))
-        ert_xi = 0.5 * (1 + self.Erf(xi / np.sqrt(2)))
+        erf_r = 0.5 * (1 + self.Erf.fcn_value(b / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf.fcn_value(a / np.sqrt(2)))
+        ert_xi = 0.5 * (1 + self.Erf.fcn_value(xi / np.sqrt(2)))
         cdf[in_range_index[:, 0], 0] = (ert_xi - ert_l) / (erf_r - ert_l)
         return cdf
 
@@ -431,7 +428,7 @@ class HalfNormal(ContinuousDistributions):
         """
         super(HalfNormal, self).__init__(sigma=sigma, variance=variance)
 
-        self.Erf = erf_fcn
+        self.Erf = ErfFcn(method='simpson', intervals=10000)
 
     @property
     def statistics(self):
@@ -447,17 +444,17 @@ class HalfNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        in_range_index = (x >= 0)
+        ind = (x >= 0)
         prob = np.zeros((len(x), 1))
-        prob[in_range_index[:, 0], 0] = (np.sqrt(2 / np.pi) / self.sigma) * np.exp(
-            -((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
+        prob[ind[:, 0], 0] = (np.sqrt(2 / np.pi) / self.sigma) * np.exp(
+            -((x[ind[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
-        in_range_index = (x >= 0)
+        ind = (x >= 0)
         derivatives_prob = np.zeros((len(x), 1))
-        derivatives_prob[in_range_index[:, 0], 0] = (- np.sqrt(2 / np.pi) / (self.sigma ** 3)) * (
-            x[in_range_index[:, 0], 0]) * np.exp(-((x[in_range_index[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
+        derivatives_prob[ind[:, 0], 0] = (- np.sqrt(2 / np.pi) / (self.sigma ** 3)) * (
+            x[ind[:, 0], 0]) * np.exp(-((x[ind[:, 0], 0]) ** 2) / (2 * self.sigma ** 2))
         return derivatives_prob
 
     def log_prob(self, x: np.ndarray) -> np.ndarray:
@@ -512,7 +509,7 @@ class SkewedNormal(ContinuousDistributions):
             raise Exception(
                 'The value of either mean or standard deviation is not specified (Skewed Normal distribution)!')
 
-        self.Erf = erf_fcn
+        self.Erf = ErfFcn(method='simpson', intervals=10000)
 
     @property
     def statistics(self):
@@ -529,14 +526,15 @@ class SkewedNormal(ContinuousDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         z = (x - self.mu) / self.sigma
-        erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
+        erf_part, der_erf_part = 0.5 * (1 + self.Erf.fcn_value(z * (self.alpha / np.sqrt(2.0))))
         normal_part = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * (z ** 2))
         prob = 2 * erf_part * normal_part
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
         z = (x - self.mu) / self.sigma
-        erf_part, der_erf_part = 0.5 * (1 + self.Erf(z * (self.alpha / np.sqrt(2.0))))
+        erf_part = 0.5 * (1 + self.Erf.fcn_value(z * (self.alpha / np.sqrt(2.0))))
+        der_erf_part = self.Erf.derivatives(z * (self.alpha / np.sqrt(2.0)))
         derivatives_prob = -np.sqrt(2 / np.pi) * (z / self.sigma) * np.exp(-0.5 * (z ** 2)) * erf_part + (
                 self.alpha / self.sigma) * np.sqrt(2 / np.pi) * np.exp(-0.5 * (z ** 2)) * der_erf_part
         return derivatives_prob
@@ -549,16 +547,16 @@ class SkewedNormal(ContinuousDistributions):
          (Cx1, Cx1)
         """
         z = (x - self.mu) / self.sigma
-        erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
+        erf_value = self.Erf.fcn_value((z * self.alpha) / np.sqrt(2))
         log_prob = -0.5 * np.log(2 * np.pi) - 0.5 * (z ** 2) + np.log(1 + erf_value)
         return log_prob
 
     def log_prob_diff(self, x: np.ndarray) -> np.ndarray:
         z = (x - self.mu) / self.sigma
-        erf_value, der_erf_value = self.Erf((z * self.alpha) / np.sqrt(2))
+        erf_value, der_erf_value = self.Erf.fcn_value((z * self.alpha) / np.sqrt(2))
+        der_erf_value = self.Erf.derivatives((z * self.alpha) / np.sqrt(2))
         derivatives_log_prob = -z * (1 / self.sigma) + (1 / (self.sigma * np.sqrt(2))) * (
                 der_erf_value / (1 + erf_value))
-
         return derivatives_log_prob
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
