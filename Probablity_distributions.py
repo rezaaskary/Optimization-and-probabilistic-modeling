@@ -302,7 +302,7 @@ class Normal(ContinuousDistributions, ErfFcn):
         erf_value = self.Erf.fcn_value(z)
         return erf_value
 
-    def sample(self, size:int = 100):
+    def sample(self, size: int = 100):
         uniform_dis = RNG.uniform(low=0.0, high=1.0, size=size)
         return uniform_dis
 
@@ -329,7 +329,7 @@ class TruncatedNormal(ContinuousDistributions):
             raise Exception(
                 'The value of either mean or standard deviation is not specified (Truncated Normal distribution)!')
 
-        self.Erf = erf_fcn
+        self.Erf = ErfFcn(method='simpson', intervals=10000)
 
     @property
     def statistics(self):
@@ -345,28 +345,28 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        in_range_index = (x >= self.lb) & (x <= self.ub)
+        ind = (x >= self.lb) & (x <= self.ub)
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
 
-        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
-        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+        erf_r = 0.5 * (1 + self.Erf.fcn_value(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf.fcn_value(arg_l / np.sqrt(2)))
+        normal_argument = (x[ind[:, 0], 0] - self.mu) / self.sigma
         prob = np.zeros((len(x), 1))
         normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * normal_argument ** 2)
-        prob[in_range_index[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        prob[ind[:, 0], 0] = (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
         return prob
 
     def pdf_diff(self, x: np.ndarray) -> np.ndarray:
 
-        in_range_index = (x >= self.lb) & (x <= self.ub)
+        ind = (x >= self.lb) & (x <= self.ub)
         arg_r = (self.ub - self.mu) / self.sigma
         arg_l = (self.lb - self.mu) / self.sigma
-        erf_r = 0.5 * (1 + self.Erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + self.Erf(arg_l / np.sqrt(2)))
-        normal_argument = (x[in_range_index[:, 0], 0] - self.mu) / self.sigma
+        erf_r = 0.5 * (1 + self.Erf.fcn_value(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + self.Erf.fcn_value(arg_l / np.sqrt(2)))
+        normal_argument = (x[ind[:, 0], 0] - self.mu) / self.sigma
         derivatives_prob = np.zeros((len(x), 1))
-        derivatives_prob[in_range_index[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
+        derivatives_prob[ind[:, 0], 0] = (1 / self.sigma ** 2) * (1 / (erf_r - ert_l)) * (
                 -1 / (np.sqrt(2 * np.pi))) * normal_argument * np.exp(-0.5 * normal_argument ** 2)
         return derivatives_prob
 
