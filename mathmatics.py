@@ -60,7 +60,6 @@ class ErfFcn(object):
         return (2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
 
 
-
 class ErfcFcn:
     def __init__(self, method: str = 'simpson', intervals: int = 10000):
         if isinstance(method, str):
@@ -87,7 +86,7 @@ class ErfcFcn:
         :return:
         """
 
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
         deltat = t[1:2, :] - t[0:1, :]
         integral = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
@@ -99,7 +98,7 @@ class ErfcFcn:
         :param z:
         :return:
         """
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = (2 / np.sqrt(np.pi)) * np.exp(-t ** 2)
         t_m = 0.5 * (t[1:, :] + t[:-1, :])
         f_m = (2 / np.sqrt(np.pi)) * np.exp(-t_m ** 2)
@@ -115,7 +114,6 @@ class ErfcFcn:
         :return:
         """
         return -(2 / np.sqrt(np.pi)) * np.exp(-z ** 2)
-
 
 
 class LowerIncompleteGamma:
@@ -151,7 +149,7 @@ class LowerIncompleteGamma:
         :param s:
         :return:
         """
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = np.exp(-t) * t ** (s - 1)
         deltat = t[1:2, :] - t[0:1, :]
         integral = deltat * (f[1:-1, :]).sum(axis=0) + 0.5 * deltat * (f[0:1, :] + f[-1:, :])
@@ -165,7 +163,7 @@ class LowerIncompleteGamma:
         :param s:
         :return:
         """
-        t = (np.linspace(0, z, terms))[:, :, 0]
+        t = (np.linspace(0, z, self.intervals))[:, :, 0]
         f = np.exp(-t) * t ** (s - 1)
         t_m = 0.5 * (t[1:, :] + t[:-1, :])
         f_m = np.exp(-t_m) * t_m ** (s - 1)
@@ -173,7 +171,6 @@ class LowerIncompleteGamma:
         integral = (deltat / 6) * (f[0:1, :] + f[-1:, :]) + (deltat / 3) * (f[1:-1, :]).sum(axis=0) + (
                 deltat * (2 / 3)) * f_m.sum(axis=0)
         return integral
-
 
 
 class ArcTangent:
@@ -187,7 +184,7 @@ class ArcTangent:
     def fcn_value(self, z: np.ndarray = None) -> np.ndarray:
         Lindex = z <= -1
         Rindex = z >= 1
-        Mindex = (x>-1) & (x<1)
+        Mindex = (z > -1) & ( z < 1)
 
         fcn_value = np.zeros(len(z), 1)
         fcn_value[Rindex[:, 0], 0] = 0.5 * np.pi
