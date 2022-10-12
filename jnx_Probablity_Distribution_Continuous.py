@@ -32,7 +32,7 @@ class Uniform(ContinuousDistributions):
         """
         super(Uniform, self).__init__(a=a, b=b)
 
-        if not isinstance(self.a, int) == isinstance(self.b, int):
+        if not type(self.a) == type(self.b):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
 
 
