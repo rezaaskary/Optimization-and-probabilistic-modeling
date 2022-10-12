@@ -35,7 +35,7 @@ class ContinuousDistributions:
             else:
                 raise Exception('The standard deviation should be a positive value!')
 
-        if not isinstance(sigma, (np.ndarray,float,int)) and isinstance(variance, (np.ndarray,float,int)):
+        if not isinstance(sigma, (np.ndarray, float, int)) and isinstance(variance, (np.ndarray, float, int)):
             if variance > 0:
                 self.sigma = np.sqrt(variance)
                 self.variance = variance
@@ -46,84 +46,84 @@ class ContinuousDistributions:
             self.sigma = None
             self.variance = None
 
-        if isinstance(lb, (np.ndarray,float,int)):
+        if isinstance(lb, (np.ndarray, float, int)):
             self.lb = lb
         elif lb is None:
             self.lb = None
         else:
             raise Exception('The lower bound is not specified correctly!')
 
-        if isinstance(ub, (np.ndarray,float,int)):
+        if isinstance(ub, (np.ndarray, float, int)):
             self.ub = ub
         elif ub is None:
             self.ub = None
         else:
             raise Exception('The upper bound is not specified correctly!')
 
-        if isinstance(mu, (np.ndarray,float,int)):
+        if isinstance(mu, (np.ndarray, float, int)):
             self.mu = mu
         elif mu is None:
             self.mu = None
         else:
             raise Exception('The value of mu is not specified correctly!')
 
-        if isinstance(alpha, (np.ndarray,float,int)):
+        if isinstance(alpha, (np.ndarray, float, int)):
             self.alpha = alpha
         elif alpha is None:
             self.alpha = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(beta, (np.ndarray,float,int)):
+        if isinstance(beta, (np.ndarray, float, int)):
             self.beta = beta
         elif beta is None:
             self.beta = None
         else:
             raise Exception('The value of alpha is not specified correctly!')
 
-        if isinstance(Lambda, (np.ndarray,float,int)):
+        if isinstance(Lambda, (np.ndarray, float, int)):
             self.Lambda = Lambda
         elif Lambda is None:
             self.Lambda = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
 
-        if isinstance(a, (np.ndarray,float,int)):
+        if isinstance(a, (np.ndarray, float, int)):
             self.a = a
         elif a is None:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
 
-        if isinstance(c, (np.ndarray,float,int)):
+        if isinstance(c, (np.ndarray, float, int)):
             self.c = c
         elif c is None:
             self.c = None
         else:
             raise Exception('The value of c is not specified correctly!')
 
-        if isinstance(b, (np.ndarray,float,int)):
+        if isinstance(b, (np.ndarray, float, int)):
             self.b = b
         elif b is None:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
 
-        if isinstance(kappa, (np.ndarray,float,int)):
+        if isinstance(kappa, (np.ndarray, float, int)):
             self.kappa = kappa
         elif kappa is None:
             self.kappa = None
         else:
             raise Exception('The value of kappa is not specified correctly!')
 
-        if isinstance(nu, (np.ndarray,float,int)):
+        if isinstance(nu, (np.ndarray, float, int)):
             self.nu = nu
         elif nu is None:
             self.nu = None
         else:
             raise Exception('The value of nu is not specified correctly!')
 
-        if isinstance(gamma, (np.ndarray,float,int)):
+        if isinstance(gamma, (np.ndarray, float, int)):
             self.gamma = gamma
         elif gamma is None:
             self.gamma = None
@@ -147,7 +147,7 @@ class ContinuousDistributions:
                   f'Variant number of chains is activated .'
                   f'--------------------------------------------------------------------------------------------------')
 
-        if isinstance(xm, (float, int)):
+        if isinstance(xm, (float, int, float)):
             self.xm = xm
         elif xm is None:
             self.xm = None
