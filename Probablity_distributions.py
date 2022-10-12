@@ -2,9 +2,8 @@ import numpy as np
 from matplotlib.pyplot import plot, show, grid, hist, figure, subplot
 import matplotlib.pyplot as plt
 from mathmatics import *
-
-
 RNG = np.random.default_rng(20)
+
 
 class ContinuousDistributions:
     def __init__(self,
@@ -26,10 +25,10 @@ class ContinuousDistributions:
                  chains: int = 1,
                  xm: float = None) -> None:
 
-        if isinstance(sigma, (np.ndarray,float,int)) and isinstance(variance, (np.ndarray,float,int)):
+        if isinstance(sigma, (np.ndarray, float, int)) and isinstance(variance, (np.ndarray, float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
 
-        if isinstance(sigma, (np.ndarray,float,int)) and not isinstance(variance, (np.ndarray,float,int)):
+        if isinstance(sigma, (np.ndarray, float, int)) and not isinstance(variance, (np.ndarray, float, int)):
             if sigma > 0:
                 self.sigma = sigma
                 self.variance = sigma ** 2
@@ -1567,6 +1566,7 @@ class ChiSquared(ContinuousDistributions):
 
         self.Gamma = gamma_fcn
         self.ligf = lower_incomplete_gamma_fcn
+
     @property
     def statistics(self):
         """
