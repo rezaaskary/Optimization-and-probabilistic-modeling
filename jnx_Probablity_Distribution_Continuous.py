@@ -23,7 +23,21 @@ class ContinuousDistributions:
             raise Exception('The value of b is not specified correctly!')
 
 
+class Uniform(ContinuousDistributions):
+    def __init__(self, a: float = None, b: float = None) -> None:
+        """
+        Continuous uniform distribution
+        :param a: The lower limit of uniform distribution
+        :param b: The upper limit of uniform distribution
+        """
+        super(Uniform, self).__init__(a=a, b=b)
 
+        if not isinstance(self.a, int) == isinstance(self.b, int):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+
+
+        if self.a >= self.b:
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
 
 
