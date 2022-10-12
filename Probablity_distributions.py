@@ -1885,7 +1885,7 @@ class ExModifiedGaussian(ContinuousDistributions):
         if self.variance <= 0 :
             raise Exception('The value of variance should be positive (Exponentially modified Gaussian distribution)!')
 
-        self.Erfc = erfc_fcn
+        self.Erfc = ErfFcn(method='simpson', intervals=10000)
         self.LogErfc = log_erfc
 
     @property
@@ -1904,7 +1904,7 @@ class ExModifiedGaussian(ContinuousDistributions):
         """
         arg_exp = 2*self.mu+self.Lambda*(self.sigma**2)-2*x
         arg_erfc = (self.mu+self.Lambda*(self.sigma**2)-x)/(self.sigma*np.sqrt(2))
-        erfc_val, erfc_diff_val = self.Erfc(arg_erfc)
+        erfc_val = self.Erfc.fcn_value(arg_erfc)
         pdf = 0.5 * self.Lambda * np.exp(0.5 * self.Lambda * arg_exp) * erfc_val
         return pdf
 
@@ -1916,10 +1916,10 @@ class ExModifiedGaussian(ContinuousDistributions):
         """
         arg_exp = 2 * self.mu + self.Lambda * (self.sigma ** 2) - 2 * x
         arg_erfc = (self.mu + self.Lambda * (self.sigma ** 2) - x) / (self.sigma * np.sqrt(2))
-        erfc_val, erfc_diff_val = self.Erfc(arg_erfc)
-
+        erfc_val = self.Erfc.fcn_value(arg_erfc)
+        erfc_diff_val = self.Erfc.derivatives(arg_erfc)
         derivatives_pdf = -0.5 * (self.Lambda**2) * np.exp(0.5 * self.Lambda * arg_exp) * erfc_val +\
-                          0.5 * self.Lambda *np.exp(0.5 * self.Lambda * arg_exp) * (-1 / (self.sigma * np.sqrt(2))) *\
+                          0.5 * self.Lambda * np.exp(0.5 * self.Lambda * arg_exp) * (-1 / (self.sigma * np.sqrt(2))) *\
                           erfc_diff_val
         return derivatives_pdf
 
