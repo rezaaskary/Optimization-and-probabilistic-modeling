@@ -38,9 +38,16 @@ class Uniform(ContinuousDistributions):
         if not isinstance(self.a, type(self.b)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
 
-
         if jnx.any(self.a >= self.b):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Uniform distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        return None
 
 
 
