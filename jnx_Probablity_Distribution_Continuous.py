@@ -7,7 +7,10 @@ RNG = jax.random.PRNGKey(60616)
 class ContinuousDistributions:
     def __init__(self,
                  a: jnx.ndarray = None,
-                 b: jnx.ndarray = None) -> None:
+                 b: jnx.ndarray = None,
+                 fixed_chains: bool = False,
+                 nchains: int = 1) -> None:
+
         if isinstance(a, (jnx.ndarray, float, int)):
             self.a = a
         elif a is None:
