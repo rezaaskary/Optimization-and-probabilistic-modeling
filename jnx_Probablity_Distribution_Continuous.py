@@ -31,12 +31,12 @@ class Uniform(ContinuousDistributions):
         :param b: The upper limit of uniform distribution
         """
         super(Uniform, self).__init__(a=a, b=b)
-
-        if not type(self.a) == type(self.b):
+        # check for the consistency of the input of the probability distribution
+        if not isinstance(self.a, type(self.b)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
 
 
-        if self.a >= self.b:
+        if jnx.any(self.a >= self.b):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
 
