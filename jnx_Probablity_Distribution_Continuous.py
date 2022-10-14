@@ -93,13 +93,13 @@ class Uniform(ContinuousDistributions):
         return jnp.where((x > self.lower) & (x < self.upper), 1 / (self.upper - self.lower), 0)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return self.pdf_(x)[0,0]
+        return (self.pdf_(x))[0]
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return self.log_pdf_(x)[0, 0]
+        return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x-self.lower) / (self.upper - self.lower), 1))
@@ -108,16 +108,17 @@ class Uniform(ContinuousDistributions):
         return jnp.log(jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x-self.lower) / (self.upper - self.lower), 1)))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
-        return random.uniform(key=key, minval=0.0, maxval=1.0, shape=(size, 1))
+        return random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
 
 
 x = random.uniform(key=key, minval=1, maxval=20, shape=(100, 1))
 E1 = Uniform(lower=5, upper=18).pdf(x)
+E6 = Uniform(lower=5, upper=18).diff_pdf(x)
 E2 = Uniform(lower=5, upper=18).log_pdf(x)
 E3 = Uniform(lower=5, upper=18).diff_log_pdf(x)
 E4 = Uniform(lower=5, upper=18).cdf(x)
 E5 = Uniform(lower=5, upper=18).log_cdf(x)
-E6 = Uniform(lower=5, upper=18).diff_pdf(x)
+E7 = Uniform(lower=5, upper=18).sample_(size=1000)
 
 E3
 # ts = Uniform(a=4,b=7)
