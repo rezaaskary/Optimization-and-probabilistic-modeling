@@ -1,11 +1,11 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax import vmap, jit, grad
+from jax import vmap, jit, grad, random
 import jax
+
 from jax.lax import switch
 
-RNG = jax.random.PRNGKey(60616)
-
+key = random.PRNGKey(60616)
 
 class ContinuousDistributions:
     def __init__(self,
@@ -97,15 +97,17 @@ class Uniform(ContinuousDistributions):
         return jnp.where(x<self.lower, jnp.where(x>self.upper, 1,(x-self.lower) / (self.upper - self.lower)))
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.log(jnp.where(x < self.lower, jnp.where(x > self.upper, 1, (x - self.lower) / (self.upper - self.lower))))
+    def sample_(self, size: int = 1)-> jnp.ndarray:
+        uniform_samples = random.uniform(key=key, minval=0.0, maxval=1.0, shape=(size, 1))
 
 # x = (jnx.random.uniform(low = -200, high=200, size=10000)).reshape((-1,1))
 # ts = Uniform(a=4,b=7)
-x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
+# x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
 
-ts = Uniform(a=4, b=10)
+# ts = Uniform(a=4, b=10)
 
 # R = (ts.pdf, in_axes=0, out_axes=0)
-mm=ts.pdf(x)
-R2 = DD(x)
-plt.plot(x, R, '*')
-R
+# mm=ts.pdf(x)
+# R2 = DD(x)
+# plt.plot(x, R, '*')
+# R
