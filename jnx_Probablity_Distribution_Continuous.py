@@ -67,6 +67,7 @@ class Uniform(ContinuousDistributions):
                 self.cdf = jit(vmap(self.cdf_, in_axes=[0], out_axes=0))
                 self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[0], out_axes=0))
             else:
+                self.sample = self.sample_
                 self.pdf = vmap(self.pdf_, in_axes=[0], out_axes=0)
                 self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_pdf_, in_axes=[0], out_axes=0)
@@ -108,7 +109,19 @@ class Uniform(ContinuousDistributions):
         return jnp.log(jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x-self.lower) / (self.upper - self.lower), 1)))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
-        return random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+        y = random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+        def sub_fcn(y):
+            def nr_solver(i, x0):
+                x0 = x0 - (self.cdf_(x0) - y)/self.pdf_(x0)
+                x0 = jnp.clip(x0, self.lower, self.upper)
+                # x0 = x0 - (jnp.log(self.cdf_(x0) / y) * self.cdf_(x0)) / self.pdf_(x0)
+                return x0
+            y0 = 0.25 * (self.lower + self.upper)
+            # y1 = 0.75 * (self.lower + self.upper)
+            r = lax.fori_loop(lower=0, upper=500, body_fun=nr_solver, init_val=y0)
+            return r
+        return vmap(sub_fcn, in_axes=0, out_axes=0)(y)
+        # return random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
 
 
 x = random.uniform(key=key, minval=1, maxval=20, shape=(100, 1))
@@ -118,7 +131,7 @@ E2 = Uniform(lower=5, upper=18).log_pdf(x)
 E3 = Uniform(lower=5, upper=18).diff_log_pdf(x)
 E4 = Uniform(lower=5, upper=18).cdf(x)
 E5 = Uniform(lower=5, upper=18).log_cdf(x)
-E7 = Uniform(lower=5, upper=18).sample_(size=1000)
+E7 = Uniform(lower=5, upper=18).sample(size=20)
 
 E3
 # ts = Uniform(a=4,b=7)
