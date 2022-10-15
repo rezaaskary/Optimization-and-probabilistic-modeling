@@ -103,7 +103,7 @@ class Uniform(ContinuousDistributions):
         return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return self.diff_cdf_(x)[0]
+        return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.log(
@@ -128,7 +128,7 @@ class Uniform(ContinuousDistributions):
                   }
         return values
 
-x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(10000000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
 activate_jit = False
 E1 = Uniform(lower=5, upper=18,activate_jit=activate_jit).pdf(x)
 E6 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_pdf(x)
@@ -137,7 +137,7 @@ E3 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_log_pdf(x)
 E4 = Uniform(lower=5, upper=18,activate_jit=activate_jit).cdf(x)
 E5 = Uniform(lower=5, upper=18,activate_jit=activate_jit).log_cdf(x)
 E7 = Uniform(lower=5, upper=18,activate_jit=activate_jit).sample(size=20)
-
+E8 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_cdf(x)
 E3
 # ts = Uniform(a=4,b=7)
 # x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
