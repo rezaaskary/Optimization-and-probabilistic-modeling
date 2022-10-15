@@ -13,7 +13,8 @@ class ContinuousDistributions:
                  upper: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
-                 nchains: int = 1) -> None:
+                 nchains: int = 1
+                 rng : int) -> None:
 
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
@@ -132,6 +133,9 @@ E3 = Uniform(lower=5, upper=18).diff_log_pdf(x)
 E4 = Uniform(lower=5, upper=18).cdf(x)
 E5 = Uniform(lower=5, upper=18).log_cdf(x)
 E7 = Uniform(lower=5, upper=18).sample(size=20)
+
+
+
 
 E3
 # ts = Uniform(a=4,b=7)
