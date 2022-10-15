@@ -123,7 +123,7 @@ class Uniform(ContinuousDistributions):
                   }
         return values
 
-x = random.uniform(key=5, minval=1, maxval=20, shape=(100, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
 E1 = Uniform(lower=5, upper=18).pdf(x)
 E6 = Uniform(lower=5, upper=18).diff_pdf(x)
 E2 = Uniform(lower=5, upper=18).log_pdf(x)
