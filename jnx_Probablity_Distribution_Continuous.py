@@ -5,7 +5,6 @@ import jax
 
 from jax.lax import switch
 
-key = random.PRNGKey(60616)
 
 class ContinuousDistributions:
     def __init__(self,
@@ -13,8 +12,10 @@ class ContinuousDistributions:
                  upper: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
-                 nchains: int = 1
-                 rng : int) -> None:
+                 nchains: int = 1,
+                 rng: int = 1) -> None:
+
+        self.key = random.PRNGKey(rng)
 
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
@@ -39,7 +40,6 @@ class ContinuousDistributions:
             self.activate_jit = activate_jit
         else:
             raise Exception('Please specify the activation of the just-in-time evaluation!')
-
 
 
 class Uniform(ContinuousDistributions):
@@ -78,13 +78,7 @@ class Uniform(ContinuousDistributions):
         else:
             pass
 
-    @property
-    def statistics(self):
-        """
-        Statistics calculated for the Uniform distribution function given distribution parameters
-        :return: A dictionary of calculated metrics
-        """
-        return None
+
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -104,28 +98,32 @@ class Uniform(ContinuousDistributions):
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x-self.lower) / (self.upper - self.lower), 1))
+        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.log(jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x-self.lower) / (self.upper - self.lower), 1)))
+        return jnp.log(
+            jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
-        y = random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
-        def sub_fcn(y):
-            def nr_solver(i, x0):
-                x0 = x0 - (self.cdf_(x0) - y)/self.pdf_(x0)
-                x0 = jnp.clip(x0, self.lower, self.upper)
-                # x0 = x0 - (jnp.log(self.cdf_(x0) / y) * self.cdf_(x0)) / self.pdf_(x0)
-                return x0
-            y0 = 0.25 * (self.lower + self.upper)
-            # y1 = 0.75 * (self.lower + self.upper)
-            r = lax.fori_loop(lower=0, upper=500, body_fun=nr_solver, init_val=y0)
-            return r
-        return vmap(sub_fcn, in_axes=0, out_axes=0)(y)
-        # return random.uniform(key=key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+        return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
 
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Uniform distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        values = {'mean': 0.5 * (self.lower + self.upper),
+                  'median': 0.5 * (self.lower + self.upper),
+                  'variance': (1 / 12) * (self.lower - self.upper) ** 2,
+                  'MAD': (1 / 4) * (self.lower + self.upper),
+                  'skewness': 0,
+                  'kurtosis': -6 / 5,
+                  'Entropy': jnp.log(self.upper - self.lower)
+                  }
+        return values
 
-x = random.uniform(key=key, minval=1, maxval=20, shape=(100, 1))
+x = random.uniform(key=5, minval=1, maxval=20, shape=(100, 1))
 E1 = Uniform(lower=5, upper=18).pdf(x)
 E6 = Uniform(lower=5, upper=18).diff_pdf(x)
 E2 = Uniform(lower=5, upper=18).log_pdf(x)
@@ -133,9 +131,6 @@ E3 = Uniform(lower=5, upper=18).diff_log_pdf(x)
 E4 = Uniform(lower=5, upper=18).cdf(x)
 E5 = Uniform(lower=5, upper=18).log_cdf(x)
 E7 = Uniform(lower=5, upper=18).sample(size=20)
-
-
-
 
 E3
 # ts = Uniform(a=4,b=7)
