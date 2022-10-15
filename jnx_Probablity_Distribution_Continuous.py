@@ -41,6 +41,29 @@ class ContinuousDistributions:
         else:
             raise Exception('Please specify the activation of the just-in-time evaluation!')
 
+    def parallelization(self):
+        if not self.variant_chains:
+            # when the number of parallel evaluation is fixed. Useful for MCMC
+            if self.activate_jit:
+                self.pdf = jit(vmap(self.pdf_, in_axes=[0], out_axes=0))
+                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
+                self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[0], out_axes=0))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
+                self.cdf = jit(vmap(self.cdf_, in_axes=[0], out_axes=0))
+                self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[0], out_axes=0))
+                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
+                self.sample = self.sample_
+            else:
+                self.sample = self.sample_
+                self.pdf = vmap(self.pdf_, in_axes=[0], out_axes=0)
+                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
+                self.log_pdf = vmap(self.log_pdf_, in_axes=[0], out_axes=0)
+                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
+                self.cdf = vmap(self.cdf_, in_axes=[0], out_axes=0)
+                self.log_cdf = vmap(self.log_cdf_, in_axes=[0], out_axes=0)
+                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
+        else:
+            pass
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False) -> None:
@@ -57,28 +80,7 @@ class Uniform(ContinuousDistributions):
         if jnp.any(self.lower >= self.upper):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
-        if not self.variant_chains:
-            # when the number of parallel evaluation is fixed. Useful for MCMC
-
-            if self.activate_jit:
-                self.pdf = jit(vmap(self.pdf_, in_axes=[0], out_axes=0))
-                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
-                self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[0], out_axes=0))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
-                self.cdf = jit(vmap(self.cdf_, in_axes=[0], out_axes=0))
-                self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[0], out_axes=0))
-            else:
-                self.sample = self.sample_
-                self.pdf = vmap(self.pdf_, in_axes=[0], out_axes=0)
-                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
-                self.log_pdf = vmap(self.log_pdf_, in_axes=[0], out_axes=0)
-                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
-                self.cdf = vmap(self.cdf_, in_axes=[0], out_axes=0)
-                self.log_cdf = vmap(self.log_cdf_, in_axes=[0], out_axes=0)
-        else:
-            pass
-
-
+        ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -99,6 +101,9 @@ class Uniform(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return self.diff_cdf_(x)[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.log(
@@ -123,14 +128,15 @@ class Uniform(ContinuousDistributions):
                   }
         return values
 
-x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
-E1 = Uniform(lower=5, upper=18).pdf(x)
-E6 = Uniform(lower=5, upper=18).diff_pdf(x)
-E2 = Uniform(lower=5, upper=18).log_pdf(x)
-E3 = Uniform(lower=5, upper=18).diff_log_pdf(x)
-E4 = Uniform(lower=5, upper=18).cdf(x)
-E5 = Uniform(lower=5, upper=18).log_cdf(x)
-E7 = Uniform(lower=5, upper=18).sample(size=20)
+x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(10000000, 1))
+activate_jit = False
+E1 = Uniform(lower=5, upper=18,activate_jit=activate_jit).pdf(x)
+E6 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_pdf(x)
+E2 = Uniform(lower=5, upper=18,activate_jit=activate_jit).log_pdf(x)
+E3 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_log_pdf(x)
+E4 = Uniform(lower=5, upper=18,activate_jit=activate_jit).cdf(x)
+E5 = Uniform(lower=5, upper=18,activate_jit=activate_jit).log_cdf(x)
+E7 = Uniform(lower=5, upper=18,activate_jit=activate_jit).sample(size=20)
 
 E3
 # ts = Uniform(a=4,b=7)
@@ -143,3 +149,4 @@ E3
 # R2 = DD(x)
 # plt.plot(x, R, '*')
 # R
+################################################################################
