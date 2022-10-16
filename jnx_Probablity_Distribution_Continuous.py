@@ -180,31 +180,30 @@ class Normal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * jnp.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return (self.pdf_(x))[0]
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return -jnp.log((self.sigma * np.sqrt(2 * np.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        z = (x - self.mu) / (self.sigma * np.sqrt(2))
+        z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
         return lax.erf(z)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-
         return jnp.log(self.cdf_(x))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
-        y = random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
-        return y
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+        return scipy.special.erfinv(y)
 
     @property
     def statistics(self):
@@ -215,6 +214,7 @@ class Normal(ContinuousDistributions):
         values = {'mean': self.mu,
                   'median': self.mu,
                   'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
+                  'third_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.75 - 1),
                   'variance': self.variance,
                   'mode': self.mu,
                   'MAD': self.sigma*jnp.sqrt(2/jnp.pi),
