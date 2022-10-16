@@ -8,6 +8,8 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
+                 variance: jnp.ndarray = None,
+                 sigma: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None,
                  variant_chains: bool = False,
@@ -16,6 +18,28 @@ class ContinuousDistributions:
                  rng: int = 1) -> None:
 
         self.key = random.PRNGKey(rng)
+
+        if isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
+            raise Exception('Please Enter either variance or standard deviation!')
+
+        if isinstance(sigma, (jnp.ndarray, float, int)) and not isinstance(variance, (jnp.ndarray, float, int)):
+            if sigma > 0:
+                self.sigma = sigma
+                self.variance = sigma ** 2
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+
+        if not isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
+            if variance > 0:
+                self.sigma = jnp.sqrt(variance)
+                self.variance = variance
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+
+        if sigma is None and variance is None:
+            self.sigma = None
+            self.variance = None
+
 
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
@@ -128,6 +152,90 @@ class Uniform(ContinuousDistributions):
                   }
         return values
 
+class Normal(ContinuousDistributions):
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+        """
+        Continuous uniform distribution
+        :param lower: The lower limit of uniform distribution
+        :param upper: The upper limit of uniform distribution
+        """
+        super(Uniform, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+
+        if jnp.any(self.lower >= self.upper):
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Uniform distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        """
+        return jnp.where((x > self.lower) & (x < self.upper), 1 / (self.upper - self.lower), 0)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.log(
+            jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Uniform distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        values = {'mean': 0.5 * (self.lower + self.upper),
+                  'median': 0.5 * (self.lower + self.upper),
+                  'variance': (1 / 12) * (self.lower - self.upper) ** 2,
+                  'MAD': (1 / 4) * (self.lower + self.upper),
+                  'skewness': 0,
+                  'kurtosis': -6 / 5,
+                  'Entropy': jnp.log(self.upper - self.lower)
+                  }
+        return values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
 activate_jit = False
 E1 = Uniform(lower=5, upper=18,activate_jit=activate_jit).pdf(x)
@@ -150,3 +258,69 @@ E3
 # plt.plot(x, R, '*')
 # R
 ################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+class Uniform(ContinuousDistributions):
+    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False) -> None:
+        """
+        Continuous uniform distribution
+        :param lower: The lower limit of uniform distribution
+        :param upper: The upper limit of uniform distribution
+        """
+        super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+
+        if jnp.any(self.lower >= self.upper):
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Uniform distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        """
+        return jnp.where((x > self.lower) & (x < self.upper), 1 / (self.upper - self.lower), 0)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.log(
+            jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Uniform distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        values = {'mean': 0.5 * (self.lower + self.upper),
+                  'median': 0.5 * (self.lower + self.upper),
+                  'variance': (1 / 12) * (self.lower - self.upper) ** 2,
+                  'MAD': (1 / 4) * (self.lower + self.upper),
+                  'skewness': 0,
+                  'kurtosis': -6 / 5,
+                  'Entropy': jnp.log(self.upper - self.lower)
+                  }
+        return values
