@@ -162,9 +162,11 @@ class Uniform(ContinuousDistributions):
 class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
         """
-        Continuous uniform distribution
-        :param lower: The lower limit of uniform distribution
-        :param upper: The upper limit of uniform distribution
+        Continuous Normal distribution
+        :param sigma: The standard deviation of the distribution
+        :param variance: The variance of the distribution
+        :param mu: The center of the distribution
+        :param activate_jit: Activating just-in-time evaluation of the methods
         """
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
@@ -176,19 +178,34 @@ class Normal(ContinuousDistributions):
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Uniform distribution
+        Parallelized calculating the probability of the Normal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
-        :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
         """
         return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * jnp.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
         return (self.pdf_(x))[0]
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
         return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
