@@ -8,6 +8,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
+                 mu: jnp.ndarray = None,
                  variance: jnp.ndarray = None,
                  sigma: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
@@ -18,6 +19,13 @@ class ContinuousDistributions:
                  rng: int = 1) -> None:
 
         self.key = random.PRNGKey(rng)
+
+        if isinstance(mu, (jnp.ndarray, float, int)):
+            self.mu = mu
+        elif mu is None:
+            self.mu = None
+        else:
+            raise Exception('The value of mu is not specified correctly!')
 
         if isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -39,7 +47,6 @@ class ContinuousDistributions:
         if sigma is None and variance is None:
             self.sigma = None
             self.variance = None
-
 
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
@@ -159,13 +166,13 @@ class Normal(ContinuousDistributions):
         :param lower: The lower limit of uniform distribution
         :param upper: The upper limit of uniform distribution
         """
-        super(Uniform, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
         if not isinstance(self.lower, type(self.upper)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
 
-        if jnp.any(self.lower >= self.upper):
-            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+        if self.mu is None or self.sigma is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -175,26 +182,26 @@ class Normal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        return jnp.where((x > self.lower) & (x < self.upper), 1 / (self.upper - self.lower), 0)
+        return (1 / (self.sigma * np.sqrt(2 * np.pi))) * np.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return (self.pdf_(x))[0]
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
+        return -jnp.log((self.sigma * np.sqrt(2 * np.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+        z = (x - self.mu) / (self.sigma * np.sqrt(2))
+        return lax.erf(z)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.log(
-            jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
+        return jnp.log( )
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
