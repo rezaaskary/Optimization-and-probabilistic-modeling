@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax import vmap, jit, grad, random, lax
-import jax
+from jax import vmap, jit, grad, random, lax, scipy
+
 
 from jax.lax import switch
 
@@ -201,10 +201,12 @@ class Normal(ContinuousDistributions):
         return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.log( )
+
+        return jnp.log(self.cdf_(x))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
-        return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+        y = random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+        return y
 
     @property
     def statistics(self):
@@ -212,13 +214,15 @@ class Normal(ContinuousDistributions):
         Statistics calculated for the Uniform distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        values = {'mean': 0.5 * (self.lower + self.upper),
-                  'median': 0.5 * (self.lower + self.upper),
-                  'variance': (1 / 12) * (self.lower - self.upper) ** 2,
-                  'MAD': (1 / 4) * (self.lower + self.upper),
+        values = {'mean': self.mu,
+                  'median': self.mu,
+                  'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
+                  'variance': self.variance,
+                  'mode': self.mu,
+                  'MAD': self.sigma*jnp.sqrt(2/jnp.pi),
                   'skewness': 0,
-                  'kurtosis': -6 / 5,
-                  'Entropy': jnp.log(self.upper - self.lower)
+                  'kurtosis': 0,
+                  'Entropy': 0.5 * (1 + jnp.log(2*jnp.pi*self.sigma**2))
                   }
         return values
 
