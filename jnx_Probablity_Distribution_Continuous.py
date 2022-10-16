@@ -209,23 +209,43 @@ class Normal(ContinuousDistributions):
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
         z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
         return lax.erf(z)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
         return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
         return jnp.log(self.cdf_(x))
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Normal distribution
+        :param size:
+        :return:
+        """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
-        return scipy.special.erfinv(y)
+        return vmap(scipy.special.erfinv, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the Uniform distribution function given distribution parameters
+        Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         values = {'mean': self.mu,
