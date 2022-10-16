@@ -168,8 +168,6 @@ class Normal(ContinuousDistributions):
         """
         super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
 
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
@@ -229,34 +227,18 @@ class Normal(ContinuousDistributions):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
 activate_jit = False
-E1 = Uniform(lower=5, upper=18,activate_jit=activate_jit).pdf(x)
-E6 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_pdf(x)
-E2 = Uniform(lower=5, upper=18,activate_jit=activate_jit).log_pdf(x)
-E3 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_log_pdf(x)
-E4 = Uniform(lower=5, upper=18,activate_jit=activate_jit).cdf(x)
-E5 = Uniform(lower=5, upper=18,activate_jit=activate_jit).log_cdf(x)
-E7 = Uniform(lower=5, upper=18,activate_jit=activate_jit).sample(size=20)
-E8 = Uniform(lower=5, upper=18,activate_jit=activate_jit).diff_cdf(x)
+
+KK = Normal(mu=0,sigma=5,activate_jit=activate_jit)
+E1 = KK.pdf(x)
+E6 = KK.diff_pdf(x)
+E2 = KK.log_pdf(x)
+E3 = KK.diff_log_pdf(x)
+E4 = KK.cdf(x)
+E5 = KK.log_cdf(x)
+E7 = KK.sample(size=20)
+E8 = KK.diff_cdf(x)
 E3
 # ts = Uniform(a=4,b=7)
 # x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
