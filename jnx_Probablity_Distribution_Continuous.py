@@ -292,10 +292,9 @@ class TruncatedNormal(ContinuousDistributions):
         """
         arg_r = (self.upper - self.mu) / self.sigma
         arg_l = (self.lower - self.mu) / self.sigma
-        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
-        erf_r = 0.5 * (1 + lax.erf(arg_r / np.sqrt(2)))
-        ert_l = 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))
-        return (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
+        normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+        return (1 / self.sigma) * (normal_fcn_value /
+                                   (0.5 * (1 + lax.erf(arg_r / np.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -311,7 +310,12 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+
+        arg_r = (self.upper - self.mu) / self.sigma
+        arg_l = (self.lower - self.mu) / self.sigma
+        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) -\
+                    jnp.log((0.5 * (1 + lax.erf(arg_r / np.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))))
+        return log_pdf
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -327,8 +331,16 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
-        return lax.erf(z)
+
+        def middle_range(x: jnp.ndarray) -> jnp.ndarray:
+            b = (self.upper - self.mu) / self.sigma
+            a = (self.lower - self.mu) / self.sigma
+            erf_r = 0.5 * (1 + lax.erf(b / np.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / np.sqrt(2)))
+            ert_xi = 0.5 * (1 + lax.erf(((x - self.mu) / self.sigma) / np.sqrt(2)))
+            return (ert_xi - ert_l) / (erf_r - ert_l)
+
+        return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 1, middle_range(x)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
