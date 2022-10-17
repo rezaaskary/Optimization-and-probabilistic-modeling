@@ -279,15 +279,23 @@ class TruncatedNormal(ContinuousDistributions):
         if self.mu is None or self.sigma is None:
             raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
+        if self.lower >= self.upper:
+            raise Exception('The lower bound of the distribution cannot be greater than the upper bound!')
+
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Normal distribution
+        Parallelized calculating the probability of the Truncated Normal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * jnp.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+        arg_r = (self.upper - self.mu) / self.sigma
+        arg_l = (self.lower - self.mu) / self.sigma
+        normal_fcn_value = (1 / (np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+        erf_r = 0.5 * (1 + lax.erf(arg_r / np.sqrt(2)))
+        ert_l = 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))
+        return (1 / self.sigma) * (normal_fcn_value / (erf_r - ert_l))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
