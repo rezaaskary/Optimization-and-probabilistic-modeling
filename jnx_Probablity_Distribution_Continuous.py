@@ -261,6 +261,120 @@ class Normal(ContinuousDistributions):
                   }
         return values
 
+class Normal(ContinuousDistributions):
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+        """
+        Continuous Normal distribution
+        :param sigma: The standard deviation of the distribution
+        :param variance: The variance of the distribution
+        :param mu: The center of the distribution
+        :param activate_jit: Activating just-in-time evaluation of the methods
+        """
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+
+        if self.mu is None or self.sigma is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * jnp.exp(-((x - self.mu) ** 2) / (2 * self.sigma ** 2))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+        z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
+        return lax.erf(z)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Normal distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+        return vmap(scipy.special.erfinv, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Normal distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        values = {'mean': self.mu,
+                  'median': self.mu,
+                  'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
+                  'third_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.75 - 1),
+                  'variance': self.variance,
+                  'mode': self.mu,
+                  'MAD': self.sigma*jnp.sqrt(2/jnp.pi),
+                  'skewness': 0,
+                  'kurtosis': 0,
+                  'Entropy': 0.5 * (1 + jnp.log(2*jnp.pi*self.sigma**2))
+                  }
+        return values
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
