@@ -261,16 +261,19 @@ class Normal(ContinuousDistributions):
                   }
         return values
 
-class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+class TruncatedNormal(ContinuousDistributions):
+    def __init__(self, lower: float = None, upper: float = None, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
         """
-        Continuous Normal distribution
+        Continuous Truncated Normal distribution
+        :param lower: The lower bound of the distribution
+        :param upper: The upper bound of the distribution
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
         :param mu: The center of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
+        super(TruncatedNormal, self).__init__(lower=lower, upper=upper, sigma=sigma,
+                                              variance=variance, mu=mu, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
         if self.mu is None or self.sigma is None:
