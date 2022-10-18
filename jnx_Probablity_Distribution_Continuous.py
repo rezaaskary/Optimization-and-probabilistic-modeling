@@ -262,7 +262,8 @@ class Normal(ContinuousDistributions):
         return values
 
 class TruncatedNormal(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+    def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
+                 variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
         """
         Continuous Truncated Normal distribution
         :param lower: The lower bound of the distribution
