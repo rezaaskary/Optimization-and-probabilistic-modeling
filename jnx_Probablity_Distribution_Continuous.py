@@ -2,7 +2,6 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
 
-
 from jax.lax import switch
 
 
@@ -96,6 +95,7 @@ class ContinuousDistributions:
         else:
             pass
 
+
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False) -> None:
         """
@@ -159,8 +159,10 @@ class Uniform(ContinuousDistributions):
                   }
         return values
 
+
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None,
+                 activate_jit: bool = False) -> None:
         """
         Continuous Normal distribution
         :param sigma: The standard deviation of the distribution
@@ -198,7 +200,7 @@ class Normal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) -((x - self.mu) ** 2) / (2 * self.sigma ** 2)
+        return -jnp.log((self.sigma * jnp.sqrt(2 * jnp.pi))) - ((x - self.mu) ** 2) / (2 * self.sigma ** 2)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -250,16 +252,17 @@ class Normal(ContinuousDistributions):
         """
         values = {'mean': self.mu,
                   'median': self.mu,
-                  'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
+                  'first_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
                   'third_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.75 - 1),
                   'variance': self.variance,
                   'mode': self.mu,
-                  'MAD': self.sigma*jnp.sqrt(2/jnp.pi),
+                  'MAD': self.sigma * jnp.sqrt(2 / jnp.pi),
                   'skewness': 0,
                   'kurtosis': 0,
-                  'Entropy': 0.5 * (1 + jnp.log(2*jnp.pi*self.sigma**2))
+                  'Entropy': 0.5 * (1 + jnp.log(2 * jnp.pi * self.sigma ** 2))
                   }
         return values
+
 
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
@@ -295,7 +298,8 @@ class TruncatedNormal(ContinuousDistributions):
         arg_l = (self.lower - self.mu) / self.sigma
         normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
         return (1 / self.sigma) * (normal_fcn_value /
-                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (
+                                               1 + lax.erf(arg_l / jnp.sqrt(2)))))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -314,8 +318,8 @@ class TruncatedNormal(ContinuousDistributions):
 
         arg_r = (self.upper - self.mu) / self.sigma
         arg_l = (self.lower - self.mu) / self.sigma
-        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) -\
-                    jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) - \
+                  jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
         return log_pdf
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -373,7 +377,8 @@ class TruncatedNormal(ContinuousDistributions):
             erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
             ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
             z = (erf_r - ert_l) * y + ert_l
-            return scipy.special.erfinv(2*z - 1) * self.sigma * jnp.sqrt(2) + self.mu
+            return scipy.special.erfinv(2 * z - 1) * self.sigma * jnp.sqrt(2) + self.mu
+
         return vmap(reverse_cdf, in_axes=0, out_axes=0)(y)
 
     @property
@@ -382,20 +387,21 @@ class TruncatedNormal(ContinuousDistributions):
         Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        alpha = (self.lower - self.mu)/self.sigma
+        alpha = (self.lower - self.mu) / self.sigma
         beta = (self.upper - self.mu) / self.sigma
-        fi_alpha_ = 0.5*(1+lax.erf(alpha/jnp.sqrt(2)))
-        fi_beta_ = 0.5*(1+lax.erf(beta/jnp.sqrt(2)))
-        denominator =  fi_beta_ - fi_alpha_
-        fi_alpha = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * alpha**2)
-        fi_beta = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * beta**2)
+        fi_alpha_ = 0.5 * (1 + lax.erf(alpha / jnp.sqrt(2)))
+        fi_beta_ = 0.5 * (1 + lax.erf(beta / jnp.sqrt(2)))
+        denominator = fi_beta_ - fi_alpha_
+        fi_alpha = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * alpha ** 2)
+        fi_beta = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * beta ** 2)
         mean_ = self.mu + ((fi_alpha - fi_beta) / denominator) * self.sigma
-        median_ = self.mu + scipy.special.erfinv(0.5*(fi_alpha_+fi_beta_))* self.sigma
+        median_ = self.mu + scipy.special.erfinv(0.5 * (fi_alpha_ + fi_beta_)) * self.sigma
         mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
-        variance_ = (self.sigma**2) * (1 + ((alpha * fi_alpha - beta * fi_beta)/denominator) - ((fi_alpha - fi_beta) /
-                                                                                                denominator)**2)
-        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta)/denominator) +\
-                   jnp.log(denominator * self.sigma * jnp.sqrt(2*jnp.pi*jnp.exp(1)))
+        variance_ = (self.sigma ** 2) * (
+                    1 + ((alpha * fi_alpha - beta * fi_beta) / denominator) - ((fi_alpha - fi_beta) /
+                                                                               denominator) ** 2)
+        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta) / denominator) + \
+                   jnp.log(denominator * self.sigma * jnp.sqrt(2 * jnp.pi * jnp.exp(1)))
         values = {'mean': mean_,
                   'median': median_,
                   'variance': variance_,
@@ -417,7 +423,8 @@ class HalfNormal(ContinuousDistributions):
         # check for the consistency of the input of the probability distribution
 
         if self.variance is None or self.sigma is None:
-            raise Exception('The value of either variance or standard deviation is not specified (Normal distribution)!')
+            raise Exception(
+                'The value of either variance or standard deviation is not specified (Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -487,15 +494,7 @@ class HalfNormal(ContinuousDistributions):
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
-
-        def reverse_cdf(y: jnp.ndarray) -> jnp.ndarray:
-            b = (self.upper - self.mu) / self.sigma
-            a = (self.lower - self.mu) / self.sigma
-            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
-            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
-            z = (erf_r - ert_l) * y + ert_l
-            return scipy.special.erfinv(2*z - 1) * self.sigma * jnp.sqrt(2) + self.mu
-        return vmap(reverse_cdf, in_axes=0, out_axes=0)(y)
+        return vmap(self.sigma * jnp.sqrt(2) * scipy.special.erfinv, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
@@ -503,20 +502,21 @@ class HalfNormal(ContinuousDistributions):
         Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        alpha = (self.lower - self.mu)/self.sigma
+        alpha = (self.lower - self.mu) / self.sigma
         beta = (self.upper - self.mu) / self.sigma
-        fi_alpha_ = 0.5*(1+lax.erf(alpha/jnp.sqrt(2)))
-        fi_beta_ = 0.5*(1+lax.erf(beta/jnp.sqrt(2)))
-        denominator =  fi_beta_ - fi_alpha_
-        fi_alpha = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * alpha**2)
-        fi_beta = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * beta**2)
+        fi_alpha_ = 0.5 * (1 + lax.erf(alpha / jnp.sqrt(2)))
+        fi_beta_ = 0.5 * (1 + lax.erf(beta / jnp.sqrt(2)))
+        denominator = fi_beta_ - fi_alpha_
+        fi_alpha = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * alpha ** 2)
+        fi_beta = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * beta ** 2)
         mean_ = self.mu + ((fi_alpha - fi_beta) / denominator) * self.sigma
-        median_ = self.mu + scipy.special.erfinv(0.5*(fi_alpha_+fi_beta_))* self.sigma
+        median_ = self.mu + scipy.special.erfinv(0.5 * (fi_alpha_ + fi_beta_)) * self.sigma
         mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
-        variance_ = (self.sigma**2) * (1 + ((alpha * fi_alpha - beta * fi_beta)/denominator) - ((fi_alpha - fi_beta) /
-                                                                                                denominator)**2)
-        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta)/denominator) +\
-                   jnp.log(denominator * self.sigma * jnp.sqrt(2*jnp.pi*jnp.exp(1)))
+        variance_ = (self.sigma ** 2) * (
+                    1 + ((alpha * fi_alpha - beta * fi_beta) / denominator) - ((fi_alpha - fi_beta) /
+                                                                               denominator) ** 2)
+        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta) / denominator) + \
+                   jnp.log(denominator * self.sigma * jnp.sqrt(2 * jnp.pi * jnp.exp(1)))
         values = {'mean': mean_,
                   'median': median_,
                   'variance': variance_,
@@ -526,21 +526,10 @@ class HalfNormal(ContinuousDistributions):
         return values
 
 
-
-
-
-
-
-
-
-
-
-
-
 x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
 activate_jit = False
 
-KK = Normal(mu=0,sigma=5,activate_jit=activate_jit)
+KK = Normal(mu=0, sigma=5, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
@@ -550,6 +539,8 @@ E5 = KK.log_cdf(x)
 E7 = KK.sample(size=20)
 E8 = KK.diff_cdf(x)
 E3
+
+
 # ts = Uniform(a=4,b=7)
 # x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
 
