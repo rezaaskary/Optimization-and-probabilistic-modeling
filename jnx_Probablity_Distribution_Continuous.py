@@ -295,7 +295,7 @@ class TruncatedNormal(ContinuousDistributions):
         arg_l = (self.lower - self.mu) / self.sigma
         normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
         return (1 / self.sigma) * (normal_fcn_value /
-                                   (0.5 * (1 + lax.erf(arg_r / np.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))))
+                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -315,7 +315,7 @@ class TruncatedNormal(ContinuousDistributions):
         arg_r = (self.upper - self.mu) / self.sigma
         arg_l = (self.lower - self.mu) / self.sigma
         log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) -\
-                    jnp.log((0.5 * (1 + lax.erf(arg_r / np.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / np.sqrt(2)))))
+                    jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
         return log_pdf
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -336,9 +336,9 @@ class TruncatedNormal(ContinuousDistributions):
         def middle_range(x: jnp.ndarray) -> jnp.ndarray:
             b = (self.upper - self.mu) / self.sigma
             a = (self.lower - self.mu) / self.sigma
-            erf_r = 0.5 * (1 + lax.erf(b / np.sqrt(2)))
-            ert_l = 0.5 * (1 + lax.erf(a / np.sqrt(2)))
-            ert_xi = 0.5 * (1 + lax.erf(((x - self.mu) / self.sigma) / np.sqrt(2)))
+            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
+            ert_xi = 0.5 * (1 + lax.erf(((x - self.mu) / self.sigma) / jnp.sqrt(2)))
             return (ert_xi - ert_l) / (erf_r - ert_l)
 
         return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 1, middle_range(x)))
@@ -370,8 +370,8 @@ class TruncatedNormal(ContinuousDistributions):
         def reverse_cdf(y: jnp.ndarray) -> jnp.ndarray:
             b = (self.upper - self.mu) / self.sigma
             a = (self.lower - self.mu) / self.sigma
-            erf_r = 0.5 * (1 + lax.erf(b / np.sqrt(2)))
-            ert_l = 0.5 * (1 + lax.erf(a / np.sqrt(2)))
+            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
             z = (erf_r - ert_l) * y + ert_l
             return scipy.special.erfinv(2*z - 1) * self.sigma * jnp.sqrt(2) + self.mu
         return vmap(reverse_cdf, in_axes=0, out_axes=0)(y)
@@ -382,6 +382,9 @@ class TruncatedNormal(ContinuousDistributions):
         Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
+
+
+
         values = {'mean': self.mu,
                   'median': self.mu,
                   'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
