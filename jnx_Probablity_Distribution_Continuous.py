@@ -499,31 +499,17 @@ class HalfNormal(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the Normal distribution function given distribution parameters
+        Statistics calculated for the Half Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        alpha = (self.lower - self.mu) / self.sigma
-        beta = (self.upper - self.mu) / self.sigma
-        fi_alpha_ = 0.5 * (1 + lax.erf(alpha / jnp.sqrt(2)))
-        fi_beta_ = 0.5 * (1 + lax.erf(beta / jnp.sqrt(2)))
-        denominator = fi_beta_ - fi_alpha_
-        fi_alpha = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * alpha ** 2)
-        fi_beta = (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * beta ** 2)
-        mean_ = self.mu + ((fi_alpha - fi_beta) / denominator) * self.sigma
-        median_ = self.mu + scipy.special.erfinv(0.5 * (fi_alpha_ + fi_beta_)) * self.sigma
-        mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
-        variance_ = (self.sigma ** 2) * (
-                    1 + ((alpha * fi_alpha - beta * fi_beta) / denominator) - ((fi_alpha - fi_beta) /
-                                                                               denominator) ** 2)
-        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta) / denominator) + \
-                   jnp.log(denominator * self.sigma * jnp.sqrt(2 * jnp.pi * jnp.exp(1)))
-        values = {'mean': mean_,
-                  'median': median_,
-                  'variance': variance_,
-                  'mode': mode_,
-                  'Entropy': entropy_
-                  }
-        return values
+
+        # values = {'mean': mean_,
+        #           'median': median_,
+        #           'variance': variance_,
+        #           'mode': mode_,
+        #           'Entropy': entropy_
+        #           }
+        return
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
