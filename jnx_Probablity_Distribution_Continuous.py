@@ -405,7 +405,148 @@ class TruncatedNormal(ContinuousDistributions):
         return values
 
 
+class TruncatedNormal(ContinuousDistributions):
+    def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
+                 variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+        """
+        Continuous Truncated Normal distribution
+        :param lower: The lower bound of the distribution
+        :param upper: The upper bound of the distribution
+        :param sigma: The standard deviation of the distribution
+        :param variance: The variance of the distribution
+        :param mu: The center of the distribution
+        :param activate_jit: Activating just-in-time evaluation of the methods
+        """
+        super(TruncatedNormal, self).__init__(lower=lower, upper=upper, sigma=sigma,
+                                              variance=variance, mu=mu, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
 
+        if self.mu is None or self.sigma is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
+
+        if self.lower >= self.upper:
+            raise Exception('The lower bound of the distribution cannot be greater than the upper bound!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Truncated Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        arg_r = (self.upper - self.mu) / self.sigma
+        arg_l = (self.lower - self.mu) / self.sigma
+        normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+        return (1 / self.sigma) * (normal_fcn_value /
+                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        arg_r = (self.upper - self.mu) / self.sigma
+        arg_l = (self.lower - self.mu) / self.sigma
+        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) -\
+                    jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+        return log_pdf
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        def middle_range(x: jnp.ndarray) -> jnp.ndarray:
+            b = (self.upper - self.mu) / self.sigma
+            a = (self.lower - self.mu) / self.sigma
+            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
+            ert_xi = 0.5 * (1 + lax.erf(((x - self.mu) / self.sigma) / jnp.sqrt(2)))
+            return (ert_xi - ert_l) / (erf_r - ert_l)
+
+        return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 1, middle_range(x)))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Normal distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def reverse_cdf(y: jnp.ndarray) -> jnp.ndarray:
+            b = (self.upper - self.mu) / self.sigma
+            a = (self.lower - self.mu) / self.sigma
+            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
+            z = (erf_r - ert_l) * y + ert_l
+            return scipy.special.erfinv(2*z - 1) * self.sigma * jnp.sqrt(2) + self.mu
+        return vmap(reverse_cdf, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Normal distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        alpha = (self.lower - self.mu)/self.sigma
+        beta = (self.upper - self.mu) / self.sigma
+        fi_alpha_ = 0.5*(1+lax.erf(alpha/jnp.sqrt(2)))
+        fi_beta_ = 0.5*(1+lax.erf(beta/jnp.sqrt(2)))
+        denominator =  fi_beta_ - fi_alpha_
+        fi_alpha = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * alpha**2)
+        fi_beta = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * beta**2)
+        mean_ = self.mu + ((fi_alpha - fi_beta) / denominator) * self.sigma
+        median_ = self.mu + scipy.special.erfinv(0.5*(fi_alpha_+fi_beta_))* self.sigma
+        mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
+        variance_ = (self.sigma**2) * (1 + ((alpha * fi_alpha - beta * fi_beta)/denominator) - ((fi_alpha - fi_beta) /
+                                                                                                denominator)**2)
+        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta)/denominator) +\
+                   jnp.log(denominator * self.sigma * jnp.sqrt(2*jnp.pi*jnp.exp(1)))
+        values = {'mean': mean_,
+                  'median': median_,
+                  'variance': variance_,
+                  'mode': mode_,
+                  'Entropy': entropy_
+                  }
+        return values
 
 
 
