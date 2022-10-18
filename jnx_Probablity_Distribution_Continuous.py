@@ -444,11 +444,8 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-
-        arg_r = (self.upper - self.mu) / self.sigma
-        arg_l = (self.lower - self.mu) / self.sigma
-        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) -\
-                    jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+        log_pdf = jnp.where(x > 0, 0.5 * jnp.log(2 / jnp.pi) - jnp.log(self.sigma) -
+                            (x ** 2) / (2 * self.sigma ** 2), - jnp.inf)
         return log_pdf
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -465,16 +462,7 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        def middle_range(x: jnp.ndarray) -> jnp.ndarray:
-            b = (self.upper - self.mu) / self.sigma
-            a = (self.lower - self.mu) / self.sigma
-            erf_r = 0.5 * (1 + lax.erf(b / jnp.sqrt(2)))
-            ert_l = 0.5 * (1 + lax.erf(a / jnp.sqrt(2)))
-            ert_xi = 0.5 * (1 + lax.erf(((x - self.mu) / self.sigma) / jnp.sqrt(2)))
-            return (ert_xi - ert_l) / (erf_r - ert_l)
-
-        return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 1, middle_range(x)))
+        return jnp.where(x > 0, lax.erf(x / (self.sigma * jnp.sqrt(2))), 0)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
