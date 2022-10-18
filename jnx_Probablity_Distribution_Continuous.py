@@ -405,41 +405,30 @@ class TruncatedNormal(ContinuousDistributions):
         return values
 
 
-class TruncatedNormal(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
-                 variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+class HalfNormal(ContinuousDistributions):
+    def __init__(self, sigma: float = None, variance: float = None, activate_jit: bool = False) -> None:
         """
-        Continuous Truncated Normal distribution
-        :param lower: The lower bound of the distribution
-        :param upper: The upper bound of the distribution
+        Continuous Half Normal distribution
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
-        :param mu: The center of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
-        super(TruncatedNormal, self).__init__(lower=lower, upper=upper, sigma=sigma,
-                                              variance=variance, mu=mu, activate_jit=activate_jit)
+        super(HalfNormal, self).__init__(sigma=sigma, variance=variance, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
-        if self.mu is None or self.sigma is None:
-            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
-
-        if self.lower >= self.upper:
-            raise Exception('The lower bound of the distribution cannot be greater than the upper bound!')
+        if self.variance is None or self.sigma is None:
+            raise Exception('The value of either variance or standard deviation is not specified (Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Truncated Normal distribution
+        Parallelized calculating the probability of the Half Normal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        arg_r = (self.upper - self.mu) / self.sigma
-        arg_l = (self.lower - self.mu) / self.sigma
-        normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
-        return (1 / self.sigma) * (normal_fcn_value /
-                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
+
+        return (jnp.sqrt(2 / jnp.pi) / self.sigma) * jnp.exp(-(x ** 2) / (2 * self.sigma ** 2))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
