@@ -382,19 +382,25 @@ class TruncatedNormal(ContinuousDistributions):
         Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
-
-
-        values = {'mean': self.mu,
-                  'median': self.mu,
-                  'first_quentile':  self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
-                  'third_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.75 - 1),
-                  'variance': self.variance,
-                  'mode': self.mu,
-                  'MAD': self.sigma*jnp.sqrt(2/jnp.pi),
-                  'skewness': 0,
-                  'kurtosis': 0,
-                  'Entropy': 0.5 * (1 + jnp.log(2*jnp.pi*self.sigma**2))
+        alpha = (self.lower - self.mu)/self.sigma
+        beta = (self.upper - self.mu) / self.sigma
+        fi_alpha_ = 0.5*(1+lax.erf(alpha/jnp.sqrt(2)))
+        fi_beta_ = 0.5*(1+lax.erf(beta/jnp.sqrt(2)))
+        denominator =  fi_beta_ - fi_alpha_
+        fi_alpha = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * alpha**2)
+        fi_beta = (1/jnp.sqrt(2*jnp.pi)) * jnp.exp(-0.5 * beta**2)
+        mean_ = self.mu + ((fi_alpha - fi_beta) / denominator) * self.sigma
+        median_ = self.mu + scipy.special.erfinv(0.5*(fi_alpha_+fi_beta_))* self.sigma
+        mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
+        variance_ = (self.sigma**2) * (1 + ((alpha * fi_alpha - beta * fi_beta)/denominator) - ((fi_alpha - fi_beta) /
+                                                                                                denominator)**2)
+        entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta)/denominator) +\
+                   jnp.log(denominator * self.sigma * jnp.sqrt(2*jnp.pi*jnp.exp(1)))
+        values = {'mean': mean_,
+                  'median': median_,
+                  'variance': variance_,
+                  'mode': mode_,
+                  'Entropy': entropy_
                   }
         return values
 
