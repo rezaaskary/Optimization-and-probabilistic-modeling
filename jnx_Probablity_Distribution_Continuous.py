@@ -365,7 +365,15 @@ class TruncatedNormal(ContinuousDistributions):
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
-        return vmap(scipy.special.erfinv, in_axes=0, out_axes=0)(y)
+
+        def reverse_cdf(y: jnp.ndarray) -> jnp.ndarray:
+            b = (self.upper - self.mu) / self.sigma
+            a = (self.lower - self.mu) / self.sigma
+            erf_r = 0.5 * (1 + lax.erf(b / np.sqrt(2)))
+            ert_l = 0.5 * (1 + lax.erf(a / np.sqrt(2)))
+            z = (erf_r - ert_l) * y + ert_l
+            return scipy.special.erfinv(2*z - 1) * self.sigma * jnp.sqrt(2) + self.mu
+        return vmap(reverse_cdf, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
