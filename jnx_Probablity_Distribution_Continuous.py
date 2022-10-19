@@ -317,12 +317,7 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-
-        arg_r = (self.upper - self.mu) / self.sigma
-        arg_l = (self.lower - self.mu) / self.sigma
-        log_pdf = -jnp.log(self.sigma) - jnp.log((jnp.sqrt(2 * jnp.pi))) - (0.5 * ((x - self.mu) / self.sigma) ** 2) - \
-                  jnp.log((0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (1 + lax.erf(arg_l / jnp.sqrt(2)))))
-        return log_pdf
+        return jnp.log(self.pdf_(x))
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -519,16 +514,57 @@ activate_jit = False
 
 KK = TruncatedNormal(mu=0, sigma=5,lower=-7,upper=5, activate_jit=activate_jit)
 E1 = KK.pdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E1,'*')
+plt.title('PDF')
+plt.show()
+
 E6 = KK.diff_pdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E6,'*')
+plt.title('Diff PDF')
+plt.show()
+
 E2 = KK.log_pdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E2,'*')
+plt.title('LOG PDF')
+plt.show()
+
+
+
 E3 = KK.diff_log_pdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E3,'*')
+plt.title('DIFF LOG PDF')
+plt.show()
+
 E4 = KK.cdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E4,'*')
+plt.title('CDF')
+plt.show()
+
 E5 = KK.log_cdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E5,'*')
+plt.title('LOG CDF')
+plt.show()
+
 E7 = KK.sample(size=20)
+plt.figure(dpi=150)
+plt.hist(E7, 100)
+plt.title('samples')
+plt.show()
+
 E8 = KK.diff_cdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E8,'*')
+plt.title('DIFF CDF')
+plt.show()
+
 E3
 
-plt.hist(E1,20)
 
 # ts = Uniform(a=4,b=7)
 # x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
