@@ -575,6 +575,13 @@ plt.plot(x,E8,'*')
 plt.title('DIFF CDF')
 plt.show()
 
+E9 = KK.diff_log_cdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E9,'*')
+plt.title('DIFF LOG CDF')
+plt.show()
+
+
 E7 = KK.sample(size=20000)
 plt.figure(dpi=150)
 plt.hist(E7, 30)
