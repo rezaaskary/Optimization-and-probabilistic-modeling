@@ -528,7 +528,7 @@ class HalfNormal(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
 activate_jit = False
 
-KK = Normal(mu=2,sigma=4, activate_jit=activate_jit)
+KK = HalfNormal(mu=2,sigma=4, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x,E1,'*')
