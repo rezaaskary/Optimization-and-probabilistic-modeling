@@ -497,6 +497,9 @@ class HalfNormal(ContinuousDistributions):
         """
         return jnp.log(self.cdf_(x))
 
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
         Sampling form the Normal distribution
