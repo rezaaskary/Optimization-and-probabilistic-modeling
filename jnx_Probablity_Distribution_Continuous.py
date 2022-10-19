@@ -76,22 +76,22 @@ class ContinuousDistributions:
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
                 self.pdf = jit(vmap(self.pdf_, in_axes=[0], out_axes=0))
-                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
+                self.diff_pdf = jit(vmap(self.diff_pdf_, in_axes=[0], out_axes=0))
                 self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[0], out_axes=0))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
+                self.diff_log_pdf = jit(vmap(self.diff_log_pdf_, in_axes=[0], out_axes=0))
                 self.cdf = jit(vmap(self.cdf_, in_axes=[0], out_axes=0))
                 self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[0], out_axes=0))
-                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
+                self.diff_cdf = jit(vmap(self.diff_cdf_, in_axes=[0], out_axes=0))
                 self.sample = self.sample_
             else:
                 self.sample = self.sample_
                 self.pdf = vmap(self.pdf_, in_axes=[0], out_axes=0)
-                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
+                self.diff_pdf = vmap(self.diff_pdf_, in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_pdf_, in_axes=[0], out_axes=0)
-                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
+                self.diff_log_pdf = vmap(self.diff_log_pdf_, in_axes=[0], out_axes=0)
                 self.cdf = vmap(self.cdf_, in_axes=[0], out_axes=0)
                 self.log_cdf = vmap(self.log_cdf_, in_axes=[0], out_axes=0)
-                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
+                self.diff_cdf = vmap(self.diff_cdf_, in_axes=[0], out_axes=0)
         else:
             pass
 
@@ -325,7 +325,7 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        return self.log_pdf_(x)[0]
+        return jnp.where(x < self.lower, -jnp.inf,jnp.where(x > self.upper, -jnp.inf, grad(self.log_pdf_(x)[0])))
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -551,17 +551,19 @@ plt.plot(x,E5,'*')
 plt.title('LOG CDF')
 plt.show()
 
+E8 = KK.diff_cdf(x)
+plt.figure(dpi=150)
+plt.plot(x,E8,'*')
+plt.title('DIFF CDF')
+plt.show()
+
 E7 = KK.sample(size=20)
 plt.figure(dpi=150)
 plt.hist(E7, 100)
 plt.title('samples')
 plt.show()
 
-E8 = KK.diff_cdf(x)
-plt.figure(dpi=150)
-plt.plot(x,E8,'*')
-plt.title('DIFF CDF')
-plt.show()
+
 
 E3
 
