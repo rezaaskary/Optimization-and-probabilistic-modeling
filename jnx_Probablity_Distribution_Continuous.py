@@ -76,22 +76,26 @@ class ContinuousDistributions:
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
                 self.pdf = jit(vmap(self.pdf_, in_axes=[0], out_axes=0))
-                self.diff_pdf = jit(vmap(self.diff_pdf_, in_axes=[0], out_axes=0))
+                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
                 self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[0], out_axes=0))
-                self.diff_log_pdf = jit(vmap(self.diff_log_pdf_, in_axes=[0], out_axes=0))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
                 self.cdf = jit(vmap(self.cdf_, in_axes=[0], out_axes=0))
                 self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[0], out_axes=0))
-                self.diff_cdf = jit(vmap(self.diff_cdf_, in_axes=[0], out_axes=0))
+                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0))
                 self.sample = self.sample_
             else:
                 self.sample = self.sample_
                 self.pdf = vmap(self.pdf_, in_axes=[0], out_axes=0)
-                self.diff_pdf = vmap(self.diff_pdf_, in_axes=[0], out_axes=0)
+                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_pdf_, in_axes=[0], out_axes=0)
-                self.diff_log_pdf = vmap(self.diff_log_pdf_, in_axes=[0], out_axes=0)
+                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
                 self.cdf = vmap(self.cdf_, in_axes=[0], out_axes=0)
                 self.log_cdf = vmap(self.log_cdf_, in_axes=[0], out_axes=0)
-                self.diff_cdf = vmap(self.diff_cdf_, in_axes=[0], out_axes=0)
+                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
+                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0)
+
+
         else:
             pass
 
@@ -139,6 +143,9 @@ class Uniform(ContinuousDistributions):
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.log(
             jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
@@ -235,6 +242,9 @@ class Normal(ContinuousDistributions):
         """
         return jnp.log(self.cdf_(x))
 
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
         Sampling form the Normal distribution
@@ -325,7 +335,7 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x < self.lower, -jnp.inf,jnp.where(x > self.upper, -jnp.inf, grad(self.log_pdf_(x)[0])))
+        return (self.log_pdf(x))[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -359,6 +369,9 @@ class TruncatedNormal(ContinuousDistributions):
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
         return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
@@ -512,7 +525,7 @@ class HalfNormal(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
 activate_jit = False
 
-KK = TruncatedNormal(mu=0, sigma=5,lower=-7,upper=5, activate_jit=activate_jit)
+KK = Normal(mu=2,sigma=4, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x,E1,'*')
@@ -557,9 +570,9 @@ plt.plot(x,E8,'*')
 plt.title('DIFF CDF')
 plt.show()
 
-E7 = KK.sample(size=20)
+E7 = KK.sample(size=20000)
 plt.figure(dpi=150)
-plt.hist(E7, 100)
+plt.hist(E7, 30)
 plt.title('samples')
 plt.show()
 
