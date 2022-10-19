@@ -512,10 +512,10 @@ class HalfNormal(ContinuousDistributions):
         return
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=1, maxval=20, shape=(100, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1))
 activate_jit = False
 
-KK = Normal(mu=0, sigma=5, activate_jit=activate_jit)
+KK = TruncatedNormal(mu=0, sigma=5,lower=-7,upper=5, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
