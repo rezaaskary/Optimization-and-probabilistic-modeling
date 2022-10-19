@@ -444,8 +444,7 @@ class HalfNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-
-        return (jnp.sqrt(2 / jnp.pi) / self.sigma) * jnp.exp(-(x ** 2) / (2 * self.sigma ** 2))
+        return jnp.where(x < 0, 0, (jnp.sqrt(2 / jnp.pi) / self.sigma) * jnp.exp(-(x ** 2) / (2 * self.sigma ** 2)))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -461,8 +460,7 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        log_pdf = jnp.where(x > 0, 0.5 * jnp.log(2 / jnp.pi) - jnp.log(self.sigma) -
-                            (x ** 2) / (2 * self.sigma ** 2), - jnp.inf)
+        log_pdf = jnp.where(x >= 0, jnp.log(self.pdf_(x)), - jnp.inf)
         return log_pdf
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -479,7 +477,7 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x > 0, lax.erf(x / (self.sigma * jnp.sqrt(2))), 0)
+        return jnp.where(x >= 0, lax.erf(x / (self.sigma * jnp.sqrt(2))), 0)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -530,7 +528,7 @@ class HalfNormal(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
 activate_jit = False
 
-KK = HalfNormal(mu=2,sigma=4, activate_jit=activate_jit)
+KK = HalfNormal(sigma=4, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x,E1,'*')
