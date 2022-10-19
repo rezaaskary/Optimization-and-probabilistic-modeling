@@ -304,13 +304,15 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
+
         def pdf_in_range(x: jnp.ndarray) -> jnp.ndarray:
             arg_r = (self.upper - self.mu) / self.sigma
             arg_l = (self.lower - self.mu) / self.sigma
             normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
             return (1 / self.sigma) * (normal_fcn_value /
-                                (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (
-                                        1 + lax.erf(arg_l / jnp.sqrt(2)))))
+                                       (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (
+                                               1 + lax.erf(arg_l / jnp.sqrt(2)))))
+
         return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 0, pdf_in_range(x)))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -408,8 +410,8 @@ class TruncatedNormal(ContinuousDistributions):
         median_ = self.mu + scipy.special.erfinv(0.5 * (fi_alpha_ + fi_beta_)) * self.sigma
         mode_ = jnp.where(self.mu < self.lower, self.lower, jnp.where(self.mu > self.upper, self.upper, self.mu))
         variance_ = (self.sigma ** 2) * (
-                    1 + ((alpha * fi_alpha - beta * fi_beta) / denominator) - ((fi_alpha - fi_beta) /
-                                                                               denominator) ** 2)
+                1 + ((alpha * fi_alpha - beta * fi_beta) / denominator) - ((fi_alpha - fi_beta) /
+                                                                           denominator) ** 2)
         entropy_ = 0.5 * ((alpha * fi_alpha - beta * fi_beta) / denominator) + \
                    jnp.log(denominator * self.sigma * jnp.sqrt(2 * jnp.pi * jnp.exp(1)))
         values = {'mean': mean_,
@@ -504,8 +506,13 @@ class HalfNormal(ContinuousDistributions):
         :param size:
         :return:
         """
+
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
-        return vmap(self.sigma * jnp.sqrt(2) * scipy.special.erfinv, in_axes=0, out_axes=0)(y)
+
+        def inversion_of_cdf_(x):
+            return self.sigma * jnp.sqrt(2) * scipy.special.erfinv
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
@@ -514,15 +521,15 @@ class HalfNormal(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        values = {'mean': self.sigma * jnp.sqrt(2/jnp.pi),
+        values = {'mean': self.sigma * jnp.sqrt(2 / jnp.pi),
                   'median': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.5),
-                  'variance': (self.sigma**2)*(1-2/jnp.pi),
-                  'skewness': (jnp.sqrt(2)*(4-jnp.pi))/(jnp.pi-2)**1.5,
+                  'variance': (self.sigma ** 2) * (1 - 2 / jnp.pi),
+                  'skewness': (jnp.sqrt(2) * (4 - jnp.pi)) / (jnp.pi - 2) ** 1.5,
                   'mode': 0,
-                  'kurtosis': (8*(jnp.pi - 3))/(jnp.pi - 2)**2.0,
-                  'entropy': 0.5 * jnp.log2(2 * jnp.pi * jnp.exp(1) * self.sigma**2) - 1
+                  'kurtosis': (8 * (jnp.pi - 3)) / (jnp.pi - 2) ** 2.0,
+                  'entropy': 0.5 * jnp.log2(2 * jnp.pi * jnp.exp(1) * self.sigma ** 2) - 1
                   }
-        return
+        return values
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
@@ -531,62 +538,57 @@ activate_jit = False
 KK = HalfNormal(sigma=4, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E1,'*')
+plt.plot(x, E1, '*')
 plt.title('PDF')
 plt.show()
 
 E6 = KK.diff_pdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E6,'*')
+plt.plot(x, E6, '*')
 plt.title('Diff PDF')
 plt.show()
 
 E2 = KK.log_pdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E2,'*')
+plt.plot(x, E2, '*')
 plt.title('LOG PDF')
 plt.show()
 
-
-
 E3 = KK.diff_log_pdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E3,'*')
+plt.plot(x, E3, '*')
 plt.title('DIFF LOG PDF')
 plt.show()
 
 E4 = KK.cdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E4,'*')
+plt.plot(x, E4, '*')
 plt.title('CDF')
 plt.show()
 
 E5 = KK.log_cdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E5,'*')
+plt.plot(x, E5, '*')
 plt.title('LOG CDF')
 plt.show()
 
 E8 = KK.diff_cdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E8,'*')
+plt.plot(x, E8, '*')
 plt.title('DIFF CDF')
 plt.show()
 
 E9 = KK.diff_log_cdf(x)
 plt.figure(dpi=150)
-plt.plot(x,E9,'*')
+plt.plot(x, E9, '*')
 plt.title('DIFF LOG CDF')
 plt.show()
-
 
 E7 = KK.sample(size=20000)
 plt.figure(dpi=150)
 plt.hist(E7, 30)
 plt.title('samples')
 plt.show()
-
-
 
 E3
 
