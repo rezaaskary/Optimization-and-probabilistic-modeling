@@ -509,8 +509,8 @@ class HalfNormal(ContinuousDistributions):
 
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(x):
-            return self.sigma * jnp.sqrt(2) * scipy.special.erfinv
+        def inversion_of_cdf_(y):
+            return self.sigma * jnp.sqrt(2) * scipy.special.erfinv(y)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
