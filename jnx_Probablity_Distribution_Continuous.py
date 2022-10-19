@@ -294,12 +294,14 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        arg_r = (self.upper - self.mu) / self.sigma
-        arg_l = (self.lower - self.mu) / self.sigma
-        normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
-        return (1 / self.sigma) * (normal_fcn_value /
-                                   (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (
-                                               1 + lax.erf(arg_l / jnp.sqrt(2)))))
+        def pdf_in_range(x: jnp.ndarray) -> jnp.ndarray:
+            arg_r = (self.upper - self.mu) / self.sigma
+            arg_l = (self.lower - self.mu) / self.sigma
+            normal_fcn_value = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * ((x - self.mu) / self.sigma) ** 2)
+            return (1 / self.sigma) * (normal_fcn_value /
+                                (0.5 * (1 + lax.erf(arg_r / jnp.sqrt(2))) - 0.5 * (
+                                        1 + lax.erf(arg_l / jnp.sqrt(2)))))
+        return jnp.where(x < self.lower, 0, jnp.where(x > self.upper, 0, pdf_in_range(x)))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -512,7 +514,7 @@ class HalfNormal(ContinuousDistributions):
         return
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
 activate_jit = False
 
 KK = TruncatedNormal(mu=0, sigma=5,lower=-7,upper=5, activate_jit=activate_jit)
@@ -526,6 +528,7 @@ E7 = KK.sample(size=20)
 E8 = KK.diff_cdf(x)
 E3
 
+plt.hist(E1,20)
 
 # ts = Uniform(a=4,b=7)
 # x = jax.random.uniform(key=RNG, minval=-20, maxval=20, shape=(10, 1))
