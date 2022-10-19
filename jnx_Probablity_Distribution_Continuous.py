@@ -516,12 +516,14 @@ class HalfNormal(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        # values = {'mean': mean_,
-        #           'median': median_,
-        #           'variance': variance_,
-        #           'mode': mode_,
-        #           'Entropy': entropy_
-        #           }
+        values = {'mean': self.sigma * jnp.sqrt(2/jnp.pi),
+                  'median': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.5),
+                  'variance': (self.sigma**2)*(1-2/jnp.pi),
+                  'skewness': (jnp.sqrt(2)*(4-jnp.pi))/(jnp.pi-2)**1.5,
+                  'mode': 0,
+                  'kurtosis': (8*(jnp.pi - 3))/(jnp.pi - 2)**2.0,
+                  'entropy': 0.5 * jnp.log2(2 * jnp.pi * jnp.exp(1) * self.sigma**2) - 1
+                  }
         return
 
 
