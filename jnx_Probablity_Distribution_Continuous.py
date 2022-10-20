@@ -648,6 +648,13 @@ class SkewedNormal(ContinuousDistributions):
         delta_ = self.alpha/jnp.sqrt(1+self.alpha**2)
         mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2/jnp.pi)
         variance_ = (self.sigma**2)*(1-2*(delta_**2)/jnp.pi)
+        gamma1_ = 0.5*(4-jnp.pi)*((delta_*jnp.sqrt(2/jnp.pi))**3)/(1-2*(delta_**2/jnp.pi))**1.5
+        kurtosis = 2 * (jnp.pi - 3) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 4) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 2
+
+        muz = jnp.sqrt(2/jnp.pi)
+        sigmaz = jnp.sqrt(1-muz**2)
+        m0 = muz - 0.5 * gamma1_ * sigmaz - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2*jnp.pi)/jnp.abs(self.alpha))
+
 
 
 
