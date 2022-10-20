@@ -696,8 +696,10 @@ class BetaPdf(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
+
         def beta_(a, b):
-            beta = (jnp.exp(scipy.special.gammaln(a)) * jnp.exp(scipy.special.gammaln(b)))/ jnp.exp(scipy.special.gammaln(b+a))
+            beta = (jnp.exp(scipy.special.gammaln(a)) * jnp.exp(scipy.special.gammaln(b))) / jnp.exp(
+                scipy.special.gammaln(b + a))
             return beta
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
@@ -719,21 +721,18 @@ class BetaPdf(ContinuousDistributions):
         """
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
-        def beta_(a, b):
-            beta = (jnp.exp(scipy.special.gammaln(a)) * jnp.exp(scipy.special.gammaln(b))) /\
-                   jnp.exp(scipy.special.gammaln(b+a))
-            return beta
-
-        log_prob = (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(1 - x) -\
-                   jnp.log(scipy.special.betainc(self.alpha, self.beta))
+        log_prob = (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(1 - x) + \
+                   scipy.special.gammaln(self.alpha) + scipy.special.gammaln(self.beta) - \
+                   scipy.special.gammaln(self.beta + self.alpha)
         return log_prob
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of Normal probability distribution
+        The derivatives of Beta probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
         return self.log_pdf_(x)[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -742,8 +741,8 @@ class BetaPdf(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        scipy.special.betainc(a=self.alpha, b=self.beta,x=x)
-        return erf_part - 2 * owens_t((x - self.mu) / self.sigma, self.alpha)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return scipy.special.betainc(a=self.alpha, b=self.beta, x=x)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -751,6 +750,7 @@ class BetaPdf(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
         return (self.cdf_(x))[0]
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -759,9 +759,11 @@ class BetaPdf(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
         return jnp.log(self.cdf_(x))
 
     def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
         return (self.log_cdf_(x))[0]
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
@@ -780,20 +782,11 @@ class BetaPdf(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the Half Normal distribution function given distribution parameters
+        Statistics calculated for the Beta distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        delta_ = self.alpha / jnp.sqrt(1 + self.alpha ** 2)
-        mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2 / jnp.pi)
-        variance_ = (self.sigma ** 2) * (1 - 2 * (delta_ ** 2) / jnp.pi)
-        gamma1_ = 0.5 * (4 - jnp.pi) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 3) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 1.5
-        kurtosis_ = 2 * (jnp.pi - 3) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 4) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 2
 
-        muz = jnp.sqrt(2 / jnp.pi)
-        sigmaz_ = jnp.sqrt(1 - muz ** 2)
-        m0 = muz - 0.5 * gamma1_ * sigmaz_ - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2 * jnp.pi) / jnp.abs(self.alpha))
-        mode_ = self.mu + self.sigma * m0
-        values = {'mean': mean_,
+        values = {'mean': self.alpha/(self.alpha + self.beta),
                   'variance': variance_,
                   'skewness': gamma1_,
                   'mode': mode_,
