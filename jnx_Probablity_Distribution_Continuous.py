@@ -645,6 +645,13 @@ class SkewedNormal(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
+        delta_ = self.alpha/jnp.sqrt(1+self.alpha**2)
+        mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2/jnp.pi)
+        variance_ = (self.sigma**2)*(1-2*(delta_**2)/jnp.pi)
+
+
+
+
         values = {'mean': self.sigma * jnp.sqrt(2 / jnp.pi),
                   'median': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.5),
                   'first_quantile': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.25),
