@@ -7,6 +7,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
+                 beta: jnp.ndarray = None,
                  mu: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
                  variance: jnp.ndarray = None,
@@ -19,6 +20,13 @@ class ContinuousDistributions:
                  rng: int = 1) -> None:
 
         self.key = random.PRNGKey(rng)
+
+        if isinstance(beta, (jnp.ndarray, float, int)):
+            self.beta = beta
+        elif beta is None:
+            self.beta = None
+        else:
+            raise Exception('The value of beta is not specified correctly!')
 
         if isinstance(mu, (jnp.ndarray, float, int)):
             self.mu = mu
@@ -631,12 +639,10 @@ class SkewedNormal(ContinuousDistributions):
         :param size:
         :return:
         """
-
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y):
             return None
-
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -645,7 +651,6 @@ class SkewedNormal(ContinuousDistributions):
         Statistics calculated for the Half Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
         delta_ = self.alpha/jnp.sqrt(1+self.alpha**2)
         mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2/jnp.pi)
         variance_ = (self.sigma**2)*(1-2*(delta_**2)/jnp.pi)
@@ -656,7 +661,6 @@ class SkewedNormal(ContinuousDistributions):
         sigmaz_ = jnp.sqrt(1-muz**2)
         m0 = muz - 0.5 * gamma1_ * sigmaz_ - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2*jnp.pi)/jnp.abs(self.alpha))
         mode_ = self.mu + self.sigma * m0
-
         values = {'mean': mean_,
                   'variance': variance_,
                   'skewness': gamma1_,
@@ -664,6 +668,132 @@ class SkewedNormal(ContinuousDistributions):
                   'kurtosis': kurtosis_,
                   }
         return values
+
+class BetaPdf(ContinuousDistributions):
+    def __init__(self,  alpha: None, beta: None, activate_jit: bool = False) -> None:
+        """
+        Continuous Half Normal distribution
+        :param sigma: The standard deviation of the distribution
+        :param variance: The variance of the distribution
+        :param activate_jit: Activating just-in-time evaluation of the methods
+        """
+        super(BetaPdf, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Half Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        z = (x - self.mu) / self.sigma
+        erf_part = 0.5 * (1 + lax.erf(z * (self.alpha / jnp.sqrt(2.0))))
+        normal_part = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * (z ** 2))
+        return 2 * erf_part * normal_part
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+        erf_part = 0.5 * (1 + lax.erf(x/jnp.sqrt(2)))
+        return erf_part - 2 * owens_t((x-self.mu)/self.sigma, self.alpha)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Normal distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y):
+            return None
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Half Normal distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        delta_ = self.alpha/jnp.sqrt(1+self.alpha**2)
+        mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2/jnp.pi)
+        variance_ = (self.sigma**2)*(1-2*(delta_**2)/jnp.pi)
+        gamma1_ = 0.5*(4-jnp.pi)*((delta_*jnp.sqrt(2/jnp.pi))**3)/(1-2*(delta_**2/jnp.pi))**1.5
+        kurtosis_ = 2 * (jnp.pi - 3) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 4) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 2
+
+        muz = jnp.sqrt(2/jnp.pi)
+        sigmaz_ = jnp.sqrt(1-muz**2)
+        m0 = muz - 0.5 * gamma1_ * sigmaz_ - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2*jnp.pi)/jnp.abs(self.alpha))
+        mode_ = self.mu + self.sigma * m0
+        values = {'mean': mean_,
+                  'variance': variance_,
+                  'skewness': gamma1_,
+                  'mode': mode_,
+                  'kurtosis': kurtosis_,
+                  }
+        return values
+
+
+
+
+
+
+
+
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(10000, 1))
