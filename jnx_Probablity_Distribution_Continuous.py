@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
-
+from tensorflow_probability.substrates.jax.math.special import owens_t
 from jax.lax import switch
 
 
@@ -603,7 +603,8 @@ class SkewedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        return None
+        erf_part = 0.5 * (1 + lax.erf(x/jnp.sqrt(2)))
+        return erf_part - 2 * owens_t((x-self.mu)/self.sigma, self.alpha)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -649,25 +650,18 @@ class SkewedNormal(ContinuousDistributions):
         mean_ = self.mu + self.sigma * delta_ * jnp.sqrt(2/jnp.pi)
         variance_ = (self.sigma**2)*(1-2*(delta_**2)/jnp.pi)
         gamma1_ = 0.5*(4-jnp.pi)*((delta_*jnp.sqrt(2/jnp.pi))**3)/(1-2*(delta_**2/jnp.pi))**1.5
-        kurtosis = 2 * (jnp.pi - 3) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 4) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 2
+        kurtosis_ = 2 * (jnp.pi - 3) * ((delta_ * jnp.sqrt(2 / jnp.pi)) ** 4) / (1 - 2 * (delta_ ** 2 / jnp.pi)) ** 2
 
         muz = jnp.sqrt(2/jnp.pi)
-        sigmaz = jnp.sqrt(1-muz**2)
-        m0 = muz - 0.5 * gamma1_ * sigmaz - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2*jnp.pi)/jnp.abs(self.alpha))
+        sigmaz_ = jnp.sqrt(1-muz**2)
+        m0 = muz - 0.5 * gamma1_ * sigmaz_ - 0.5 * jnp.sign(self.alpha) * jnp.exp(-(2*jnp.pi)/jnp.abs(self.alpha))
+        mode_ = self.mu + self.sigma * m0
 
-
-
-
-
-        values = {'mean': self.sigma * jnp.sqrt(2 / jnp.pi),
-                  'median': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.5),
-                  'first_quantile': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.25),
-                  'third_quantile': self.sigma * jnp.sqrt(2) * scipy.special.erfinv(0.75),
-                  'variance': (self.sigma ** 2) * (1 - 2 / jnp.pi),
-                  'skewness': (jnp.sqrt(2) * (4 - jnp.pi)) / (jnp.pi - 2) ** 1.5,
-                  'mode': 0,
-                  'kurtosis': (8 * (jnp.pi - 3)) / (jnp.pi - 2) ** 2.0,
-                  'entropy': 0.5 * jnp.log2(2 * jnp.pi * jnp.exp(1) * self.sigma ** 2) - 1
+        values = {'mean': mean_,
+                  'variance': variance_,
+                  'skewness': gamma1_,
+                  'mode': mode_,
+                  'kurtosis': kurtosis_,
                   }
         return values
 
@@ -675,7 +669,7 @@ class SkewedNormal(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
 activate_jit = False
 
-KK = HalfNormal(sigma=4, activate_jit=activate_jit)
+KK = SkewedNormal(sigma=4, alpha=4, mu=0, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x, E1, '*')
@@ -730,7 +724,7 @@ plt.hist(E7, 30)
 plt.title('samples')
 plt.show()
 
-E
+
 
 ################################################################################
 ################################################################################
