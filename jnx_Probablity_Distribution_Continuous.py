@@ -8,6 +8,7 @@ from jax.lax import switch
 class ContinuousDistributions:
     def __init__(self,
                  mu: jnp.ndarray = None,
+                 alpha: jnp.ndarray = None,
                  variance: jnp.ndarray = None,
                  sigma: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
@@ -25,6 +26,13 @@ class ContinuousDistributions:
             self.mu = None
         else:
             raise Exception('The value of mu is not specified correctly!')
+
+        if isinstance(alpha, (jnp.ndarray, float, int)):
+            self.alpha = alpha
+        elif alpha is None:
+            self.alpha = None
+        else:
+            raise Exception('The value of alpha is not specified correctly!')
 
         if isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
@@ -533,20 +541,23 @@ class HalfNormal(ContinuousDistributions):
                   }
         return values
 
-class HalfNormal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, activate_jit: bool = False) -> None:
+
+class SkewedNormal(ContinuousDistributions):
+    def __init__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
+                 activate_jit: bool = False) -> None:
         """
         Continuous Half Normal distribution
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
-        super(HalfNormal, self).__init__(sigma=sigma, variance=variance, activate_jit=activate_jit)
+        super(SkewedNormal, self).__init__(sigma=sigma, mu=mu, alpha=alpha, variance=variance,
+                                           activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
-        if self.variance is None or self.sigma is None:
+        if self.variance is None or self.sigma is None or self.mu is None:
             raise Exception(
-                'The value of either variance or standard deviation is not specified (Normal distribution)!')
+                'The value of either mean or standard deviation is not specified (Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -556,7 +567,10 @@ class HalfNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x < 0, 0, (jnp.sqrt(2 / jnp.pi) / self.sigma) * jnp.exp(-(x ** 2) / (2 * self.sigma ** 2)))
+        z = (x - self.mu) / self.sigma
+        erf_part = 0.5 * (1 + lax.erf(z * (self.alpha / jnp.sqrt(2.0))))
+        normal_part = (1 / (jnp.sqrt(2 * jnp.pi))) * jnp.exp(-0.5 * (z ** 2))
+        return 2 * erf_part * normal_part
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -572,8 +586,8 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        log_pdf = jnp.where(x >= 0, jnp.log(self.pdf_(x)), - jnp.inf)
-        return log_pdf
+
+        return jnp.log(self.pdf_(x))
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -589,7 +603,7 @@ class HalfNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= 0, lax.erf(x / (self.sigma * jnp.sqrt(2))), 0)
+        return None
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -620,7 +634,7 @@ class HalfNormal(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y):
-            return self.sigma * jnp.sqrt(2) * scipy.special.erfinv(y)
+            return None
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -642,17 +656,6 @@ class HalfNormal(ContinuousDistributions):
                   'entropy': 0.5 * jnp.log2(2 * jnp.pi * jnp.exp(1) * self.sigma ** 2) - 1
                   }
         return values
-
-
-
-
-
-
-
-
-
-
-
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
@@ -714,7 +717,6 @@ plt.title('samples')
 plt.show()
 
 E
-
 
 ################################################################################
 ################################################################################
