@@ -666,7 +666,7 @@ class SkewedNormal(ContinuousDistributions):
         return values
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(10000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(10000, 1))
 activate_jit = False
 
 KK = SkewedNormal(sigma=4, alpha=4, mu=0, activate_jit=activate_jit)
