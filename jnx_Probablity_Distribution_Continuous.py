@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
-from tensorflow_probability.substrates.jax.math.special import owens_t
+from tensorflow_probability.substrates.jax.math.special import owens_t, betaincinv
 from jax.lax import switch
 
 
@@ -775,7 +775,7 @@ class BetaPdf(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y):
-            return None
+            return betaincinv(a=self.alpha, b=self.beta, y=y)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
