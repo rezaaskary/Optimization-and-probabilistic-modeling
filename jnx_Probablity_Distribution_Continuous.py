@@ -669,7 +669,7 @@ class SkewedNormal(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(10000, 1))
 activate_jit = False
 
-KK = SkewedNormal(sigma=4, alpha=4, mu=0, activate_jit=activate_jit)
+KK = SkewedNormal(sigma=1, alpha=4, mu=0, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x, E1, '*')
