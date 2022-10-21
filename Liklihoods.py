@@ -1,7 +1,7 @@
 import numpy as np
+import jax.numpy as jnp
 class Liklihood_Functions:
-    def __int__(self,function:str = 'gaussian_single_variable', vectorized:bool = False,\
-                sigma:np.ndarray = np.ones((1,1)), Covariance: np.ndarray = np.ones((1,1)),\
+    def __int__(self, sigma: jnp.ndarray = np.ones((1,1)), covariance: jnp.ndarray = np.ones((1,1)),\
                 K:int = None, measured: np.ndarray = None, estimated: np.ndarray = None,
                 C: int = None, diagonal_covariance:bool = None):
 
