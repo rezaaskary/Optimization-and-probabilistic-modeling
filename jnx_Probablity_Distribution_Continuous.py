@@ -803,7 +803,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
         """
-        Continuous Half Normal distribution
+        Kumaraswamy distribution
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
@@ -820,18 +820,15 @@ class Kumaraswamy(ContinuousDistributions):
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Half Normal distribution
+        Parallelized calculating the probability of the Kumaraswamy distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
 
-        def beta_(a, b):
-            beta = (jnp.exp(scipy.special.gammaln(a)) * jnp.exp(scipy.special.gammaln(b))) / jnp.exp(
-                scipy.special.gammaln(b + a))
-            return beta
-
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
-        return ((x ** (self.alpha - 1)) * ((1 - x) ** (self.beta - 1))) / beta_(self.alpha, self.beta)
+        term1 = (x ** (self.alpha - 1))
+        term2 = (1 - x ** self.alpha)
+        return self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -849,9 +846,8 @@ class Kumaraswamy(ContinuousDistributions):
         """
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
-        log_prob = (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(1 - x) + \
-                   scipy.special.gammaln(self.alpha) + scipy.special.gammaln(self.beta) - \
-                   scipy.special.gammaln(self.beta + self.alpha)
+        log_prob = jnp.log(self.alpha * self.beta) + (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(
+            (1 - x ** self.alpha))
         return log_prob
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -870,7 +866,7 @@ class Kumaraswamy(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
-        return scipy.special.betainc(a=self.alpha, b=self.beta, x=x)
+        return 1 - (1 - x ** self.alpha) ** self.beta
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -902,8 +898,8 @@ class Kumaraswamy(ContinuousDistributions):
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(y):
-            return betaincinv(a=self.alpha, b=self.beta, y=y)
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return (1-(1-y)**(1/self.beta))**(1/self.alpha)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
