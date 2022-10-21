@@ -832,7 +832,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of Normal probability distribution
+        The derivatives of Kumaraswamy distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -840,7 +840,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of Normal probability distribution
+        The log of Kumaraswamy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -852,7 +852,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of Beta probability distribution
+        The derivatives of Kumaraswamy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -861,7 +861,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative Normal probability distribution
+        The cumulative Kumaraswamy probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
@@ -870,7 +870,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative Normal probability distribution
+        The derivatives of the cumulative Kumaraswamy probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -879,7 +879,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative Normal probability distribution
+        The log values of the cumulative Kumaraswamy probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -892,7 +892,7 @@ class Kumaraswamy(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the Normal distribution
+        Sampling form the Kumaraswamy distribution
         :param size:
         :return:
         """
