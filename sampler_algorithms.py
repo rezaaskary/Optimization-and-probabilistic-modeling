@@ -1,4 +1,4 @@
-import numpy as np
+import jax.numpy as jnp
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, iterations: int = None, x_init: np.ndarray = None, parallelized: bool = False,
+    def __init__(self, log_prop_fcn, iterations: int = None, x_init: jnp.ndarray = None, parallelized: bool = False,
                  chains: int = 1, take_derivatives: bool = False, progress_bar: bool = True):
         """
         Metropolis Hastings sampling algorithm
