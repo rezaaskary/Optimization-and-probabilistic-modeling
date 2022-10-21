@@ -276,6 +276,7 @@ class Normal(ContinuousDistributions):
         Statistics calculated for the Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
+
         values = {'mean': self.mu,
                   'median': self.mu,
                   'first_quentile': self.mu + self.sigma * jnp.sqrt(2) * scipy.special.erfinv(2 * 0.25 - 1),
@@ -412,7 +413,7 @@ class TruncatedNormal(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the Normal distribution function given distribution parameters
+        Statistics calculated for the Truncated Normal distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
         alpha = (self.lower - self.mu) / self.sigma
@@ -795,10 +796,10 @@ class BetaPdf(ContinuousDistributions):
         return None
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(10000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(1000, 1))
 activate_jit = False
 
-KK = SkewedNormal(sigma=1, alpha=4, mu=0, activate_jit=activate_jit)
+KK = BetaPdf(beta=2, alpha=2, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x, E1, '*')
