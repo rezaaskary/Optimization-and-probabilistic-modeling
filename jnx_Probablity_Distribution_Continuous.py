@@ -7,6 +7,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
+                 lmabd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  mu: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
@@ -20,6 +21,13 @@ class ContinuousDistributions:
                  rng: int = 1) -> None:
 
         self.key = random.PRNGKey(rng)
+
+        if isinstance(lmabd, (jnp.ndarray, float, int)):
+            self.lmabd = lmabd
+        elif lmabd is None:
+            self.lmabd = None
+        else:
+            raise Exception('The value of lambda is not specified correctly!')
 
         if isinstance(beta, (jnp.ndarray, float, int)):
             self.beta = beta
@@ -555,7 +563,9 @@ class SkewedNormal(ContinuousDistributions):
     def __init__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
                  activate_jit: bool = False) -> None:
         """
-        Continuous Half Normal distribution
+        Continuous Skewed Normal distribution
+        :param alpha:
+        :param mu:
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
@@ -676,10 +686,10 @@ class BetaPdf(ContinuousDistributions):
 
     def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
         """
-        Continuous Half Normal distribution
-        :param sigma: The standard deviation of the distribution
-        :param variance: The variance of the distribution
-        :param activate_jit: Activating just-in-time evaluation of the methods
+        Continuous Beta distribution
+        :param alpha:
+        :param beta:
+        :param activate_jit:
         """
         super(BetaPdf, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
@@ -804,9 +814,9 @@ class Kumaraswamy(ContinuousDistributions):
     def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
         """
         Kumaraswamy distribution
-        :param sigma: The standard deviation of the distribution
-        :param variance: The variance of the distribution
-        :param activate_jit: Activating just-in-time evaluation of the methods
+        :param alpha:
+        :param beta:
+        :param activate_jit:
         """
         super(Kumaraswamy, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
@@ -913,6 +923,144 @@ class Kumaraswamy(ContinuousDistributions):
 
         values = {'median': median_}
         return values
+
+
+class Exponential(ContinuousDistributions):
+
+    def __init__(self, lmabd: None, beta: None, activate_jit: bool = False) -> None:
+        """
+        Kumaraswamy distribution
+        :param lambda:
+        :param activate_jit:
+        """
+        super(Exponential, self).__init__(lmabd=lmabd, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Kumaraswamy distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        term1 = (x ** (self.alpha - 1))
+        term2 = (1 - x ** self.alpha)
+        return self.beta * self.alpha * term1 * (term2 ** (self.beta - 1))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Kumaraswamy distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        log_prob = jnp.log(self.alpha * self.beta) + (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(
+            (1 - x ** self.alpha))
+        return log_prob
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return 1 - (1 - x ** self.alpha) ** self.beta
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Kumaraswamy distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return (1-(1-y)**(1/self.beta))**(1/self.alpha)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Kumaraswamy distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        median_ = (1-2**(-1/self.beta))**(1/self.alpha)
+
+        values = {'median': median_}
+        return values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1))
