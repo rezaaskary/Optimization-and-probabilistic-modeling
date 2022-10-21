@@ -7,6 +7,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
+                 b: jnp.ndarray = None,
                  lambd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  mu: jnp.ndarray = None,
@@ -28,6 +29,13 @@ class ContinuousDistributions:
             self.lambd = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
+
+        if isinstance(b, (jnp.ndarray, float, int)):
+            self.b = b
+        elif b is None:
+            self.b = None
+        else:
+            raise Exception('The value of b is not specified correctly!')
 
         if isinstance(beta, (jnp.ndarray, float, int)):
             self.beta = beta
@@ -799,8 +807,8 @@ class BetaPdf(ContinuousDistributions):
 
         variance_ = (self.alpha * self.beta) / ((self.alpha + self.beta + 1) * (self.alpha + self.beta) ** 2)
         skewmess_ = (2 * (self.beta - self.alpha) * jnp.sqrt(self.beta + self.alpha + 1)) / (
-                    (self.alpha + self.beta + 2) *
-                    jnp.sqrt(self.alpha * self.beta))
+                (self.alpha + self.beta + 2) *
+                jnp.sqrt(self.alpha * self.beta))
 
         values = {'mean': self.alpha / (self.alpha + self.beta),
                   'variance': variance_,
@@ -909,7 +917,7 @@ class Kumaraswamy(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return (1-(1-y)**(1/self.beta))**(1/self.alpha)
+            return (1 - (1 - y) ** (1 / self.beta)) ** (1 / self.alpha)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -919,7 +927,7 @@ class Kumaraswamy(ContinuousDistributions):
         Statistics calculated for the Kumaraswamy distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        median_ = (1-2**(-1/self.beta))**(1/self.alpha)
+        median_ = (1 - 2 ** (-1 / self.beta)) ** (1 / self.alpha)
 
         values = {'median': median_}
         return values
@@ -982,7 +990,7 @@ class Exponential(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x < 0, 0,  1 - jnp.exp(- self.lambd * x))
+        return jnp.where(x < 0, 0, 1 - jnp.exp(- self.lambd * x))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1012,7 +1020,7 @@ class Exponential(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.log(1-y)/-self.lambd
+            return jnp.log(1 - y) / -self.lambd
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -1022,15 +1030,15 @@ class Exponential(ContinuousDistributions):
         Statistics calculated for the Kumaraswamy distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        first_quantile_ = jnp.log(0.75)/-self.lambd
-        third_quantile_ = jnp.log(0.25)/-self.lambd
-        mean_ = 1/self.lambd
+        first_quantile_ = jnp.log(0.75) / -self.lambd
+        third_quantile_ = jnp.log(0.25) / -self.lambd
+        mean_ = 1 / self.lambd
         mode_ = 0
-        variance_ = (1/self.lambd)**2
+        variance_ = (1 / self.lambd) ** 2
         skewness_ = 2
         kurtosis_ = 6
-        entropy_ = 1-jnp.log(self.lambd)
-        median_ = jnp.log(0.5)/-self.lambd
+        entropy_ = 1 - jnp.log(self.lambd)
+        median_ = jnp.log(0.5) / -self.lambd
 
         values = {'median': median_,
                   'first_quantile': first_quantile_,
@@ -1045,35 +1053,34 @@ class Exponential(ContinuousDistributions):
         return values
 
 
+class Laplace(ContinuousDistributions):
 
-class Exponential(ContinuousDistributions):
-
-    def __init__(self, lambd: None, activate_jit: bool = False) -> None:
+    def __init__(self, mu: None, b: None, activate_jit: bool = False) -> None:
         """
         Exponential distribution
-        :param lambda:
+        :param b:
+        :param mu
         :param activate_jit:
         """
-        super(Exponential, self).__init__(lambd=lambd, activate_jit=activate_jit)
+        super(Laplace, self).__init__(mu=mu, b=b, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
-        if self.lambd <= 0:
-            raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
+        if self.b <= 0:
+            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
 
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Exponential distribution
+        Parallelized calculating the probability of the Laplace distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x < 0, 0, self.lambd * jnp.exp(-self.lambd * x))
+        return (1 / (2 * self.b)) * jnp.exp((-1 / self.b) * jnp.abs(x - self.mu))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of Exponential distribution
+        The derivatives of Laplace distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -1081,16 +1088,16 @@ class Exponential(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of Kumaraswamy probability distribution
+        The log of Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x < 0, -jnp.inf, jnp.log(self.lambd) - self.lambd * x)
+        return -jnp.log(2 * self.b) - (1 / self.b) * jnp.abs(x - self.mu)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of Kumaraswamy probability distribution
+        The derivatives of Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1098,16 +1105,17 @@ class Exponential(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative Kumaraswamy probability distribution
+        The cumulative Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x < 0, 0,  1 - jnp.exp(- self.lambd * x))
+        return jnp.where(x >= self.mu, 1 - 0.5 * jnp.exp((-1 / self.b) * (x - self.mu)), 0.5 * jnp.exp((1 / self.b) *
+                                                                                                       (x- self.mu)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative Kumaraswamy probability distribution
+        The derivatives of the cumulative Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1115,7 +1123,7 @@ class Exponential(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative Kumaraswamy probability distribution
+        The log values of the cumulative Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1126,32 +1134,33 @@ class Exponential(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the Kumaraswamy distribution
+        Sampling form the Laplace distribution
         :param size:
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.log(1-y)/-self.lambd
+            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y-0.5))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the Kumaraswamy distribution function given distribution parameters
+        Statistics calculated for the Laplace distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        first_quantile_ = jnp.log(0.75)/-self.lambd
-        third_quantile_ = jnp.log(0.25)/-self.lambd
-        mean_ = 1/self.lambd
-        mode_ = 0
-        variance_ = (1/self.lambd)**2
-        skewness_ = 2
-        kurtosis_ = 6
-        entropy_ = 1-jnp.log(self.lambd)
-        median_ = jnp.log(0.5)/-self.lambd
+        median_ = self.mu
+
+        first_quantile_ = self.mu + self.b * jnp.log(2*0.25)
+        third_quantile_ = self.mu + self.b * jnp.log(2-2*0.75)
+        mean_ = self.mu
+        mode_ = self.mu
+        variance_ = 2 * self.b ** 2
+        skewness_ = 0
+        kurtosis_ = 3
+        entropy_ = jnp.log(2 * self.b * jnp.exp(1))
 
         values = {'median': median_,
                   'first_quantile': first_quantile_,
@@ -1166,29 +1175,10 @@ class Exponential(ContinuousDistributions):
         return values
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
 activate_jit = False
 
-KK = Exponential(lambd=3, activate_jit=activate_jit)
+KK = Laplace(mu=0, b=1, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x, E1, '*')
