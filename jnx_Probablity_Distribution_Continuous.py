@@ -787,13 +787,15 @@ class BetaPdf(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        # values = {'mean': self.alpha/(self.alpha + self.beta),
-        #           'variance': variance_,
-        #           'skewness': gamma1_,
-        #           'mode': mode_,
-        #           'kurtosis': kurtosis_,
-        #           }
-        return None
+        variance_ = (self.alpha*self.beta)/((self.alpha+self.beta+1)*(self.alpha+self.beta)**2)
+        skewmess_ = (2*(self.beta-self.alpha)*jnp.sqrt(self.beta+self.alpha+1))/((self.alpha+self.beta+2)*
+                                                                                 jnp.sqrt(self.alpha*self.beta))
+
+        values = {'mean': self.alpha/(self.alpha + self.beta),
+                  'variance': variance_,
+                  'skewness': skewmess_,
+                  }
+        return values
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1))
