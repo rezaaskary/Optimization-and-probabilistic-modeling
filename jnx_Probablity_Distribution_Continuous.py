@@ -1046,7 +1046,124 @@ class Exponential(ContinuousDistributions):
 
 
 
+class Exponential(ContinuousDistributions):
 
+    def __init__(self, lambd: None, activate_jit: bool = False) -> None:
+        """
+        Exponential distribution
+        :param lambda:
+        :param activate_jit:
+        """
+        super(Exponential, self).__init__(lambd=lambd, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+
+        if self.lambd <= 0:
+            raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Exponential distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x < 0, 0, self.lambd * jnp.exp(-self.lambd * x))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Exponential distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x < 0, -jnp.inf, jnp.log(self.lambd) - self.lambd * x)
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x < 0, 0,  1 - jnp.exp(- self.lambd * x))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Kumaraswamy probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Kumaraswamy distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.log(1-y)/-self.lambd
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Kumaraswamy distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        first_quantile_ = jnp.log(0.75)/-self.lambd
+        third_quantile_ = jnp.log(0.25)/-self.lambd
+        mean_ = 1/self.lambd
+        mode_ = 0
+        variance_ = (1/self.lambd)**2
+        skewness_ = 2
+        kurtosis_ = 6
+        entropy_ = 1-jnp.log(self.lambd)
+        median_ = jnp.log(0.5)/-self.lambd
+
+        values = {'median': median_,
+                  'first_quantile': first_quantile_,
+                  'third_quantile': third_quantile_,
+                  'mean': mean_,
+                  'mode': mode_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
+                  'entropy': entropy_
+                  }
+        return values
 
 
 
