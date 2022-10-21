@@ -7,7 +7,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
-                 lmabd: jnp.ndarray = None,
+                 lambd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  mu: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
@@ -22,10 +22,10 @@ class ContinuousDistributions:
 
         self.key = random.PRNGKey(rng)
 
-        if isinstance(lmabd, (jnp.ndarray, float, int)):
-            self.lmabd = lmabd
-        elif lmabd is None:
-            self.lmabd = None
+        if isinstance(lambd, (jnp.ndarray, float, int)):
+            self.lambd = lambd
+        elif lambd is None:
+            self.lambd = None
         else:
             raise Exception('The value of lambda is not specified correctly!')
 
@@ -927,16 +927,16 @@ class Kumaraswamy(ContinuousDistributions):
 
 class Exponential(ContinuousDistributions):
 
-    def __init__(self, lmabd: None, beta: None, activate_jit: bool = False) -> None:
+    def __init__(self, lambd: None, activate_jit: bool = False) -> None:
         """
         Exponential distribution
         :param lambda:
         :param activate_jit:
         """
-        super(Exponential, self).__init__(lmabd=lmabd, activate_jit=activate_jit)
+        super(Exponential, self).__init__(lambd=lambd, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
-        if self.lmabd <= 0:
+        if self.lambd <= 0:
             raise Exception('Parameter lambda (for calculating the Exponential distribution) should be positive')
 
         ContinuousDistributions.parallelization(self)
@@ -1024,9 +1024,9 @@ class Exponential(ContinuousDistributions):
         """
         first_quantile_ = jnp.log(0.75)/-self.lambd
         third_quantile_ = jnp.log(0.25)/-self.lambd
-        mean_ = 1/self.lmabd
+        mean_ = 1/self.lambd
         mode_ = 0
-        variance_ = (1/self.lmabd)**2
+        variance_ = (1/self.lambd)**2
         skewness_ = 2
         kurtosis_ = 6
         entropy_ = 1-jnp.log(self.lambd)
@@ -1071,7 +1071,7 @@ class Exponential(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1))
 activate_jit = False
 
-KK = BetaPdf(beta=2, alpha=2, activate_jit=activate_jit)
+KK = Exponential(lambd=3, activate_jit=activate_jit)
 E1 = KK.pdf(x)
 plt.figure(dpi=150)
 plt.plot(x, E1, '*')
