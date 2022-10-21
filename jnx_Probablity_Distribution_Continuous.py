@@ -965,7 +965,7 @@ class Exponential(ContinuousDistributions):
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x < 0, -jnp.inf, jnp.log(self.lambd) - self.lmabd * x)
+        return jnp.where(x < 0, -jnp.inf, jnp.log(self.lambd) - self.lambd * x)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1068,7 +1068,7 @@ class Exponential(ContinuousDistributions):
 
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
 activate_jit = False
 
 KK = Exponential(lambd=3, activate_jit=activate_jit)
