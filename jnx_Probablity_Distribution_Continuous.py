@@ -796,7 +796,7 @@ class BetaPdf(ContinuousDistributions):
         return None
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=-3, maxval=3, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1))
 activate_jit = False
 
 KK = BetaPdf(beta=2, alpha=2, activate_jit=activate_jit)
