@@ -787,11 +787,139 @@ class BetaPdf(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        variance_ = (self.alpha*self.beta)/((self.alpha+self.beta+1)*(self.alpha+self.beta)**2)
-        skewmess_ = (2*(self.beta-self.alpha)*jnp.sqrt(self.beta+self.alpha+1))/((self.alpha+self.beta+2)*
-                                                                                 jnp.sqrt(self.alpha*self.beta))
+        variance_ = (self.alpha * self.beta) / ((self.alpha + self.beta + 1) * (self.alpha + self.beta) ** 2)
+        skewmess_ = (2 * (self.beta - self.alpha) * jnp.sqrt(self.beta + self.alpha + 1)) / (
+                    (self.alpha + self.beta + 2) *
+                    jnp.sqrt(self.alpha * self.beta))
 
-        values = {'mean': self.alpha/(self.alpha + self.beta),
+        values = {'mean': self.alpha / (self.alpha + self.beta),
+                  'variance': variance_,
+                  'skewness': skewmess_,
+                  }
+        return values
+
+
+class Kumaraswamy(ContinuousDistributions):
+
+    def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
+        """
+        Continuous Half Normal distribution
+        :param sigma: The standard deviation of the distribution
+        :param variance: The variance of the distribution
+        :param activate_jit: Activating just-in-time evaluation of the methods
+        """
+        super(Kumaraswamy, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
+        # check for the consistency of the input of the probability distribution
+
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the beta distribution) should be positive')
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the beta distribution) should be positive')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Half Normal distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+
+        def beta_(a, b):
+            beta = (jnp.exp(scipy.special.gammaln(a)) * jnp.exp(scipy.special.gammaln(b))) / jnp.exp(
+                scipy.special.gammaln(b + a))
+            return beta
+
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return ((x ** (self.alpha - 1)) * ((1 - x) ** (self.beta - 1))) / beta_(self.alpha, self.beta)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        log_prob = (self.alpha - 1) * jnp.log(x) + (self.beta - 1) * jnp.log(1 - x) + \
+                   scipy.special.gammaln(self.alpha) + scipy.special.gammaln(self.beta) - \
+                   scipy.special.gammaln(self.beta + self.alpha)
+        return log_prob
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Beta probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return scipy.special.betainc(a=self.alpha, b=self.beta, x=x)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Normal probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0)
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Normal distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y):
+            return betaincinv(a=self.alpha, b=self.beta, y=y)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Beta distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        variance_ = (self.alpha * self.beta) / ((self.alpha + self.beta + 1) * (self.alpha + self.beta) ** 2)
+        skewmess_ = (2 * (self.beta - self.alpha) * jnp.sqrt(self.beta + self.alpha + 1)) / (
+                    (self.alpha + self.beta + 2) *
+                    jnp.sqrt(self.alpha * self.beta))
+
+        values = {'mean': self.alpha / (self.alpha + self.beta),
                   'variance': variance_,
                   'skewness': skewmess_,
                   }
