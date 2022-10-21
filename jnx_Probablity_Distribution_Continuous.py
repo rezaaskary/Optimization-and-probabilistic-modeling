@@ -906,19 +906,12 @@ class Kumaraswamy(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the Beta distribution function given distribution parameters
+        Statistics calculated for the Kumaraswamy distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
+        median_ = (1-2**(-1/self.beta))**(1/self.alpha)
 
-        variance_ = (self.alpha * self.beta) / ((self.alpha + self.beta + 1) * (self.alpha + self.beta) ** 2)
-        skewmess_ = (2 * (self.beta - self.alpha) * jnp.sqrt(self.beta + self.alpha + 1)) / (
-                    (self.alpha + self.beta + 2) *
-                    jnp.sqrt(self.alpha * self.beta))
-
-        values = {'mean': self.alpha / (self.alpha + self.beta),
-                  'variance': variance_,
-                  'skewness': skewmess_,
-                  }
+        values = {'median': median_}
         return values
 
 
