@@ -1215,7 +1215,10 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return (1 / (2 * self.b)) * jnp.exp((-1 / self.b) * jnp.abs(x - self.mu))
+        coefficient = self.b / (self.kappa + 1 / self.kappa)
+        return jnp.where(x >= self.mu, coefficient * jnp.exp(-self.b * self.kappa * (x - self.mu)), coefficient *
+                  np.exp((self.b / self.kappa) * (x - self.mu)))
+
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1232,7 +1235,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
 
-        return -jnp.log(2 * self.b) - (1 / self.b) * jnp.abs(x - self.mu)
+        return -jnp.log(self.pdf_(x))
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1244,17 +1247,24 @@ class AsymmetricLaplace(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative Laplace probability distribution
+        The cumulative Asymmetric Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
+        cdf = np.zeros((len(x), 1))
+        in_range_index = x >= self.mu
+        cdf[in_range_index[:, 0], 0] = 1 - (1 / (1 + self.kappa ** 2)) * np.exp(
+            -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
+        cdf[~in_range_index[:, 0], 0] = (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp(
+            (self.b / self.kappa) * (~x[in_range_index[:, 0], 0] - self.mu))
 
-        return jnp.where(x >= self.mu, 1 - 0.5 * jnp.exp((-1 / self.b) * (x - self.mu)), 0.5 * jnp.exp((1 / self.b) *
-                                                                                                       (x- self.mu)))
 
+
+
+        return
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative Laplace probability distribution
+        The derivatives of the cumulative Asymmetric Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1262,7 +1272,7 @@ class AsymmetricLaplace(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative Laplace probability distribution
+        The log values of the cumulative Asymmetric Laplace probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
