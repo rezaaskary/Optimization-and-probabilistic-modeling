@@ -1280,7 +1280,9 @@ class AsymmetricLaplace(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y - 0.5))
+            threshold = (self.kappa ** 2) / (1 + self.kappa ** 2)
+            return jnp.where(y <= threshold, jnp.log(y/threshold) * (self.kappa/self.lambd) + self.mu,
+                      jnp.log((1-y) * (1 + self.kappa ** 2))*(-1/(self.kappa * self.lambd)) + self.mu)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
