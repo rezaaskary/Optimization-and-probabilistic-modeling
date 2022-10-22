@@ -7,7 +7,7 @@ from jax.lax import switch
 
 class ContinuousDistributions:
     def __init__(self,
-                 kappa: jnp.ndarray = None ,
+                 kappa: jnp.ndarray = None,
                  b: jnp.ndarray = None,
                  lambd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
@@ -1119,7 +1119,7 @@ class Laplace(ContinuousDistributions):
         """
 
         return jnp.where(x >= self.mu, 1 - 0.5 * jnp.exp((-1 / self.b) * (x - self.mu)), 0.5 * jnp.exp((1 / self.b) *
-                                                                                                       (x- self.mu)))
+                                                                                                       (x - self.mu)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1149,7 +1149,7 @@ class Laplace(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y-0.5))
+            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y - 0.5))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -1161,8 +1161,8 @@ class Laplace(ContinuousDistributions):
         """
         median_ = self.mu
 
-        first_quantile_ = self.mu + self.b * jnp.log(2*0.25)
-        third_quantile_ = self.mu + self.b * jnp.log(2-2*0.75)
+        first_quantile_ = self.mu + self.b * jnp.log(2 * 0.25)
+        third_quantile_ = self.mu + self.b * jnp.log(2 - 2 * 0.75)
         mean_ = self.mu
         mode_ = self.mu
         variance_ = 2 * self.b ** 2
@@ -1183,8 +1183,6 @@ class Laplace(ContinuousDistributions):
         return values
 
 
-
-
 class AsymmetricLaplace(ContinuousDistributions):
 
     def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
@@ -1195,7 +1193,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param mu
         :param activate_jit:
         """
-        super(AsymmetricLaplace, self).__init__(mu=mu, b=b, kappa=kappa,  activate_jit=activate_jit)
+        super(AsymmetricLaplace, self).__init__(mu=mu, b=b, kappa=kappa, activate_jit=activate_jit)
         # check for the consistency of the input of the probability distribution
 
         if self.b <= 0:
@@ -1217,8 +1215,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         coefficient = self.b / (self.kappa + 1 / self.kappa)
         return jnp.where(x >= self.mu, coefficient * jnp.exp(-self.b * self.kappa * (x - self.mu)), coefficient *
-                  np.exp((self.b / self.kappa) * (x - self.mu)))
-
+                         np.exp((self.b / self.kappa) * (x - self.mu)))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1251,17 +1248,10 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        cdf = np.zeros((len(x), 1))
-        in_range_index = x >= self.mu
-        cdf[in_range_index[:, 0], 0] = 1 - (1 / (1 + self.kappa ** 2)) * np.exp(
-            -self.b * self.kappa * (x[in_range_index[:, 0], 0] - self.mu))
-        cdf[~in_range_index[:, 0], 0] = (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp(
-            (self.b / self.kappa) * (~x[in_range_index[:, 0], 0] - self.mu))
 
+        return jnp.where(x >= self.mu, 1 - (1 / (1 + self.kappa ** 2)) * np.exp(-self.b * self.kappa * (x - self.mu)),
+                         (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp((self.b / self.kappa) * (x - self.mu)))
 
-
-
-        return
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         The derivatives of the cumulative Asymmetric Laplace probability distribution
@@ -1290,7 +1280,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y-0.5))
+            return self.mu - self.b * jnp.sign(y - 0.5) * jnp.log(1 - 2 * jnp.abs(y - 0.5))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -1302,8 +1292,8 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         median_ = self.mu
 
-        first_quantile_ = self.mu + self.b * jnp.log(2*0.25)
-        third_quantile_ = self.mu + self.b * jnp.log(2-2*0.75)
+        first_quantile_ = self.mu + self.b * jnp.log(2 * 0.25)
+        third_quantile_ = self.mu + self.b * jnp.log(2 - 2 * 0.75)
         mean_ = self.mu
         mode_ = self.mu
         variance_ = 2 * self.b ** 2
@@ -1322,23 +1312,6 @@ class AsymmetricLaplace(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
