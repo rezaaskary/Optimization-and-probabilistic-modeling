@@ -1292,22 +1292,19 @@ class AsymmetricLaplace(ContinuousDistributions):
         Statistics calculated for the Laplace distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        median_ = self.mu
+        mean_ = self.mu + (1 - self.kappa**2) / (self.lambd * self.kappa)
+        median_ = jnp.where(self.kappa > 1,
+                  self.mu + (self.kappa / self.lambd) * jnp.log((1 + self.kappa ** 2) / (2 * self.kappa ** 2)),
+                  self.mu - (1 / (self.lambd * self.kappa)) * jnp.log((1 + self.kappa ** 2) / 2)
+                  )
 
-        first_quantile_ = self.mu + self.b * jnp.log(2 * 0.25)
-        third_quantile_ = self.mu + self.b * jnp.log(2 - 2 * 0.75)
-        mean_ = self.mu
-        mode_ = self.mu
-        variance_ = 2 * self.b ** 2
-        skewness_ = 0
-        kurtosis_ = 3
-        entropy_ = jnp.log(2 * self.b * jnp.exp(1))
+        variance_ = (1 + self.kappa ** 4) / ((self.kappa ** 2) * (self.lambd ** 2))
+        skewness_ = 2 * (1 - self.kappa ** 6) / (self.kappa ** 4 + 1) ** 1.5
+        kurtosis_ = 6 * (1 + self.kappa ** 8) / (self.kappa ** 4 + 1) ** 2.0
+        entropy_ = 1 + jnp.log((1 + self.kappa ** 2) / (self.kappa * self.lambd))
 
         values = {'median': median_,
-                  'first_quantile': first_quantile_,
-                  'third_quantile': third_quantile_,
                   'mean': mean_,
-                  'mode': mode_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
