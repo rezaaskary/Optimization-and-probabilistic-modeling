@@ -116,6 +116,22 @@ class Liklihood_Functions:
         return dll_des, dll_sigma
 
 
+
+class DiagonalMVNormal:
+    def __init__(self):
+        self.t = 1
+
+    def liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, covariance: jnp.ndarray):
+
+
+
+
+
+
+
+
+
+
     #
     # def Normal(self) -> np.ndarray:
     #     """
