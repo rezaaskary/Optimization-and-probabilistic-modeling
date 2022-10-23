@@ -144,8 +144,6 @@ class MVNormal:
 
         det,inversion = jnp.linalg.det(covariance), jnp.linalg.inv(covariance)
 
-
-
         def over_samples(xt, inv_cov, x):
             def over_chains(zt, inv_cov, z):
                 return zt @ inv_cov @ z
