@@ -117,12 +117,62 @@ class Liklihood_Functions:
 
 
 
-class DiagonalMVNormal:
-    def __init__(self):
-        self.t = 1
+class MVNormal:
+    def __init__(self, N: int = None, dim: int = None):
+        self.dim = dim
+        self.n = N
+        self.diag_index = np.arange(self.dim, dtype=int)
+        self.sample_index = np.arange(self.n, dtype=int)
 
-    def liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, covariance: jnp.ndarray):
+    def liklihood(self, estimated: jnp.ndarray, measured: jnp.ndarray, covariance: jnp.ndarray):
+        """
+        #     The log liklihood of the Multivariable gaussian distribution used for multivariable fitting (multivariables objective function)
+        #     :param measured: KxNxC measured parameters (K dimentional parameters and N sampling points and C chains)
+        #     :param estimated:KxNxC estimated parameters (K dimentional parameters and N sampling points and C chains)
+        #     :param N: An integer indicating the number of measurements
+        #     :param Covariance: A positive definite square matrix indicating the covariance matrix of the multivariable Normal distribution (KxKxC)
+        #     :param K: The dimention of the multivariable gaussian distribution
+        #     :return: The log liklihood of the multivariable gaussian distribution
+        #     """
 
+        # cov nxnxC
+        error = estimated - measured   # kxnxc
+        error_t = jnp.transpose(error, axes=(1, 0, 2))  # nxkxc error matrix
+        det = jnp.linalg.det(covariance)
+
+        def whole_mdl(xt, inv_cov, x):
+            def over_chains(zt, inv_cov, z):
+                return zt @ inv_cov @ z
+            return vmap(over_chains, in_axes=[-1, None, -1])(xt, inv_cov, x)
+        TT = vmap(whole_mdl, in_axes=[0, None, 1])(xt, inv_cov, x)  # over samples
+
+
+
+
+        det = (covariance[self.diag_index, self.diag_index, :]).prod(axis=0)
+        inv_cov = covariance.copy()
+        inv_cov = 1 / covariance  #nxnxC
+
+        # ((2 * jnp.pi)**(-0.5 * dim)) * (1 / jnp.sqrt(det))
+
+        inv_cov = self.covariance.copy()  # predefining the inversion matrices
+        inv_cov[self.diag_index, self.diag_index, :] = 1 / covariance[self.diag_index, self.diag_index, :]
+        vectorized_mahalanobis_distance = (((error_t[:, :, None] * inv_cov).sum(axis=1))[:, :, None] * T).sum(
+            axis=1)  # NxNxC
+
+
+        if self.Diagonal:
+            # calcualting the inversion of the covariance matrix
+            inv_cov[diagonal_indexes, diagonal_indexes, :] = 1 / inv_cov[diagonal_indexes, diagonal_indexes,
+                                                                 :]  # KxKxX tensor
+            det_cov = np.prod(self.Covariance[diagonal_indexes, Covariance, :], axis=0)  # 1xC array
+
+            vectorized_mahalanobis_distance = (((Error_T[:, :, None] * inv_cov).sum(axis=1))[:, :, None] * T).sum(
+                axis=1)  # NxNxC
+            mahalanobis_distance = vectorized_mahalanobis_distance[diagonal_indexes_samples, diagonal_indexes_samples,
+                                   :].sum(axis=0)
+            log_liklihood = -self.N * np.log(np.sqrt(((2 * np.pi) ** self.K) * det_cov)) - 0.5 * mahalanobis_distance
+            return log_liklihood
 
 
 
