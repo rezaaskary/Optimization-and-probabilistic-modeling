@@ -139,12 +139,12 @@ class MVNormal:
         error = estimated - measured   # kxnxc
         error_t = jnp.transpose(error, axes=(1, 0, 2))  # nxkxc error matrix
         det = jnp.linalg.det(covariance)
-
+        inv_cov = jnp.linalg.inv(covariance)
         def whole_mdl(xt, inv_cov, x):
             def over_chains(zt, inv_cov, z):
                 return zt @ inv_cov @ z
             return vmap(over_chains, in_axes=[-1, None, -1])(xt, inv_cov, x)
-        TT = vmap(whole_mdl, in_axes=[0, None, 1])(xt, inv_cov, x)  # over samples
+        TT = vmap(whole_mdl, in_axes=[0, None, 1])(error_t, inv_cov, error)  # over samples
 
 
 
