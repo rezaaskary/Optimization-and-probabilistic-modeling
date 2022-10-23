@@ -1,6 +1,6 @@
 import numpy as np
 import jax.numpy as jnp
-
+from jax import lax, jit, vmap, grad
 
 class Liklihood_Functions:
     def __int__(self, fcn: str = None, sigma: jnp.ndarray = None, covariance: jnp.ndarray = None,
