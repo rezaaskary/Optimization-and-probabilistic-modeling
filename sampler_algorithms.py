@@ -201,6 +201,7 @@ class MCMCHammer:
             return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)
         samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
 
+
         U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
 
 
