@@ -196,8 +196,9 @@ class MCMCHammer:
 
     def mcmc_hammer_non_vectorized_sampling(self):
         def sample_proposal(a: float = None):
-            y = random.uniform(key=self.key, minval=0, maxval=1.0)
-            z =
+            random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
+            return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)
+
 
 
 
