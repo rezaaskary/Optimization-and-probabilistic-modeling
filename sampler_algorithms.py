@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+from jax import vmap, jit, grad, random
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -161,9 +162,10 @@ class MetropolisHastings:
 
 
 class MCMCHammer:
-    def __init__(self, logprop_fcn, iterations: int = None, x0: np.ndarray = None, vectorized:bool = False,
+    def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None, vectorized:bool = False,
                  chains: int = 1, progress_bar: bool = True):
 
+        self.key = random.PRNGKey(rng)
         # checking the correctness of log probability function
         if hasattr(logprop_fcn, "__call__"):
             self.logprop_fcn = logprop_fcn
@@ -192,6 +194,18 @@ class MCMCHammer:
                 f'The default value of {self.Nchain} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
+    def mcmc_hammer_non_vectorized_sampling(self):
+        def sample_proposal(a: float = None):
+            y = random.uniform(key=self.key, minval=0, maxval=1.0)
+            z =
+
+
+
+
+
+
+
+
 
 # logprop_fcn,
 # logprop_fcn = Gaussian_liklihood,
@@ -203,6 +217,6 @@ if __name__=='__main__':
     priori_distribution = dict()
     # priori_distribution.update({'parameter1':})
 
-    G = Metropolis_Hastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
-                            x0 = x0, vectorized = False, chains=5, progress_bar=True)
+    # G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
+    #                         x0 = x0, vectorized = False, chains=5, progress_bar=True)
     G.run()
