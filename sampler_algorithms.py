@@ -195,9 +195,13 @@ class MCMCHammer:
                 f'----------------------------------------------------------------------------------------------------')
 
     def mcmc_hammer_non_vectorized_sampling(self):
-        def sample_proposal(a: float = None):
+        random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
+        def sample_proposal(a: float = None, chains: int = None, iterations: int = None):
             random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
             return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)
+        samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
+
+        U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
 
 
 
