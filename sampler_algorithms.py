@@ -76,7 +76,7 @@ class MetropolisHastings:
                 raise Exception('The initial condition is not selected properly!')
 
         # checking the correctness of the vectorized simulation
-        if isinstance(vectorized, bool):
+        if isinstance(parallelized, bool):
             self.parallelized = parallelized
             if self.parallelized:
                 self.run = self.mh_vectorized_sampling
