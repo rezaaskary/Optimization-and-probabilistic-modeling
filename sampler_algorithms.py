@@ -105,11 +105,15 @@ class MetropolisHastings:
                 f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        # initializing all values
+        # initializing chain values
         self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
+        # initializing the log of the posteriori values
         self.log_prop_values = np.zeros((self.n_chains, self.iterations))
+        # initializing the track of hasting ratio values
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
+        # initializing the first values of the log probability
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
+
         self.n_of_accept = np.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
