@@ -111,9 +111,12 @@ class MetropolisHastings:
         self.log_prop_values = np.zeros((self.n_chains, self.iterations))
         # initializing the track of hasting ratio values
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
+
         # initializing the first values of the log probability
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
+
+        # in order to calculate the acceptance ration of all chains
         self.n_of_accept = np.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
@@ -125,9 +128,9 @@ class MetropolisHastings:
         x_old += np.random.randn(self.ndim, self.n_chains) * sigma
         return x_old
 
-    def mh_non_vectorized_sampling(self):
+    def sample(self):
         """
-        non-vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
+        vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
