@@ -78,13 +78,8 @@ class MetropolisHastings:
         # checking the correctness of the vectorized simulation
         if isinstance(parallelized, bool):
             self.parallelized = parallelized
-            if self.parallelized:
-                self.run = self.mh_vectorized_sampling
-            else:
-                self.run = self.mh_non_vectorized_sampling
         else:
             self.parallelized = False
-            self.run = self.mh_non_vectorized_sampling
             print(
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The default value of {self.parallelized} is selected for parallelized simulations\n'
