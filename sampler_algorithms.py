@@ -8,7 +8,7 @@ from Probablity_distributions import *
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True, estimations: jnp.ndarray =
+                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True, model_eval: jnp.ndarray =
                  None):
         """
         Metropolis Hastings sampling algorithm
@@ -87,12 +87,15 @@ class MetropolisHastings:
                 f'The default value of {self.parallelized} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        if self.parallelized:
-
+        if hasattr(model_eval, "__call__"):
+            self.model_eval = model_eval
         else:
+            raise Exception('The function of the model is not defined properly!')
 
-
-
+        if self.parallelized:
+            self.mdl_eval = jit(vmap(self.model_eval, in_axes=0))
+        else:
+            self.mdl_eval = vmap(self.model_eval, in_axes=0)
 
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
@@ -103,7 +106,6 @@ class MetropolisHastings:
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'----------------------------------------------------------------------------------------------------')
-
 
         # initializing all values
         self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
@@ -130,24 +132,24 @@ class MetropolisHastings:
         # sampling from a uniform distribution
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
-        for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):       # sampling from the distribution
-            for ch in (range(self.Nchain)):                                             # sampling from each chains
+        for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
+            for ch in (range(self.Nchain)):  # sampling from each chains
 
                 # generating the sample for each chain
-                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration-1:iteration].copy(),
+                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration - 1:iteration].copy(),
                                                                     sigma=0.1)
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
                 # calculating the hasting ratio
-                hastings = np.exp(Ln_prop - self.logprop[ch, iteration-1])
+                hastings = np.exp(Ln_prop - self.logprop[ch, iteration - 1])
                 criteria = uniform_random_number[ch, iteration] < hastings
                 if criteria:
-                    self.chains[:, ch, iteration:iteration+1] = self.proposed
+                    self.chains[:, ch, iteration:iteration + 1] = self.proposed
                     self.logprop[ch, iteration] = Ln_prop
                     self.n_of_accept[ch, 0] += 1
                     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
                 else:
-                    self.chains[:, ch, iteration:iteration+1] = self.chains[:, ch, iteration - 1:iteration]
+                    self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
                     self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
                     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
 
@@ -165,7 +167,8 @@ class MetropolisHastings:
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
             # generating the sample for each chain
-            self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(), sigma=0.1)
+            self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(),
+                                                                sigma=0.1)
             # calculating the log of the posteriori function
             Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
             # calculating the hasting ratio
@@ -184,7 +187,8 @@ class MetropolisHastings:
 
 
 class MCMCHammer:
-    def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None, vectorized:bool = False,
+    def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None,
+                 vectorized: bool = False,
                  chains: int = 1, progress_bar: bool = True):
 
         self.key = random.PRNGKey(rng)
@@ -218,30 +222,23 @@ class MCMCHammer:
 
     def mcmc_hammer_non_vectorized_sampling(self):
         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
+
         def sample_proposal(a: float = None, chains: int = None, iterations: int = None):
             random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
-            return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)
+            return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)
+
         samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
 
-
         U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
-
-
-
-
-
-
-
-
 
 
 # logprop_fcn,
 # logprop_fcn = Gaussian_liklihood,
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     x0 = 15 * np.ones((1, 1))
-    x0 = np.tile(x0,(1,5))
+    x0 = np.tile(x0, (1, 5))
     priori_distribution = dict()
     # priori_distribution.update({'parameter1':})
 
