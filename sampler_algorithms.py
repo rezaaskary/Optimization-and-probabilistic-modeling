@@ -7,17 +7,16 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, iterations: int = None, x_init: jnp.ndarray = None, parallelized: bool = False,
-                 chains: int = 1, take_derivatives: bool = False, progress_bar: bool = True):
+    def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None, parallelized: bool = False,
+                 chains: int = 1, progress_bar: bool = True):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
         :param iterations: The number of iteration
+        :param burnin: The number of initial samples to be droped sowing to non-stationary behaviour
         :param x_init: The initialized value of parameters
         :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
         :param chains: the number of chains used for simulation
-        :param take_derivatives: A boolean variable temporarily used to activate receiving derivatives of posteriori
-         function
         :param progress_bar: A boolean variable used to activate or deactivate the progress bar
         """
         # checking the correctness of log probability function
@@ -35,6 +34,25 @@ class MetropolisHastings:
                   f'The iteration is not an integer value.\n'
                   f' The default value of {self.iterations} is selected as the number of iterations\n'
                   f'--------------------------------------------------------------------------------------------------')
+
+        if isinstance(burnin, int):
+            self.burnin = burnin
+        elif burnin is None:
+            self.burnin = 0
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'The number samples from dropping after simulation is not an integer value.\n'
+                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
+                  f'--------------------------------------------------------------------------------------------------')
+        else:
+            self.burnin = 0
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'The number samples from dropping after simulation is not an integer value.\n'
+                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
+                  f'--------------------------------------------------------------------------------------------------')
+
+        if self.burnin >= self.iterations:
+            raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
+
 
         # checking the correctness of the iteration
         if isinstance(chains, int):
