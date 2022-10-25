@@ -8,7 +8,8 @@ from Probablity_distributions import *
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True):
+                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True, estimations: jnp.ndarray =
+                 None):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -18,6 +19,7 @@ class MetropolisHastings:
         :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
         :param chains: the number of chains used for simulation
         :param progress_bar: A boolean variable used to activate or deactivate the progress bar
+        :param estimations: The vector of estimated parameters
         """
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
@@ -85,6 +87,13 @@ class MetropolisHastings:
                 f'The default value of {self.parallelized} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
+        if self.parallelized:
+
+        else:
+
+
+
+
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
             self.progress_bar = not progress_bar
@@ -122,7 +131,7 @@ class MetropolisHastings:
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):       # sampling from the distribution
-            for ch in (range(self.Nchain)):                                             # sampling from each cahin
+            for ch in (range(self.Nchain)):                                             # sampling from each chains
 
                 # generating the sample for each chain
                 self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration-1:iteration].copy(),
