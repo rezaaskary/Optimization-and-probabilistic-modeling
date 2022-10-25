@@ -7,8 +7,8 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None, parallelized: bool = False,
-                 chains: int = 1, progress_bar: bool = True):
+    def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
+                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -52,7 +52,6 @@ class MetropolisHastings:
 
         if self.burnin >= self.iterations:
             raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
-
 
         # checking the correctness of the iteration
         if isinstance(chains, int):
