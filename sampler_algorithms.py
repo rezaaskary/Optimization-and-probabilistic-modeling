@@ -7,9 +7,8 @@ from Probablity_distributions import *
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True, model_eval: jnp.ndarray =
-                 None):
+    def __init__(self, log_prop_fcn, model, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
+                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -87,15 +86,14 @@ class MetropolisHastings:
                 f'The default value of {self.parallelized} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        if hasattr(model_eval, "__call__"):
-            self.model_eval = model_eval
+        if hasattr(model, "__call__"):
+            self.model_eval = model
+            if self.parallelized:
+                self.mdl_eval = jit(vmap(self.model_eval, in_axes=0))
+            else:
+                self.mdl_eval = vmap(self.model_eval, in_axes=0)
         else:
             raise Exception('The function of the model is not defined properly!')
-
-        if self.parallelized:
-            self.mdl_eval = jit(vmap(self.model_eval, in_axes=0))
-        else:
-            self.mdl_eval = vmap(self.model_eval, in_axes=0)
 
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
