@@ -76,6 +76,13 @@ class MetropolisHastings:
             else:
                 raise Exception('The initial condition is not selected properly!')
 
+
+
+
+
+
+
+
         # checking the correctness of the vectorized simulation
         if isinstance(parallelized, bool):
             self.parallelized = parallelized
@@ -111,6 +118,7 @@ class MetropolisHastings:
         self.log_prop_values = np.zeros((self.n_chains, self.iterations))
         # initializing the track of hasting ratio values
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
+
 
         # initializing the first values of the log probability
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)

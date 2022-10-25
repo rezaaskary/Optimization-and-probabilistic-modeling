@@ -25,4 +25,4 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     :param par: The matrix of the parmaeters
     :return:
     """
-    estimations = vmap(model, in_axes=)
+
