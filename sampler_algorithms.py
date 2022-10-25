@@ -64,8 +64,19 @@ class MetropolisHastings:
                 f' The default value of {self.Nchain} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
+            # checking the correctness of initial condition
+            if isinstance(x_init, np.ndarray):
+                dim1, dim2 = x_init.shape
+                if dim2 != self.n_chains:
+                    raise Exception('The initial condition is not consistent with the number of chains!')
+                else:
+                    self.ndim = dim1
+                    self.x_init = x_init
+            else:
+                raise Exception('The initial condition is not selected properly!')
+
         # checking the correctness of the vectorized simulation
-        if isinstance(parallelized, bool):
+        if isinstance(vectorized, bool):
             self.parallelized = parallelized
             if self.parallelized:
                 self.run = self.mh_vectorized_sampling
@@ -89,22 +100,12 @@ class MetropolisHastings:
                 f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        # checking the correctness of initial condition
-        if isinstance(x_init, np.ndarray):
-            dim1, dim2 = x_init.shape
-            if dim2 != self.n_chains:
-                raise Exception('The initial condition is not consistent with the number of chains!')
-            else:
-                self.ndim = dim1
-                self.x_init = x_init
-        else:
-            raise Exception('The initial condition is not selected properly!')
 
         # initializing all values
         self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
         self.log_prop_values = np.zeros((self.n_chains, self.iterations))
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
-        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init, Covariance=1)
+        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
         self.n_of_accept = np.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
