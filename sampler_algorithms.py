@@ -90,7 +90,7 @@ class MetropolisHastings:
 
         if hasattr(model, "__call__"):
             self.model_eval = model
-            def model_derivatives(theta, input_samples):
+            def model_derivatives(theta:jnp.ndarray = None, input_samples:jnp.ndarray = None) -> jnp.ndarray:
                 return (self.model_eval(theta, input_samples))[0]
             if self.parallelized:
                 self.mdl_eval = jit(vmap(self.model_eval, in_axes=0))
