@@ -78,11 +78,6 @@ class MetropolisHastings:
 
 
 
-
-
-
-
-
         # checking the correctness of the vectorized simulation
         if isinstance(parallelized, bool):
             self.parallelized = parallelized
