@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
-
+from sampler_algorithms import MetropolisHastings
 key = random.PRNGKey(23)
 
 x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1,1))
@@ -27,4 +27,7 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     :param par: The matrix of the parmaeters
     :return:
     """
+    return 1
 
+MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
+                   iterations=150,chains=25,progress_bar=True,burnin=30,parallelized=True)
