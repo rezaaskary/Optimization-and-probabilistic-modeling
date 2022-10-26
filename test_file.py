@@ -9,14 +9,13 @@ X_data = jnp.concatenate((x_data_1,x_data_2,jnp.ones((200,1))),axis=1)
 std_ = 1.5
 noise = random.normal(key, shape=(200,1)) * std_
 theta = jnp.array([2,-6,4]).reshape((-1,1))
-
 y = X_data@theta + noise
 
-y
-def model(par):
+def model(par: jnp.ndarray = None) -> jnp.ndarray:
     """
-    given an input of the data, the output of the model is returned
-    :param par:
+    given an input of the data, the output of the model is returned. There is no need to parallelize the function or
+     write in the vectorized format
+    :param par: The array of model parameters given by the sampler (ndimx1)
     :return:
     """
     return X_data@par

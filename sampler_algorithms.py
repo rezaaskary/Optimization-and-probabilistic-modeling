@@ -18,7 +18,7 @@ class MetropolisHastings:
         :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
         :param chains: the number of chains used for simulation
         :param progress_bar: A boolean variable used to activate or deactivate the progress bar
-        :param estimations: The vector of estimated parameters
+        :param model: The model function (a function that input parameters and returns estimations)
         """
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
