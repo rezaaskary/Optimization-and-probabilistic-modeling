@@ -29,5 +29,9 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     """
     return 1
 
+nchains = 25
+theta_init = random.uniform(key=key,minval=0,maxval=1.0,shape=(len(theta),nchains))
+
+
 MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
-                   iterations=150,chains=25,progress_bar=True,burnin=30,parallelized=True)
+                   iterations=150,chains=nchains,progress_bar=True,burnin=30,parallelized=True)

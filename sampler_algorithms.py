@@ -90,8 +90,11 @@ class MetropolisHastings:
 
         if hasattr(model, "__call__"):
             self.model_eval = model
+            def model_derivatives(theta, input_samples):
+                return (self.model_eval(theta, input_samples))[0]
             if self.parallelized:
                 self.mdl_eval = jit(vmap(self.model_eval, in_axes=0))
+
             else:
                 self.mdl_eval = vmap(self.model_eval, in_axes=0)
         else:
