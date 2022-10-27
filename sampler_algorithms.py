@@ -140,7 +140,8 @@ class MetropolisHastings:
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
         # sampling from a uniform distribution
-        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
+        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
+        # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
             for ch in (range(self.n_chains)):  # sampling from each chains
@@ -151,7 +152,7 @@ class MetropolisHastings:
                 # calculating the log of the posteriori function
                 Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
                 # calculating the hasting ratio
-                hastings = np.exp(Ln_prop - self.logprop[ch, iteration - 1])
+                hastings = jnp.exp(Ln_prop - self.logprop[ch, iteration - 1])
                 criteria = uniform_random_number[ch, iteration] < hastings
                 if criteria:
                     self.chains[:, ch, iteration:iteration + 1] = self.proposed
