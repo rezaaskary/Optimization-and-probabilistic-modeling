@@ -714,7 +714,7 @@ class BetaPdf(ContinuousDistributions):
         :param beta:
         :param activate_jit:
         """
-        super(BetaPdf, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
+        super(BetaPdf, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.alpha <= 0:
@@ -841,7 +841,7 @@ class Kumaraswamy(ContinuousDistributions):
         :param beta:
         :param activate_jit:
         """
-        super(Kumaraswamy, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit)
+        super(Kumaraswamy, self).__init__(beta=beta, alpha=alpha, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.alpha <= 0:
@@ -956,7 +956,7 @@ class Exponential(ContinuousDistributions):
         :param lambda:
         :param activate_jit:
         """
-        super(Exponential, self).__init__(lambd=lambd, activate_jit=activate_jit)
+        super(Exponential, self).__init__(lambd=lambd, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.lambd <= 0:
@@ -1077,7 +1077,7 @@ class Laplace(ContinuousDistributions):
         :param mu
         :param activate_jit:
         """
-        super(Laplace, self).__init__(mu=mu, b=b, activate_jit=activate_jit)
+        super(Laplace, self).__init__(mu=mu, b=b, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.b <= 0:
@@ -1200,7 +1200,8 @@ class AsymmetricLaplace(ContinuousDistributions):
         :param mu
         :param activate_jit:
         """
-        super(AsymmetricLaplace, self).__init__(mu=mu, b=b, kappa=kappa, activate_jit=activate_jit)
+        super(AsymmetricLaplace, self).__init__(mu=mu, b=b, kappa=kappa,
+                                                activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.b <= 0:
