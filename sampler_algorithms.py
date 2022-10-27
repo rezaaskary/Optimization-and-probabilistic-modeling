@@ -76,8 +76,6 @@ class MetropolisHastings:
             else:
                 raise Exception('The initial condition is not selected properly!')
 
-
-
         # checking the correctness of the vectorized simulation
         if isinstance(parallelized, bool):
             self.parallelized = parallelized
@@ -87,16 +85,19 @@ class MetropolisHastings:
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The default value of {self.parallelized} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
-
+        # parallelize the model evaluation as well as calculating the
         if hasattr(model, "__call__"):
             self.model_eval = model
-            def model_derivatives(theta:jnp.ndarray = None, input_samples:jnp.ndarray = None) -> jnp.ndarray:
+
+            def model_derivatives(theta: jnp.ndarray = None, input_samples: jnp.ndarray = None) -> jnp.ndarray:
                 return (self.model_eval(theta, input_samples))[0]
+
             if self.parallelized:
                 self.mdl_eval = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
                 self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
             else:
                 self.mdl_eval = vmap(self.model_eval, in_axes=0)
+                self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
         else:
             raise Exception('The function of the model is not defined properly!')
 
@@ -117,10 +118,8 @@ class MetropolisHastings:
         # initializing the track of hasting ratio values
         self.accept_rate = np.zeros((self.n_chains, self.iterations))
 
-
         # initializing the first values of the log probability
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
-
 
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = np.zeros((self.n_chains, 1))
@@ -166,35 +165,34 @@ class MetropolisHastings:
 
         return self.chains, self.accept_rate
 
-    def mhh_vectorized_sampling(self):
-        """
-        vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
-        :returns: chains: The chains of samples drawn from the posteriori distribution
-                  acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
-        """
-
-        # generating the uniform distribution to accept/or reject
-        uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-
-        for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-            # generating the sample for each chain
-            self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(),
-                                                                sigma=0.1)
-            # calculating the log of the posteriori function
-            Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
-            # calculating the hasting ratio
-            hastings = np.exp(Ln_prop - self.logprop[:, iteration - 1])
-            criteria = uniform_random_number[ch, iteration] < hastings
-            if criteria:
-                self.chains[:, ch, iteration:iteration + 1] = self.proposed
-                self.logprop[ch, iteration] = Ln_prop
-                self.n_of_accept[ch, 0] += 1
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-            else:
-                self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1: iteration]
-                self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-        return 1
+    # def mhh_vectorized_sampling(self):
+    #     """
+    #     vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
+    #     :returns: chains: The chains of samples drawn from the posteriori distribution
+    #               acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
+    #     """
+    #
+    #     uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
+    #
+    #     for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
+    #         # generating the sample for each chain
+    #         self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(),
+    #                                                             sigma=0.1)
+    #         # calculating the log of the posteriori function
+    #         Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
+    #         # calculating the hasting ratio
+    #         hastings = np.exp(Ln_prop - self.logprop[:, iteration - 1])
+    #         criteria = uniform_random_number[ch, iteration] < hastings
+    #         if criteria:
+    #             self.chains[:, ch, iteration:iteration + 1] = self.proposed
+    #             self.logprop[ch, iteration] = Ln_prop
+    #             self.n_of_accept[ch, 0] += 1
+    #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+    #         else:
+    #             self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1: iteration]
+    #             self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
+    #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+    #     return 1
 
 
 class MCMCHammer:
@@ -255,4 +253,4 @@ if __name__ == '__main__':
 
     # G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
     #                         x0 = x0, vectorized = False, chains=5, progress_bar=True)
-    G.run()
+

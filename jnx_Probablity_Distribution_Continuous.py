@@ -1215,7 +1215,7 @@ class AsymmetricLaplace(ContinuousDistributions):
         """
         coefficient = self.b / (self.kappa + 1 / self.kappa)
         return jnp.where(x >= self.mu, coefficient * jnp.exp(-self.b * self.kappa * (x - self.mu)), coefficient *
-                         np.exp((self.b / self.kappa) * (x - self.mu)))
+                         jnp.exp((self.b / self.kappa) * (x - self.mu)))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1249,8 +1249,8 @@ class AsymmetricLaplace(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1 - (1 / (1 + self.kappa ** 2)) * np.exp(-self.b * self.kappa * (x - self.mu)),
-                         (self.kappa ** 2 / (1 + self.kappa ** 2)) * np.exp((self.b / self.kappa) * (x - self.mu)))
+        return jnp.where(x >= self.mu, 1 - (1 / (1 + self.kappa ** 2)) * jnp.exp(-self.b * self.kappa * (x - self.mu)),
+                         (self.kappa ** 2 / (1 + self.kappa ** 2)) * jnp.exp((self.b / self.kappa) * (x - self.mu)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1281,8 +1281,8 @@ class AsymmetricLaplace(ContinuousDistributions):
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
             threshold = (self.kappa ** 2) / (1 + self.kappa ** 2)
-            return jnp.where(y <= threshold, jnp.log(y/threshold) * (self.kappa/self.lambd) + self.mu,
-                      jnp.log((1-y) * (1 + self.kappa ** 2))*(-1/(self.kappa * self.lambd)) + self.mu)
+            return jnp.where(y <= threshold, jnp.log(y / threshold) * (self.kappa / self.lambd) + self.mu,
+                             jnp.log((1 - y) * (1 + self.kappa ** 2)) * (-1 / (self.kappa * self.lambd)) + self.mu)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -1292,11 +1292,12 @@ class AsymmetricLaplace(ContinuousDistributions):
         Statistics calculated for the Laplace distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        mean_ = self.mu + (1 - self.kappa**2) / (self.lambd * self.kappa)
+        mean_ = self.mu + (1 - self.kappa ** 2) / (self.lambd * self.kappa)
         median_ = jnp.where(self.kappa > 1,
-                  self.mu + (self.kappa / self.lambd) * jnp.log((1 + self.kappa ** 2) / (2 * self.kappa ** 2)),
-                  self.mu - (1 / (self.lambd * self.kappa)) * jnp.log((1 + self.kappa ** 2) / 2)
-                  )
+                            self.mu + (self.kappa / self.lambd) * jnp.log(
+                                (1 + self.kappa ** 2) / (2 * self.kappa ** 2)),
+                            self.mu - (1 / (self.lambd * self.kappa)) * jnp.log((1 + self.kappa ** 2) / 2)
+                            )
 
         variance_ = (1 + self.kappa ** 4) / ((self.kappa ** 2) * (self.lambd ** 2))
         skewness_ = 2 * (1 - self.kappa ** 6) / (self.kappa ** 4 + 1) ** 1.5
@@ -1311,15 +1312,6 @@ class AsymmetricLaplace(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
-
-
-
-
-
-
-
-
 
 
 x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))

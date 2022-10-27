@@ -30,7 +30,7 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     return 1
 
 nchains = 25
-theta_init = random.uniform(key=key,minval=0,maxval=1.0,shape=(len(theta),nchains))
+theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 nchains
 # from sampler_algorithms import MetropolisHastings
