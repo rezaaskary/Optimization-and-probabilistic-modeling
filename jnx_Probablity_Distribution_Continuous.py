@@ -1314,66 +1314,66 @@ class AsymmetricLaplace(ContinuousDistributions):
         return values
 
 
-x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
-activate_jit = False
 
-KK = Laplace(mu=0, b=1, activate_jit=activate_jit)
-E1 = KK.pdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E1, '*')
-plt.title('PDF')
-plt.show()
 
-E6 = KK.diff_pdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E6, '*')
-plt.title('Diff PDF')
-plt.show()
 
-E2 = KK.log_pdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E2, '*')
-plt.title('LOG PDF')
-plt.show()
 
-E3 = KK.diff_log_pdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E3, '*')
-plt.title('DIFF LOG PDF')
-plt.show()
 
-E4 = KK.cdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E4, '*')
-plt.title('CDF')
-plt.show()
-
-E5 = KK.log_cdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E5, '*')
-plt.title('LOG CDF')
-plt.show()
-
-E8 = KK.diff_cdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E8, '*')
-plt.title('DIFF CDF')
-plt.show()
-
-E9 = KK.diff_log_cdf(x)
-plt.figure(dpi=150)
-plt.plot(x, E9, '*')
-plt.title('DIFF LOG CDF')
-plt.show()
-
-E7 = KK.sample(size=20000)
-plt.figure(dpi=150)
-plt.hist(E7, 30)
-plt.title('samples')
-plt.show()
-
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-################################################################################
+#
+# x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
+# activate_jit = False
+#
+# KK = Laplace(mu=0, b=1, activate_jit=activate_jit)
+# E1 = KK.pdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E1, '*')
+# plt.title('PDF')
+# plt.show()
+#
+# E6 = KK.diff_pdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E6, '*')
+# plt.title('Diff PDF')
+# plt.show()
+#
+# E2 = KK.log_pdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E2, '*')
+# plt.title('LOG PDF')
+# plt.show()
+#
+# E3 = KK.diff_log_pdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E3, '*')
+# plt.title('DIFF LOG PDF')
+# plt.show()
+#
+# E4 = KK.cdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E4, '*')
+# plt.title('CDF')
+# plt.show()
+#
+# E5 = KK.log_cdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E5, '*')
+# plt.title('LOG CDF')
+# plt.show()
+#
+# E8 = KK.diff_cdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E8, '*')
+# plt.title('DIFF CDF')
+# plt.show()
+#
+# E9 = KK.diff_log_cdf(x)
+# plt.figure(dpi=150)
+# plt.plot(x, E9, '*')
+# plt.title('DIFF LOG CDF')
+# plt.show()
+#
+# E7 = KK.sample(size=20000)
+# plt.figure(dpi=150)
+# plt.hist(E7, 30)
+# plt.title('samples')
+# plt.show()
