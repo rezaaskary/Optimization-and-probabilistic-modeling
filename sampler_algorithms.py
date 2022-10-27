@@ -142,8 +142,7 @@ class MetropolisHastings:
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
         # sampling from a uniform distribution
-        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0,
-                                               size=(self.n_chains, self.iterations))
+        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.n_chains, self.iterations))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
@@ -315,5 +314,6 @@ nchains = 25
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
-                       iterations=150, chains=nchains,
+                       iterations=150, chains=nchains,x_init=theta_init,
                        progress_bar=True, burnin=30, activate_jit=False)
+T.sample()
