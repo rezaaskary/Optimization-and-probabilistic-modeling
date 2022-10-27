@@ -3,7 +3,7 @@ from jax import vmap, jit, grad, random
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from Probablity_distributions import *
+# from Probablity_distributions import *
 
 
 class MetropolisHastings:
@@ -66,7 +66,7 @@ class MetropolisHastings:
                 f'----------------------------------------------------------------------------------------------------')
 
             # checking the correctness of initial condition
-            if isinstance(x_init, np.ndarray):
+            if isinstance(x_init, jnp.ndarray):
                 dim1, dim2 = x_init.shape
                 if dim2 != self.n_chains:
                     raise Exception('The initial condition is not consistent with the number of chains!')
@@ -112,17 +112,17 @@ class MetropolisHastings:
                 f'----------------------------------------------------------------------------------------------------')
 
         # initializing chain values
-        self.chains = np.zeros((self.ndim, self.n_chains, self.iterations))
+        self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
-        self.log_prop_values = np.zeros((self.n_chains, self.iterations))
+        self.log_prop_values = jnp.zeros((self.n_chains, self.iterations))
         # initializing the track of hasting ratio values
-        self.accept_rate = np.zeros((self.n_chains, self.iterations))
+        self.accept_rate = jnp.zeros((self.n_chains, self.iterations))
 
         # initializing the first values of the log probability
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
         # in order to calculate the acceptance ration of all chains
-        self.n_of_accept = np.zeros((self.n_chains, 1))
+        self.n_of_accept = jnp.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
         """
@@ -130,7 +130,7 @@ class MetropolisHastings:
         :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
         :return: new set of parameters (N)
         """
-        x_old += np.random.randn(self.ndim, self.n_chains) * sigma
+        x_old += jnp.random.randn(self.ndim, self.n_chains) * sigma
         return x_old
 
     def sample(self):
@@ -143,7 +143,7 @@ class MetropolisHastings:
         uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-            for ch in (range(self.Nchain)):  # sampling from each chains
+            for ch in (range(self.n_chains)):  # sampling from each chains
 
                 # generating the sample for each chain
                 self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration - 1:iteration].copy(),
@@ -195,60 +195,70 @@ class MetropolisHastings:
     #     return 1
 
 
-class MCMCHammer:
-    def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None,
-                 vectorized: bool = False,
-                 chains: int = 1, progress_bar: bool = True):
 
-        self.key = random.PRNGKey(rng)
-        # checking the correctness of log probability function
-        if hasattr(logprop_fcn, "__call__"):
-            self.logprop_fcn = logprop_fcn
-        else:
-            raise Exception('The log(probability) function is not defined properly!')
 
-        # checking the correctness of the iteration
-        if isinstance(iterations, int):
-            self.iterations = iterations
-        else:
-            self.iterations = 1000
-            print(
-                f'--------------------------------------------------------------------------------------------------\n '
-                f'The iteration is not an integer value.\n'
-                f' The default value of {self.iterations} is selectd as the number of iterations\n'
-                f'---------------------------------------------------------------------------------------------------')
 
-        # checking the correctness of the iteration
-        if isinstance(chains, int):
-            self.Nchain = chains
-        else:
-            self.Nchain = 1
-            print(
-                f'---------------------------------------------------------------------------------------------------\n'
-                f'The number of chains is not an integer value. '
-                f'The default value of {self.Nchain} is selected as the number of chains\n'
-                f'----------------------------------------------------------------------------------------------------')
 
-    def mcmc_hammer_non_vectorized_sampling(self):
-        random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
 
-        def sample_proposal(a: float = None, chains: int = None, iterations: int = None):
-            random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
-            return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)
 
-        samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
 
-        U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
+
+
+
+# class MCMCHammer:
+#     def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None,
+#                  vectorized: bool = False,
+#                  chains: int = 1, progress_bar: bool = True):
+#
+#         self.key = random.PRNGKey(rng)
+#         # checking the correctness of log probability function
+#         if hasattr(logprop_fcn, "__call__"):
+#             self.logprop_fcn = logprop_fcn
+#         else:
+#             raise Exception('The log(probability) function is not defined properly!')
+#
+#         # checking the correctness of the iteration
+#         if isinstance(iterations, int):
+#             self.iterations = iterations
+#         else:
+#             self.iterations = 1000
+#             print(
+#                 f'--------------------------------------------------------------------------------------------------\n '
+#                 f'The iteration is not an integer value.\n'
+#                 f' The default value of {self.iterations} is selectd as the number of iterations\n'
+#                 f'---------------------------------------------------------------------------------------------------')
+#
+#         # checking the correctness of the iteration
+#         if isinstance(chains, int):
+#             self.Nchain = chains
+#         else:
+#             self.Nchain = 1
+#             print(
+#                 f'---------------------------------------------------------------------------------------------------\n'
+#                 f'The number of chains is not an integer value. '
+#                 f'The default value of {self.Nchain} is selected as the number of chains\n'
+#                 f'----------------------------------------------------------------------------------------------------')
+#
+#     def mcmc_hammer_non_vectorized_sampling(self):
+#         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
+#
+#         def sample_proposal(a: float = None, chains: int = None, iterations: int = None):
+#             random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
+#             return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)
+#
+#         samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
+#
+#         U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
 
 
 # logprop_fcn,
 # logprop_fcn = Gaussian_liklihood,
 
-
-if __name__ == '__main__':
-    x0 = 15 * np.ones((1, 1))
-    x0 = np.tile(x0, (1, 5))
-    priori_distribution = dict()
+#
+# if __name__ == '__main__':
+#     x0 = 15 * np.ones((1, 1))
+#     x0 = np.tile(x0, (1, 5))
+#     priori_distribution = dict()
     # priori_distribution.update({'parameter1':})
 
     # G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,

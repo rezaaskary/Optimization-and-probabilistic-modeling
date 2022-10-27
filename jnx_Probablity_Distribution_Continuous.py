@@ -20,9 +20,12 @@ class ContinuousDistributions:
                  variant_chains: bool = False,
                  activate_jit: bool = False,
                  nchains: int = 1,
-                 rng: int = 1) -> None:
+                 random_seed: int = 1) -> None:
 
-        self.key = random.PRNGKey(rng)
+        if isinstance(random_seed, int):
+            self.key = random.PRNGKey(random_seed)
+        else:
+            raise Exception('The random seed is not specified correctly!')
 
         if isinstance(kappa, (jnp.ndarray, float, int)):
             self.kappa = kappa
@@ -141,7 +144,7 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False) -> None:
+    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Continuous uniform distribution
         :param lower: The lower limit of uniform distribution
@@ -209,7 +212,7 @@ class Uniform(ContinuousDistributions):
 
 class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None,
-                 activate_jit: bool = False) -> None:
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Continuous Normal distribution
         :param sigma: The standard deviation of the distribution
@@ -317,7 +320,7 @@ class Normal(ContinuousDistributions):
 
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
-                 variance: float = None, mu: float = None, activate_jit: bool = False) -> None:
+                 variance: float = None, mu: float = None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Continuous Truncated Normal distribution
         :param lower: The lower bound of the distribution
@@ -465,7 +468,8 @@ class TruncatedNormal(ContinuousDistributions):
 
 
 class HalfNormal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, activate_jit: bool = False) -> None:
+    def __init__(self, sigma: float = None, variance: float = None, activate_jit: bool = False,
+                 random_seed: int = 1) -> None:
         """
         Continuous Half Normal distribution
         :param sigma: The standard deviation of the distribution
@@ -577,7 +581,7 @@ class HalfNormal(ContinuousDistributions):
 
 class SkewedNormal(ContinuousDistributions):
     def __init__(self, mu: float = None, alpha: float = None, sigma: float = None, variance: float = None,
-                 activate_jit: bool = False) -> None:
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Continuous Skewed Normal distribution
         :param alpha:
@@ -700,7 +704,7 @@ class SkewedNormal(ContinuousDistributions):
 
 class BetaPdf(ContinuousDistributions):
 
-    def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
+    def __init__(self, alpha: None, beta: None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Continuous Beta distribution
         :param alpha:
@@ -827,7 +831,7 @@ class BetaPdf(ContinuousDistributions):
 
 class Kumaraswamy(ContinuousDistributions):
 
-    def __init__(self, alpha: None, beta: None, activate_jit: bool = False) -> None:
+    def __init__(self, alpha: None, beta: None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Kumaraswamy distribution
         :param alpha:
@@ -943,7 +947,7 @@ class Kumaraswamy(ContinuousDistributions):
 
 class Exponential(ContinuousDistributions):
 
-    def __init__(self, lambd: None, activate_jit: bool = False) -> None:
+    def __init__(self, lambd: None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Exponential distribution
         :param lambda:
@@ -1063,7 +1067,7 @@ class Exponential(ContinuousDistributions):
 
 class Laplace(ContinuousDistributions):
 
-    def __init__(self, mu: None, b: None, activate_jit: bool = False) -> None:
+    def __init__(self, mu: None, b: None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Exponential distribution
         :param b:
@@ -1186,7 +1190,7 @@ class Laplace(ContinuousDistributions):
 class AsymmetricLaplace(ContinuousDistributions):
 
     def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
-                 activate_jit: bool = False) -> None:
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Exponential distribution
         :param b:
@@ -1312,12 +1316,6 @@ class AsymmetricLaplace(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
-
-
-
-
-
 
 #
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
