@@ -68,15 +68,15 @@ class MetropolisHastings:
                 f'----------------------------------------------------------------------------------------------------')
 
             # checking the correctness of initial condition
-            if isinstance(x_init, jnp.ndarray):
-                dim1, dim2 = x_init.shape
-                if dim2 != self.n_chains:
-                    raise Exception('The initial condition is not consistent with the number of chains!')
-                else:
-                    self.ndim = dim1
-                    self.x_init = x_init
+        if isinstance(x_init, jnp.ndarray):
+            dim1, dim2 = x_init.shape
+            if dim2 != self.n_chains:
+                raise Exception('The initial condition is not consistent with the number of chains!')
             else:
-                raise Exception('The initial condition is not selected properly!')
+                self.ndim = dim1
+                self.x_init = x_init
+        else:
+            raise Exception('The initial condition is not selected properly!')
 
         # checking the correctness of the vectorized simulation
         if isinstance(activate_jit, bool):
