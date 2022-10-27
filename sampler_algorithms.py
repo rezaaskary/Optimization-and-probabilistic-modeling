@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn, model, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 activate_jit: bool = False, chains: int = 1, progress_bar: bool = True):
+                 activate_jit: bool = False, chains: int = 1, progress_bar: bool = True, random_seed: int = 1):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -20,6 +20,8 @@ class MetropolisHastings:
         :param progress_bar: A boolean variable used to activate or deactivate the progress bar
         :param model: The model function (a function that input parameters and returns estimations)
         """
+        self.key = random.PRNGKey(random_seed)
+
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
             self.log_prop_fcn = log_prop_fcn
@@ -130,6 +132,7 @@ class MetropolisHastings:
         :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
         :return: new set of parameters (N)
         """
+
         x_old += jnp.random.randn(self.ndim, self.n_chains) * sigma
         return x_old
 
@@ -140,7 +143,8 @@ class MetropolisHastings:
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
         # sampling from a uniform distribution
-        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
+        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0,
+                                               size=(self.n_chains, self.iterations))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
