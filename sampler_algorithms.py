@@ -8,7 +8,7 @@ from Probablity_distributions import *
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn, model, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 parallelized: bool = False, chains: int = 1, progress_bar: bool = True):
+                 activate_jit: bool = False, chains: int = 1, progress_bar: bool = True):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -62,7 +62,7 @@ class MetropolisHastings:
             print(
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The number of chains is not an integer value.\n'
-                f' The default value of {self.Nchain} is selected as the number of chains\n'
+                f' The default value of {self.n_chains} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
             # checking the correctness of initial condition
@@ -77,13 +77,13 @@ class MetropolisHastings:
                 raise Exception('The initial condition is not selected properly!')
 
         # checking the correctness of the vectorized simulation
-        if isinstance(parallelized, bool):
-            self.parallelized = parallelized
+        if isinstance(activate_jit, bool):
+            self.activate_jit = activate_jit
         else:
-            self.parallelized = False
+            self.activate_jit = False
             print(
                 f'---------------------------------------------------------------------------------------------------\n'
-                f'The default value of {self.parallelized} is selected for parallelized simulations\n'
+                f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
         # parallelize the model evaluation as well as calculating the
         if hasattr(model, "__call__"):
@@ -92,7 +92,7 @@ class MetropolisHastings:
             def model_derivatives(theta: jnp.ndarray = None, input_samples: jnp.ndarray = None) -> jnp.ndarray:
                 return (self.model_eval(theta, input_samples))[0]
 
-            if self.parallelized:
+            if self.activate_jit:
                 self.mdl_eval = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
                 self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
             else:

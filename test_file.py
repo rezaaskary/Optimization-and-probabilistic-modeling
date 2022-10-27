@@ -1,15 +1,16 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
+from jnx_Probablity_Distribution_Continuous import Uniform
 
 key = random.PRNGKey(23)
-
-x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1,1))
-x_data_2 = random.shuffle(key=key,x=jnp.linspace(-3, 6, 200).reshape((-1,1)))
-X_data = jnp.concatenate((x_data_1,x_data_2,jnp.ones((200,1))),axis=1)
+x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1, 1))
+x_data_2 = random.shuffle(key=key, x=jnp.linspace(-3, 6, 200).reshape((-1, 1)))
+X_data = jnp.concatenate((x_data_1, x_data_2, jnp.ones((200, 1))), axis=1)
 std_ = 1.5
-noise = random.normal(key, shape=(200,1)) * std_
-theta = jnp.array([2,-6,4]).reshape((-1,1))
-y = X_data@theta + noise
+noise = random.normal(key, shape=(200, 1)) * std_
+theta = jnp.array([2, -6, 4]).reshape((-1, 1))
+y = X_data @ theta + noise
+
 
 def model(par: jnp.ndarray = None) -> jnp.ndarray:
     """
@@ -18,7 +19,13 @@ def model(par: jnp.ndarray = None) -> jnp.ndarray:
     :param par: The array of model parameters given by the sampler (ndimx1)
     :return:
     """
-    return X_data@par
+    return X_data @ par
+
+
+theta1 = Uniform(lower=-10, upper=10)
+theta2 = Uniform(lower=-10, upper=10)
+theta3 = Uniform(lower=-10, upper=10)
+
 
 def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
     """
@@ -27,7 +34,9 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     :param par: The matrix of the parmaeters
     :return:
     """
+    lg1 = theta1.log_pdf()
     return 1
+
 
 nchains = 25
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
