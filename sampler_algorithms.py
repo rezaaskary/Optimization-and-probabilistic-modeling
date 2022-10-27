@@ -132,8 +132,7 @@ class MetropolisHastings:
         :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
         :return: new set of parameters (N)
         """
-
-        x_old += jnp.random.randn(self.ndim, self.n_chains) * sigma
+        x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
         return x_old
 
     def sample(self):
