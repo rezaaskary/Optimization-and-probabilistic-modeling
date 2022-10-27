@@ -70,6 +70,7 @@ class Liklihood_Functions:
             self.fcn = fcn
         else:
             raise Exception('the type of likelihood function is not specified correctly!')
+        return None
         #
         # if self.function is 'Normal' and not self.vectorized:
         #     self.liklihood = self.
@@ -92,7 +93,7 @@ class Liklihood_Functions:
 
 
 
- class Normal:
+class Normal:
      def __init__(self):
          self.t = 1
      def liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
@@ -106,11 +107,12 @@ class Liklihood_Functions:
 
          d_l_d_sigma = jnp.exp((-0.5 / sigma ** 2) * error ** 2) * ((sigma * jnp.sqrt(2 * jnp.pi)) ** (-N)) *\
          ((-N*jnp.sqrt(2 * jnp.pi))/(sigma * jnp.sqrt(2 * jnp.pi)) + (1/sigma**3) * (error**2).sum(axis=1))
-
          return d_l_d_estimated, d_l_d_sigma
-     def log_liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
-         return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - (0.5/sigma**2) * ((estimated - measured) ** 2).sum(axis=1)
-    def diff_log_liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
+
+     def log_liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
+        return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - (0.5/sigma**2) * ((estimated - measured) ** 2).sum(axis=1)
+
+     def diff_log_liklihood(self, N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
         dll_des = (-1 / sigma ** 2) * (estimated - measured).sum(axis=1)
         dll_sigma = (-N / sigma) + (1 / sigma**3) * ((estimated - measured)**2).sum(axis=1)
         return dll_des, dll_sigma
