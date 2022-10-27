@@ -121,16 +121,17 @@ class MetropolisHastings:
         self.accept_rate = jnp.zeros((self.n_chains, self.iterations))
 
         # initializing the first values of the log probability
-        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
+        # self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((self.n_chains, 1))
 
     def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
         """
-        :param x_old: the past values of adjustable parameters
-        :param sigma: the standard deviation of the random walk model for proposing new set of values for parameters
-        :return: new set of parameters (N)
+        proposing new samples based on the random walk model.
+        :param x_old:
+        :param sigma:
+        :return:
         """
         x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
         return x_old
