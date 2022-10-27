@@ -150,7 +150,7 @@ class Uniform(ContinuousDistributions):
         :param lower: The lower limit of uniform distribution
         :param upper: The upper limit of uniform distribution
         """
-        super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit)
+        super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
         if not isinstance(self.lower, type(self.upper)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
@@ -220,7 +220,8 @@ class Normal(ContinuousDistributions):
         :param mu: The center of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu, activate_jit=activate_jit)
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu,
+                                     activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.mu is None or self.sigma is None:
@@ -331,7 +332,8 @@ class TruncatedNormal(ContinuousDistributions):
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
         super(TruncatedNormal, self).__init__(lower=lower, upper=upper, sigma=sigma,
-                                              variance=variance, mu=mu, activate_jit=activate_jit)
+                                              variance=variance, mu=mu, activate_jit=activate_jit,
+                                              random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.mu is None or self.sigma is None:
@@ -476,7 +478,8 @@ class HalfNormal(ContinuousDistributions):
         :param variance: The variance of the distribution
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
-        super(HalfNormal, self).__init__(sigma=sigma, variance=variance, activate_jit=activate_jit)
+        super(HalfNormal, self).__init__(sigma=sigma, variance=variance, activate_jit=activate_jit,
+                                         random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.variance is None or self.sigma is None:
@@ -591,7 +594,7 @@ class SkewedNormal(ContinuousDistributions):
         :param activate_jit: Activating just-in-time evaluation of the methods
         """
         super(SkewedNormal, self).__init__(sigma=sigma, mu=mu, alpha=alpha, variance=variance,
-                                           activate_jit=activate_jit)
+                                           activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.variance is None or self.sigma is None or self.mu is None:
