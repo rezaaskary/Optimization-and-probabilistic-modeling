@@ -206,7 +206,7 @@ class MetropolisHastings:
 
 
 # class MCMCHammer:
-#     def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: np.ndarray = None,
+#     def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: jnp.ndarray = None,
 #                  vectorized: bool = False,
 #                  chains: int = 1, progress_bar: bool = True):
 #
