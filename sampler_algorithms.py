@@ -126,15 +126,7 @@ class MetropolisHastings:
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((self.n_chains, 1))
 
-    def rw_parameter_proposal(self, x_old, sigma: float = 0.01):
-        """
-        proposing new samples based on the random walk model.
-        :param x_old:
-        :param sigma:
-        :return:
-        """
-        x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
-        return x_old
+
 
     def sample(self):
         """
@@ -142,6 +134,19 @@ class MetropolisHastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
+
+        def par_proposal(x_old, sigma: float = 0.01):
+            """
+            proposing new samples based on the random walk model.
+            :param x_old:
+            :param sigma:
+            :return:
+            """
+            x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
+            return x_old
+
+
+
         # sampling from a uniform distribution
         uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.n_chains, self.iterations))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
