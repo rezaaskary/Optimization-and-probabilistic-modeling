@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
 from jnx_Probablity_Distribution_Continuous import Uniform
-
+from sampler_algorithms import MetropolisHastings
 
 
 
@@ -15,14 +15,14 @@ theta = jnp.array([2, -6, 4]).reshape((-1, 1))
 y = X_data @ theta + noise
 
 
-def model(par: jnp.ndarray = None) -> jnp.ndarray:
+def model(par: jnp.ndarray = None, X: jnp.ndarray = None) -> jnp.ndarray:
     """
     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
      write in the vectorized format
     :param par: The array of model parameters given by the sampler (ndimx1)
     :return:
     """
-    return X_data @ par
+    return X@par
 
 from jnx_Probablity_Distribution_Continuous import Uniform
 theta1 = Uniform(lower=-10, upper=10)

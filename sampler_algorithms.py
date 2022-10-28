@@ -97,6 +97,12 @@ class MetropolisHastings:
             if self.activate_jit:
                 self.mdl_eval = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
                 self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
+                self.md_der_eval = vmap(vmap(grad(self.model_eval,
+                                             argnums=0),        # parameter 0 means model parameters
+                                             in_axes=[1, None], # [1, None] means that we loop over chains
+                                             out_axes=1),       # means that chains are stacked in the second dimension
+                                             in_axes=[None, 0], # [None, 0] looping over model inputs
+                                             out_axes=2)
             else:
                 self.mdl_eval = vmap(self.model_eval, in_axes=0)
                 self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
@@ -145,7 +151,8 @@ class MetropolisHastings:
             x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
             return x_old
 
-
+        # initializing the first values of the log probability
+        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
         # sampling from a uniform distribution
         uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.n_chains, self.iterations))
