@@ -9,9 +9,11 @@ class ModelParallelizer:
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters
-        :param model: 
-        :param chains:
-        :param activate_jit:
+        :param model: Given an input of the data, the output of the model is returned. The model inputs are parameters
+         (ndim x 1) and model input variables (N x s)
+        :param chains: An integer variable indicating the number of parallel evaluation of the model and
+         model parameters
+        :param activate_jit: A boolean variable used to activate(deactivate) just-in-time evaluation of the model
         """
 
 
