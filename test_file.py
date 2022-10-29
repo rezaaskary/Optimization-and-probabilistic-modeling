@@ -18,9 +18,9 @@ y = X_data @ theta + noise
 def model(par: jnp.ndarray = None, X: jnp.ndarray = None) -> jnp.ndarray:
     """
     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
-     write in the vectorized format
-    :param par: The array of model parameters given by the sampler (ndimx1)
-    :return:
+    write in the vectorized format
+    :param par: The array of model parameters given by the sampler (ndim x 1)
+    :return: The model output (N x 1)
     """
     return X@par
 

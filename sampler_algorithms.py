@@ -4,8 +4,15 @@ import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-
-# from Probablity_distributions import *
+class ModelParallelizer:
+    def __init__(self, model: callable = None, chains: int = 1, activate_jit: bool = False):
+        """
+        Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
+        with respect to the model parameters
+        :param model: 
+        :param chains:
+        :param activate_jit:
+        """
 
 
 class MetropolisHastings:
@@ -117,9 +124,6 @@ class MetropolisHastings:
                                                 in_axes=[None, 0],  # [None, 0] looping over model inputs
                                                 out_axes=2)  # staking
 
-
-
-
         else:
             raise Exception('The function of the model is not defined properly!')
 
@@ -145,6 +149,16 @@ class MetropolisHastings:
 
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((self.n_chains, 1))
+
+    def parallelized_model(self):
+        """
+        This method returns the parallelized evaluation of the model as well as the parallelized evaluation of the
+        derivatives of the model with respect to the model partameters
+        :return:
+        """
+        return self.model_evaluate, self.model_diff_evaluate
+
+
 
     def sample(self):
         """
