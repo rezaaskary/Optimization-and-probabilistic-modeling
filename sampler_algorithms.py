@@ -16,6 +16,55 @@ class ModelParallelizer:
         :param activate_jit: A boolean variable used to activate(deactivate) just-in-time evaluation of the model
         """
 
+        if isinstance(activate_jit, bool):
+            self.activate_jit = activate_jit
+        else:
+            self.activate_jit = False
+            print(
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
+                f'----------------------------------------------------------------------------------------------------')
+
+        # parallelize the model evaluation as well as calculating the
+        if hasattr(model, "__call__"):
+            self.model_eval = model
+
+            def model_derivatives(theta: jnp.ndarray = None, input_samples: jnp.ndarray = None) -> jnp.ndarray:
+                return (self.model_eval(theta, input_samples))[0]
+
+            if self.activate_jit:
+                self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
+                # self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
+                self.model_diff_evaluate = jit(vmap(vmap(grad(self.model_eval,
+                                                              argnums=0),  # parameter 0 means model parameters
+                                                         in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                         out_axes=1),
+                                                    # means that chains are stacked in the second dimension
+                                                    in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                    out_axes=2))  # staking
+            else:
+                self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+                # self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
+                self.model_diff_evaluate = vmap(vmap(grad(self.model_eval,
+                                                          argnums=0),  # parameter 0 means model parameters
+                                                     in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                     out_axes=1),
+                                                # means that chains are stacked in the second dimension
+                                                in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                out_axes=2)  # staking
+
+        else:
+            raise Exception('The function of the model is not defined properly!')
+
+
+
+
+
+
+
+
+
+
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn, model, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
@@ -98,36 +147,7 @@ class MetropolisHastings:
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
-        # parallelize the model evaluation as well as calculating the
-        if hasattr(model, "__call__"):
-            self.model_eval = model
 
-            def model_derivatives(theta: jnp.ndarray = None, input_samples: jnp.ndarray = None) -> jnp.ndarray:
-                return (self.model_eval(theta, input_samples))[0]
-
-            if self.activate_jit:
-                self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-                # self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
-                self.model_diff_evaluate = jit(vmap(vmap(grad(self.model_eval,
-                                                              argnums=0),  # parameter 0 means model parameters
-                                                         in_axes=[1, None],  # [1, None] means that we loop over chains
-                                                         out_axes=1),
-                                                    # means that chains are stacked in the second dimension
-                                                    in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                                    out_axes=2))  # staking
-            else:
-                self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
-                # self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
-                self.model_diff_evaluate = vmap(vmap(grad(self.model_eval,
-                                                          argnums=0),  # parameter 0 means model parameters
-                                                     in_axes=[1, None],  # [1, None] means that we loop over chains
-                                                     out_axes=1),
-                                                # means that chains are stacked in the second dimension
-                                                in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                                out_axes=2)  # staking
-
-        else:
-            raise Exception('The function of the model is not defined properly!')
 
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
