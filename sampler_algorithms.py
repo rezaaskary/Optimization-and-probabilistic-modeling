@@ -4,6 +4,7 @@ import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+
 class ModelParallelizer:
     def __init__(self, model: callable = None, chains: int = 1, activate_jit: bool = False):
         """
@@ -34,7 +35,6 @@ class ModelParallelizer:
 
             if self.activate_jit:
                 self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-                # self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
                 self.model_diff_evaluate = jit(vmap(vmap(grad(self.model_eval,
                                                               argnums=0),  # parameter 0 means model parameters
                                                          in_axes=[1, None],  # [1, None] means that we loop over chains
@@ -44,7 +44,6 @@ class ModelParallelizer:
                                                     out_axes=2))  # staking
             else:
                 self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
-                # self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
                 self.model_diff_evaluate = vmap(vmap(grad(self.model_eval,
                                                           argnums=0),  # parameter 0 means model parameters
                                                      in_axes=[1, None],  # [1, None] means that we loop over chains
@@ -56,14 +55,8 @@ class ModelParallelizer:
         else:
             raise Exception('The function of the model is not defined properly!')
 
-
-
-
-
-
-
-
-
+    def evaluate_model(self):
+        return
 
 
 class MetropolisHastings:
@@ -148,7 +141,6 @@ class MetropolisHastings:
                 f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
             self.progress_bar = not progress_bar
@@ -179,8 +171,6 @@ class MetropolisHastings:
         :return:
         """
         return self.model_evaluate, self.model_diff_evaluate
-
-
 
     def sample(self):
         """
