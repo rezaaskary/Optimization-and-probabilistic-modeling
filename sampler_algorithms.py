@@ -3,6 +3,8 @@ from jax import vmap, jit, grad, random
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+
 # from Probablity_distributions import *
 
 
@@ -95,17 +97,29 @@ class MetropolisHastings:
                 return (self.model_eval(theta, input_samples))[0]
 
             if self.activate_jit:
-                self.mdl_eval = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-                self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
-                self.md_der_eval = vmap(vmap(grad(self.model_eval,
-                                             argnums=0),        # parameter 0 means model parameters
-                                             in_axes=[1, None], # [1, None] means that we loop over chains
-                                             out_axes=1),       # means that chains are stacked in the second dimension
-                                             in_axes=[None, 0], # [None, 0] looping over model inputs
-                                             out_axes=2)
+                self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
+                # self.mdl_der_eval = jit(vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0))
+                self.model_diff_evaluate = jit(vmap(vmap(grad(self.model_eval,
+                                                              argnums=0),  # parameter 0 means model parameters
+                                                         in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                         out_axes=1),
+                                                    # means that chains are stacked in the second dimension
+                                                    in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                    out_axes=2))  # staking
             else:
-                self.mdl_eval = vmap(self.model_eval, in_axes=0)
-                self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
+                self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+                # self.mdl_der_eval = vmap(grad(model_derivatives), in_axes=[None, 0], out_axes=0)
+                self.model_diff_evaluate = vmap(vmap(grad(self.model_eval,
+                                                          argnums=0),  # parameter 0 means model parameters
+                                                     in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                     out_axes=1),
+                                                # means that chains are stacked in the second dimension
+                                                in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                out_axes=2)  # staking
+
+
+
+
         else:
             raise Exception('The function of the model is not defined properly!')
 
@@ -132,8 +146,6 @@ class MetropolisHastings:
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((self.n_chains, 1))
 
-
-
     def sample(self):
         """
         vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
@@ -155,7 +167,8 @@ class MetropolisHastings:
         self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
         # sampling from a uniform distribution
-        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.n_chains, self.iterations))
+        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0,
+                                               shape=(self.n_chains, self.iterations))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
@@ -209,16 +222,6 @@ class MetropolisHastings:
     #             self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
     #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
     #     return 1
-
-
-
-
-
-
-
-
-
-
 
 
 # class MCMCHammer:
@@ -275,16 +278,10 @@ class MetropolisHastings:
 #     x0 = 15 * np.ones((1, 1))
 #     x0 = np.tile(x0, (1, 5))
 #     priori_distribution = dict()
-    # priori_distribution.update({'parameter1':})
+# priori_distribution.update({'parameter1':})
 
-    # G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
-    #                         x0 = x0, vectorized = False, chains=5, progress_bar=True)
-
-
-
-
-
-
+# G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
+#                         x0 = x0, vectorized = False, chains=5, progress_bar=True)
 
 
 key = random.PRNGKey(23)
@@ -306,7 +303,9 @@ def model(par: jnp.ndarray = None) -> jnp.ndarray:
     """
     return X_data @ par
 
+
 from jnx_Probablity_Distribution_Continuous import Uniform
+
 theta1 = Uniform(lower=-10, upper=10)
 theta2 = Uniform(lower=-10, upper=10)
 theta3 = Uniform(lower=-10, upper=10)
@@ -327,6 +326,6 @@ nchains = 25
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
-                       iterations=150, chains=nchains,x_init=theta_init,
+                       iterations=150, chains=nchains, x_init=theta_init,
                        progress_bar=True, burnin=30, activate_jit=False)
 T.sample()
