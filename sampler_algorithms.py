@@ -83,7 +83,16 @@ class ModelParallelizer:
                   ' output with respect to each model parameters\n'
                   '----------------------------------------------------------')
         else:
-
+            print('----------------------------------------------------------\n'
+                  'the input of the model should be in the format of:         \n'
+                  'theta: (ndim x C). Where ndim indicate the dimension of the\n'
+                  'problem. C also account for the number of chains (parallel \n'
+                  'evaluation).\n'
+                  'Output:\n'
+                  'y (1 x C): parallelized valuation of the model output\n'
+                  'dy/dt (ndim x C): the derivatives of the  model\n'
+                  ' output with respect to each model parameters\n'
+                  '----------------------------------------------------------')
         return
 
 
