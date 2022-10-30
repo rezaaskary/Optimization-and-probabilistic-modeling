@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 
 class ModelParallelizer:
-    def __init__(self, model: callable = None, has_input: bool = True, chains: int = None, activate_jit: bool = False):
+    def __init__(self, model: callable = None, has_input: bool = True, chains: int = None, n_obs: int = None,
+                 activate_jit: bool = False):
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters. The model can be either in the format of y=f(theta,x) or y=f(theta).
@@ -23,6 +24,15 @@ class ModelParallelizer:
             self.chains = None
         else:
             raise Exception('The number of chains (optional) is not specified correctly!')
+
+        if isinstance(n_obs, int):
+            self.n_obs = n_obs
+        elif not n_obs:
+            self.n_obs = None
+        else:
+            raise Exception('The number of observations (optional) is not specified correctly!')
+
+
 
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
@@ -54,6 +64,7 @@ class ModelParallelizer:
                                       in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
                                       out_axes=0),   # means that we stack the observations in rows
                                  in_axes=[1, None],  # means that we loop over chains (1 -> C)
+                                 axis_size=self.chains,  # specifying the number of chains
                                  out_axes=1)         # means that we stack chains in columns
                 model_der = vmap(vmap(grad(self.model_eval,
                                            argnums=0),  # parameter 0 means model parameters (d/d theta)
