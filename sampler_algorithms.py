@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class ModelParallelizer:
-    def __init__(self, model: callable = None, has_input: bool = True,  activate_jit: bool = False):
+    def __init__(self, model: callable = None, has_input: bool = True, activate_jit: bool = False):
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters
@@ -37,25 +37,54 @@ class ModelParallelizer:
         else:
             raise Exception('Please specify  whether the model has any input other than model parameters')
 
-
-
-
         # parallelize the model evaluation as well as calculating the
         if hasattr(model, "__call__"):
             self.model_eval = model
             if self.has_input:
                 model_der = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
                 model_val = vmap(vmap(grad(self.model_eval,
-                                                        argnums=0),  # parameter 0 means model parameters
-                                                        in_axes=[1, None],  # [1, None] means that we loop over chains
-                                                        out_axes=1),
-                                                        # means that chains are stacked in the second dimension
-                                                        in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                                        out_axes=2)  # staking
+                                           argnums=0),  # parameter 0 means model parameters
+                                      in_axes=[1, None],  # [1, None] means that we loop over chains
+                                      out_axes=1),
+                                 # means that chains are stacked in the second dimension
+                                 in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                 out_axes=2)  # staking
 
 
         else:
             raise Exception('The function of the model is not defined properly!')
+
+
+
+
+
+
+
+
+    @property
+    def info(self):
+        if self.has:
+            print('----------------------------------------------------------\n'
+                  'the input of the model should be in the format of:         \n'
+                  'theta: (ndim x C). Where ndim indicate the dimension of the\n'
+                  'problem. C also account for the number of chains (parallel \n'
+                  'evaluation).\n'
+                  'X(N x s): A matrix of the input (other than the model\n'
+                  'parameters). N indicate the number of observations and\n'
+                  's indicate the number of input variables.\n'
+                  'Output:\n'
+                  'y (N x C): parallelized valuation of the model output\n'
+                  'dy/dt (ndim x C x N): the derivatives of the  model\n'
+                  ' output with respect to each model parameters\n'
+                  '----------------------------------------------------------')
+        else:
+        return
+
+
+
+
+
+
 
         # if self.activate_jit:
         #     self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
@@ -75,10 +104,6 @@ class ModelParallelizer:
         #                                     # means that chains are stacked in the second dimension
         #                                     in_axes=[None, 0],  # [None, 0] looping over model inputs
         #                                     out_axes=2)  # staking
-
-
-
-
 
     # def model_evaluate(self):
     #     """
@@ -284,7 +309,6 @@ class MetropolisHastings:
     #             self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
     #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
     #     return 1
-
 
 # class MCMCHammer:
 #     def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: jnp.ndarray = None,
