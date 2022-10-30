@@ -138,7 +138,6 @@ class ContinuousDistributions:
                 self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
                 self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0)
 
-
         else:
             pass
 

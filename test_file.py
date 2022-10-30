@@ -38,17 +38,22 @@ def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
 # values = D.model_evaluate(theta2, X_data)
 # values_der = D.diff_model_evaluate(theta2, X_data)
 #
-# D2 = ModelParallelizer(model=model_no_input, activate_jit=False, has_input=False)
-# values2 = D2.model_evaluate(theta2)
-# values_der2 = D2.diff_model_evaluate(theta2)
-
+D2 = ModelParallelizer(model=model_no_input, activate_jit=False, has_input=False, chains=45)
+values2 = D2.model_evaluate(theta2)
+values_der2 = D2.diff_model_evaluate(theta2)
+values_der2
 
 
 from jnx_Probablity_Distribution_Continuous import Uniform
 
 theta1 = Uniform(lower=-10, upper=10)
-theta2 = Uniform(lower=-10, upper=10)
-theta3 = Uniform(lower=-10, upper=10)
+# theta2 = Uniform(lower=-10, upper=10)
+# theta3 = Uniform(lower=-10, upper=10)
+vals = theta1.pdf(x_data_1)
+
+vals
+
+
 
 
 def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
@@ -58,7 +63,10 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     :param par: The matrix of the parmaeters
     :return:
     """
-    lg1 = theta1.log_pdf()
+    Estimation = D.model_evaluate(par, X_data)
+
+
+    # lg1 = theta1.log_pdf()
     return 1
 
 

@@ -74,7 +74,8 @@ class ModelParallelizer:
                                  axis_size=self.n_obs, # the size of observations
                                  out_axes=2)  # staking
             else:
-                model_val = vmap(self.model_eval, in_axes=1, axis_size=self.chains, out_axes=0)
+                def reshaped_model(cc): return self.model_eval(cc)[jnp.newaxis]
+                model_val = vmap(mmdf, in_axes=1, axis_size=self.chains, out_axes=1)
                 model_der = vmap(grad(self.model_eval, argnums=0), in_axes=1, axis_size=self.chains, out_axes=1)
         else:
             raise Exception('The function of the model is not defined properly!')
