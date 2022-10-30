@@ -12,9 +12,10 @@ class ModelParallelizer:
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters. The model can be either in the format of y=f(theta,x) or y=f(theta).
         Constraint:  The model should  be a multi-input-single-output model.
-        :param: an integer indicating the number of chains used for parallel evaluation of the model
+        :param: chains: an integer indicating the number of chains used for parallel evaluation of the model
         :param model: Given an input of the data, the output of the model is returned. The model inputs are parameters
          (ndim x 1) and model input variables (N x s). For parallel evaluation, the model input would be (ndim x C).
+         :param: n_obs: an integer indicating the number of observations (measurements) of the model
         :param activate_jit: A boolean variable used to activate(deactivate) just-in-time evaluation of the model
         """
 
@@ -31,8 +32,6 @@ class ModelParallelizer:
             self.n_obs = None
         else:
             raise Exception('The number of observations (optional) is not specified correctly!')
-
-
 
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
@@ -62,6 +61,7 @@ class ModelParallelizer:
             if self.has_input:
                 model_val = vmap(vmap(self.model_eval,
                                       in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
+                                      axis_size=self.n_obs, # specifying the number of measurements
                                       out_axes=0),   # means that we stack the observations in rows
                                  in_axes=[1, None],  # means that we loop over chains (1 -> C)
                                  axis_size=self.chains,  # specifying the number of chains
@@ -71,10 +71,11 @@ class ModelParallelizer:
                                       in_axes=[1, None],  # [1, None] means that we loop over chains (1 -> C)
                                       out_axes=1), # means that chains are stacked in the second dimension
                                  in_axes=[None, 0],  # [None, 0] looping over model inputs (1 -> N)
+                                 axis_size=self.n_obs, # the size of observations
                                  out_axes=2)  # staking
             else:
-                model_val = vmap(self.model_eval, in_axes=1, out_axes=0)
-                model_der = vmap(grad(self.model_eval, argnums=0), in_axes=1, out_axes=1)
+                model_val = vmap(self.model_eval, in_axes=1, axis_size=self.chains, out_axes=0)
+                model_der = vmap(grad(self.model_eval, argnums=0), in_axes=1, axis_size=self.chains, out_axes=1)
         else:
             raise Exception('The function of the model is not defined properly!')
 

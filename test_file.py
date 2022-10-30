@@ -31,7 +31,7 @@ def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
     :param par: the input parameters should be entered in the shape of (ndim x 1)
     :return: Thr output is returned to the shape of (Cx0)
     """
-    return ((par**2).sum())[jnp.newaxis, :]
+    return (par**2).sum()
 
 
 
