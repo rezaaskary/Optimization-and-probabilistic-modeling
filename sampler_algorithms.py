@@ -42,28 +42,29 @@ class ModelParallelizer:
         if hasattr(model, "__call__"):
             self.model_eval = model
             if self.has_input:
-                model_der = vmap(vmap(self.model_eval, in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
+                model_val = vmap(vmap(self.model_eval, in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
                                       out_axes=0),   # means that we stack the observations in rows
                                  in_axes=[1, None],  # means that we loop over chains (1 -> C)
                                  out_axes=1)         # means that we stack chains in columns
-                model_val = vmap(vmap(grad(self.model_eval,
+                model_der = vmap(vmap(grad(self.model_eval,
                                            argnums=0),  # parameter 0 means model parameters
                                       in_axes=[1, None],  # [1, None] means that we loop over chains
                                       out_axes=1), # means that chains are stacked in the second dimension
                                  in_axes=[None, 0],  # [None, 0] looping over model inputs
                                  out_axes=2)  # staking
             else:
-
-                model_der = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)   # to
+                model_val = vmap(self.model_eval, in_axes=1,out_axes=1)
+                model_der = vmap(grad(self.model_eval,argnums=0),in_axes=1,out_axes=1)
         else:
             raise Exception('The function of the model is not defined properly!')
 
 
-
-
-
-
-
+        if self.activate_jit:
+            self.model_evaluate = jit(model_val)
+            self.diff_model_evaluate = jit(model_der)
+        else:
+            self.model_evaluate = model_val
+            self.diff_model_evaluate = model_der
 
     @property
     def info(self):
