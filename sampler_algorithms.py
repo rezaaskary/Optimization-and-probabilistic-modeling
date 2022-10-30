@@ -6,15 +6,23 @@ import matplotlib.pyplot as plt
 
 
 class ModelParallelizer:
-    def __init__(self, model: callable = None, has_input: bool = True, activate_jit: bool = False):
+    def __init__(self, model: callable = None, has_input: bool = True, chains: int = None, activate_jit: bool = False):
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters. The model can be either in the format of y=f(theta,x) or y=f(theta).
         Constraint:  The model should  be a multi-input-single-output model.
+        :param: an integer indicating the number of chains used for parallel evaluation of the model
         :param model: Given an input of the data, the output of the model is returned. The model inputs are parameters
          (ndim x 1) and model input variables (N x s). For parallel evaluation, the model input would be (ndim x C).
         :param activate_jit: A boolean variable used to activate(deactivate) just-in-time evaluation of the model
         """
+
+        if isinstance(chains, int):
+            self.chains = chains
+        elif not chains:
+            self.chains = None
+        else:
+            raise Exception('The number of chains (optional) is not specified correctly!')
 
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
