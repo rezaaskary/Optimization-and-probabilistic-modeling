@@ -9,9 +9,10 @@ class ModelParallelizer:
     def __init__(self, model: callable = None, has_input: bool = True, activate_jit: bool = False):
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
-        with respect to the model parameters
+        with respect to the model parameters. The model can be either in the format of y=f(theta,x) or y=f(theta).
+        Constraint:  The model should  be a multi-input-single-output model.
         :param model: Given an input of the data, the output of the model is returned. The model inputs are parameters
-         (ndim x 1) and model input variables (N x s)
+         (ndim x 1) and model input variables (N x s). For parallel evaluation, the model input would be (ndim x C).
         :param activate_jit: A boolean variable used to activate(deactivate) just-in-time evaluation of the model
         """
 
@@ -41,16 +42,19 @@ class ModelParallelizer:
         if hasattr(model, "__call__"):
             self.model_eval = model
             if self.has_input:
-                model_der = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+                model_der = vmap(vmap(self.model_eval, in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
+                                      out_axes=0),   # means that we stack the observations in rows
+                                 in_axes=[1, None],  # means that we loop over chains (1 -> C)
+                                 out_axes=1)         # means that we stack chains in columns
                 model_val = vmap(vmap(grad(self.model_eval,
                                            argnums=0),  # parameter 0 means model parameters
                                       in_axes=[1, None],  # [1, None] means that we loop over chains
-                                      out_axes=1),
-                                 # means that chains are stacked in the second dimension
+                                      out_axes=1), # means that chains are stacked in the second dimension
                                  in_axes=[None, 0],  # [None, 0] looping over model inputs
                                  out_axes=2)  # staking
+            else:
 
-
+                model_der = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)   # to
         else:
             raise Exception('The function of the model is not defined properly!')
 
@@ -78,6 +82,7 @@ class ModelParallelizer:
                   ' output with respect to each model parameters\n'
                   '----------------------------------------------------------')
         else:
+
         return
 
 
