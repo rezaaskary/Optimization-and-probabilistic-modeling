@@ -43,12 +43,12 @@ def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
 # values_der2 = D2.diff_model_evaluate(theta2)
 
 
-
 from jnx_Probablity_Distribution_Continuous import Uniform
 
 theta1 = Uniform(lower=-10, upper=10)
 theta2 = Uniform(lower=-10, upper=10)
 theta3 = Uniform(lower=-10, upper=10)
+
 
 def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
     """
@@ -57,11 +57,12 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     :param par: The matrix of the parmaeters
     :return:
     """
-    Estimation = D.model_evaluate(par, X_data)
-    log_par1 = theta1.log_pdf
+    estimation = D.model_evaluate(par, X_data)
+    log_par1 = theta1.log_pdf(par[0:1, :])
+    log_par2 = theta2.log_pdf(par[1:2, :])
+    log_par3 = theta3.log_pdf(par[2:3, :])
 
-
-    # lg1 = theta1.log_pdf()
+    log_posteriori = log_par3 + log_par2 + log_par1 +
     return 1
 
 
