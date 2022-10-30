@@ -28,10 +28,10 @@ def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
     """
     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
     write in the vectorized format
-    :param par:
-    :return:
+    :param par: the input parameters should be entered in the shape of (ndim x 1)
+    :return: Thr output is returned to the shape of (Cx0)
     """
-    return None
+    return ((par**2).sum())[jnp.newaxis, :]
 
 
 
@@ -39,8 +39,11 @@ D = ModelParallelizer(model=model, activate_jit=False, has_input=True)
 values = D.model_evaluate(theta2, X_data)
 values_der = D.diff_model_evaluate(theta2, X_data)
 
+D2 = ModelParallelizer(model=model_no_input, activate_jit=False,has_input=False)
+values2 = D2.model_evaluate(theta2)
+values_der2 = D2.diff_model_evaluate(theta2)
 
-
+modelder2
 
 from jnx_Probablity_Distribution_Continuous import Uniform
 

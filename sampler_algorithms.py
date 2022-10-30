@@ -54,8 +54,8 @@ class ModelParallelizer:
                                  in_axes=[None, 0],  # [None, 0] looping over model inputs (1 -> N)
                                  out_axes=2)  # staking
             else:
-                model_val = vmap(self.model_eval, in_axes=1, out_axes=1)
-                model_der = vmap(grad(self.model_eval,argnums=0), in_axes=1, out_axes=1)
+                model_val = vmap(self.model_eval, in_axes=1, out_axes=0)
+                model_der = vmap(grad(self.model_eval, argnums=0), in_axes=1, out_axes=1)
         else:
             raise Exception('The function of the model is not defined properly!')
 
