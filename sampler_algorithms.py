@@ -43,27 +43,42 @@ class ModelParallelizer:
         # parallelize the model evaluation as well as calculating the
         if hasattr(model, "__call__"):
             self.model_eval = model
-
-            if self.activate_jit:
-                self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-                self.diff_model_evaluate = jit(vmap(vmap(grad(self.model_eval,
-                                                        argnums=0),  # parameter 0 means model parameters
-                                                        in_axes=[1, None],  # [1, None] means that we loop over chains
-                                                        out_axes=1),
-                                                        # means that chains are stacked in the second dimension
-                                                        in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                                        out_axes=2))  # staking
-            else:
-                self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
-                self.diff_model_evaluate = vmap(vmap(grad(self.model_eval,
+            if self.has_input:
+                model_der = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+                model_val = vmap(vmap(grad(self.model_eval,
                                                         argnums=0),  # parameter 0 means model parameters
                                                         in_axes=[1, None],  # [1, None] means that we loop over chains
                                                         out_axes=1),
                                                         # means that chains are stacked in the second dimension
                                                         in_axes=[None, 0],  # [None, 0] looping over model inputs
                                                         out_axes=2)  # staking
+
+
         else:
             raise Exception('The function of the model is not defined properly!')
+
+        # if self.activate_jit:
+        #     self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
+        #     self.diff_model_evaluate = jit(vmap(vmap(grad(self.model_eval,
+        #                                                   argnums=0),  # parameter 0 means model parameters
+        #                                              in_axes=[1, None],  # [1, None] means that we loop over chains
+        #                                              out_axes=1),
+        #                                         # means that chains are stacked in the second dimension
+        #                                         in_axes=[None, 0],  # [None, 0] looping over model inputs
+        #                                         out_axes=2))  # staking
+        # else:
+        #     self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+        #     self.diff_model_evaluate = vmap(vmap(grad(self.model_eval,
+        #                                               argnums=0),  # parameter 0 means model parameters
+        #                                          in_axes=[1, None],  # [1, None] means that we loop over chains
+        #                                          out_axes=1),
+        #                                     # means that chains are stacked in the second dimension
+        #                                     in_axes=[None, 0],  # [None, 0] looping over model inputs
+        #                                     out_axes=2)  # staking
+
+
+
+
 
     # def model_evaluate(self):
     #     """
