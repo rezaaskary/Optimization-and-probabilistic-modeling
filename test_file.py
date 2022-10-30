@@ -19,15 +19,28 @@ def model(par: jnp.ndarray = None, X: jnp.ndarray = None) -> jnp.ndarray:
     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
     write in the vectorized format
     :param par: The array of model parameters given by the sampler (ndim x 1)
-    :return: The model output (N x 1)
+    :return: The model output (1 x 1)
     """
     return X @ par
 
 
-D = ModelParallelizer(model=model, activate_jit=False)
+def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
+    """
+    given an input of the data, the output of the model is returned. There is no need to parallelize the function or
+    write in the vectorized format
+    :param par:
+    :return:
+    """
+    return None
+
+
+
+D = ModelParallelizer(model=model, activate_jit=False, has_input=True)
 values = D.model_evaluate(theta2, X_data)
 values_der = D.diff_model_evaluate(theta2, X_data)
-values_der
+
+
+
 
 from jnx_Probablity_Distribution_Continuous import Uniform
 

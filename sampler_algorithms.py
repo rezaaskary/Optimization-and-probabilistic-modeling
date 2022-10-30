@@ -28,11 +28,11 @@ class ModelParallelizer:
         if isinstance(has_input, bool):
             self.has_input = has_input
             if self.has_input:
-                print(f'---------------------------------------------------------'
+                print(f'---------------------------------------------------------\n'
                       ' you  have specified that your model is like y = f(theta,x)\n'
-                      ' ----------------------------------------------------------')
+                      '----------------------------------------------------------')
             else:
-                print(f'---------------------------------------------------------'
+                print(f'---------------------------------------------------------\n'
                       ' you  have specified that your model is like y = f(theta)\n'
                       ' ----------------------------------------------------------')
         else:
@@ -42,22 +42,22 @@ class ModelParallelizer:
         if hasattr(model, "__call__"):
             self.model_eval = model
             if self.has_input:
-                model_val = vmap(vmap(self.model_eval, in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
+                model_val = vmap(vmap(self.model_eval,
+                                      in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
                                       out_axes=0),   # means that we stack the observations in rows
                                  in_axes=[1, None],  # means that we loop over chains (1 -> C)
                                  out_axes=1)         # means that we stack chains in columns
                 model_der = vmap(vmap(grad(self.model_eval,
-                                           argnums=0),  # parameter 0 means model parameters
-                                      in_axes=[1, None],  # [1, None] means that we loop over chains
+                                           argnums=0),  # parameter 0 means model parameters (d/d theta)
+                                      in_axes=[1, None],  # [1, None] means that we loop over chains (1 -> C)
                                       out_axes=1), # means that chains are stacked in the second dimension
-                                 in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                 in_axes=[None, 0],  # [None, 0] looping over model inputs (1 -> N)
                                  out_axes=2)  # staking
             else:
-                model_val = vmap(self.model_eval, in_axes=1,out_axes=1)
-                model_der = vmap(grad(self.model_eval,argnums=0),in_axes=1,out_axes=1)
+                model_val = vmap(self.model_eval, in_axes=1, out_axes=1)
+                model_der = vmap(grad(self.model_eval,argnums=0), in_axes=1, out_axes=1)
         else:
             raise Exception('The function of the model is not defined properly!')
-
 
         if self.activate_jit:
             self.model_evaluate = jit(model_val)
@@ -68,7 +68,7 @@ class ModelParallelizer:
 
     @property
     def info(self):
-        if self.has:
+        if self.has_input:
             print('----------------------------------------------------------\n'
                   'the input of the model should be in the format of:         \n'
                   'theta: (ndim x C). Where ndim indicate the dimension of the\n'
