@@ -26,7 +26,7 @@ def model(par: jnp.ndarray = None, X: jnp.ndarray = None) -> jnp.ndarray:
 
 
 D = ModelParallelizer(model=model, activate_jit=False)
-D
+D.model_evaluate
 
 
 

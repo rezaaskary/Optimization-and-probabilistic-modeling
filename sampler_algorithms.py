@@ -29,39 +29,39 @@ class ModelParallelizer:
             self.model_eval = model
 
             if self.activate_jit:
-                self.mdl_eval = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-                self.mdl_der_eval = jit(vmap(vmap(grad(self.model_eval,
-                                                       argnums=0),  # parameter 0 means model parameters
-                                                  in_axes=[1, None],  # [1, None] means that we loop over chains
-                                                  out_axes=1),
-                                             # means that chains are stacked in the second dimension
-                                             in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                             out_axes=2))  # staking
+                self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
+                self.diff_model_evaluate = jit(vmap(vmap(grad(self.model_eval,
+                                                        argnums=0),  # parameter 0 means model parameters
+                                                        in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                        out_axes=1),
+                                                        # means that chains are stacked in the second dimension
+                                                        in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                        out_axes=2))  # staking
             else:
-                self.mdl_eval = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
-                self.mdl_der_eval = vmap(vmap(grad(self.model_eval,
-                                                   argnums=0),  # parameter 0 means model parameters
-                                              in_axes=[1, None],  # [1, None] means that we loop over chains
-                                              out_axes=1),
-                                         # means that chains are stacked in the second dimension
-                                         in_axes=[None, 0],  # [None, 0] looping over model inputs
-                                         out_axes=2)  # staking
+                self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
+                self.diff_model_evaluate = vmap(vmap(grad(self.model_eval,
+                                                        argnums=0),  # parameter 0 means model parameters
+                                                        in_axes=[1, None],  # [1, None] means that we loop over chains
+                                                        out_axes=1),
+                                                        # means that chains are stacked in the second dimension
+                                                        in_axes=[None, 0],  # [None, 0] looping over model inputs
+                                                        out_axes=2)  # staking
         else:
             raise Exception('The function of the model is not defined properly!')
 
-    def model_evaluate(self):
-        """
-        Parallelized model
-        :return: The callable function for evaluating the model
-        """
-        return self.mdl_eval
-
-    def diff_model_evaluate(self):
-        """
-        Parallelized derivatives of the model
-        :return: The callable function for evaluating the model
-        """
-        return self.mdl_der_eval
+    # def model_evaluate(self):
+    #     """
+    #     Parallelized model
+    #     :return: The callable function for evaluating the model
+    #     """
+    #     return self.mdl_eval
+    #
+    # def diff_model_evaluate(self):
+    #     """
+    #     Parallelized derivatives of the model
+    #     :return: The callable function for evaluating the model
+    #     """
+    #     return self.mdl_der_eval
 
 
 class MetropolisHastings:
