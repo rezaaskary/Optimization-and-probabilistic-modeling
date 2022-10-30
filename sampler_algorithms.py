@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class ModelParallelizer:
-    def __init__(self, model: callable = None, activate_jit: bool = False):
+    def __init__(self, model: callable = None, has_input: bool = True,  activate_jit: bool = False):
         """
         Parallelling the model function for the fast evaluation of the model as well as the derivatives of the model
         with respect to the model parameters
@@ -23,6 +23,22 @@ class ModelParallelizer:
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
+
+        if isinstance(has_input, bool):
+            self.has_input = has_input
+            if self.has_input:
+                print(f'---------------------------------------------------------'
+                      ' you  have specified that your model is like y = f(theta,x)\n'
+                      ' ----------------------------------------------------------')
+            else:
+                print(f'---------------------------------------------------------'
+                      ' you  have specified that your model is like y = f(theta)\n'
+                      ' ----------------------------------------------------------')
+        else:
+            raise Exception('Please specify  whether the model has any input other than model parameters')
+
+
+
 
         # parallelize the model evaluation as well as calculating the
         if hasattr(model, "__call__"):
