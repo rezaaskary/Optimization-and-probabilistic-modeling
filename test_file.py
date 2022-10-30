@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
 from jnx_Probablity_Distribution_Continuous import Uniform
-from sampler_algorithms import MetropolisHastings
+from sampler_algorithms import MetropolisHastings, ModelParallelizer
 
 
 
@@ -23,6 +23,13 @@ def model(par: jnp.ndarray = None, X: jnp.ndarray = None) -> jnp.ndarray:
     :return: The model output (N x 1)
     """
     return X@par
+
+
+D = ModelParallelizer(model=model, activate_jit=False)
+D
+
+
+
 
 from jnx_Probablity_Distribution_Continuous import Uniform
 theta1 = Uniform(lower=-10, upper=10)
