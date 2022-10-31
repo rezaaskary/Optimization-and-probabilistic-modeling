@@ -71,7 +71,7 @@ def log_posteriori_function(par: jnp.ndarray = None):
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
     log_par3 = theta3.log_pdf(par[2:3, :])
-    ll = log_liklihood(N=200,estimated=estimation, measured=y,sigma=2)
+    ll = log_liklihood(N=200, estimated=estimation, measured=y, sigma=2)
     log_posteriori = log_par3 + log_par2 + log_par1 + ll
     return log_posteriori
 

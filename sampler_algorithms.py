@@ -61,20 +61,22 @@ class ModelParallelizer:
             if self.has_input:
                 model_val = vmap(vmap(self.model_eval,
                                       in_axes=[None, 0],  # this means that we loop over input observations(1 -> N)
-                                      axis_size=self.n_obs, # specifying the number of measurements
-                                      out_axes=0),   # means that we stack the observations in rows
+                                      axis_size=self.n_obs,  # specifying the number of measurements
+                                      out_axes=0),  # means that we stack the observations in rows
                                  in_axes=[1, None],  # means that we loop over chains (1 -> C)
                                  axis_size=self.chains,  # specifying the number of chains
-                                 out_axes=1)         # means that we stack chains in columns
+                                 out_axes=1)  # means that we stack chains in columns
                 model_der = vmap(vmap(grad(self.model_eval,
                                            argnums=0),  # parameter 0 means model parameters (d/d theta)
                                       in_axes=[1, None],  # [1, None] means that we loop over chains (1 -> C)
-                                      out_axes=1), # means that chains are stacked in the second dimension
+                                      out_axes=1),  # means that chains are stacked in the second dimension
                                  in_axes=[None, 0],  # [None, 0] looping over model inputs (1 -> N)
-                                 axis_size=self.n_obs, # the size of observations
+                                 axis_size=self.n_obs,  # the size of observations
                                  out_axes=2)  # staking
             else:
-                def reshaped_model(inputs): return self.model_eval(inputs)[jnp.newaxis]
+                def reshaped_model(inputs):
+                    return self.model_eval(inputs)[jnp.newaxis]
+
                 model_val = vmap(reshaped_model, in_axes=1, axis_size=self.chains, out_axes=1)
                 model_der = vmap(grad(self.model_eval, argnums=0), in_axes=1, axis_size=self.chains, out_axes=1)
         else:
@@ -115,12 +117,6 @@ class ModelParallelizer:
                   ' output with respect to each model parameters\n'
                   '----------------------------------------------------------')
         return
-
-
-
-
-
-
 
         # if self.activate_jit:
         #     self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
@@ -285,31 +281,31 @@ class MetropolisHastings:
 
         # sampling from a uniform distribution
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0,
-                                               shape=(self.iterations, self.n_chains))
+                                      shape=(self.iterations, self.n_chains))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
             # generating the sample for each chain
-            self.proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
+            proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
             # calculating the log of the posteriori function
-            ln_prop = self.log_prop_fcn(self.proposed)
+            ln_prop = self.log_prop_fcn(proposed)
             # calculating the hasting ratio
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[iteration - 1, :]), 1)
+            # comparing the hasting ratio with the samples drawn from the uniform distribution
+            criteria = uniform_rand[iteration, :] < hastings
 
-            criteria = uniform_random_number[ch, iteration] < hastings
             def accepting_proposed_samples():
-                self.chains[:, ch, iteration:iteration + 1] = self.proposed
-                self.logprop[ch, iteration] = Ln_prop
+                self.chains[:, :, iteration] = proposed
+                self.logprop[iteration, :] = ln_prop
                 self.n_of_accept[ch, 0] += 1
                 self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
                 return
+
             def rejecting_proposed_samples():
                 self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
                 self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
                 self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
                 return
-
-
 
             if criteria:
                 self.chains[:, ch, iteration:iteration + 1] = self.proposed
