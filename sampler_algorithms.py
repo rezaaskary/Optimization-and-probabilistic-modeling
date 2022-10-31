@@ -296,13 +296,18 @@ class MetropolisHastings:
 
             def accepting_proposed_samples():
                 self.chains[:, :, iteration] = proposed
-                self.logprop[iteration, :] = ln_prop
-                self.n_of_accept[ch, 0] += 1
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                self.log_prop_values[iteration, :] = ln_prop
+                self.n_of_accept[0, :] += 1
+                # self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :]/iteration)
                 return
 
             def rejecting_proposed_samples():
-                self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
+                self.chains = self.chains.at[:, :, iteration].set(self.chains[:, :, iteration - 1])
+                # self.chains[:, :, iteration] = self.chains[:, :, iteration - 1]
+
+                self.log_prop_values = self.log_prop_values.at[iteration, :].set(self.log_prop_values[iteration - 1, :])
+
                 self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
                 self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
                 return
