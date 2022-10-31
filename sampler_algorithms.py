@@ -252,9 +252,9 @@ class MetropolisHastings:
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
-        self.log_prop_values = jnp.zeros((self.n_chains, self.iterations))
+        self.log_prop_values = jnp.zeros((self.iterations, self.n_chains))
         # initializing the track of hasting ratio values
-        self.accept_rate = jnp.zeros((self.n_chains, self.iterations))
+        self.accept_rate = jnp.zeros((self.iterations, self.n_chains))
 
         # initializing the first values of the log probability
         # self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
@@ -276,37 +276,35 @@ class MetropolisHastings:
             :param sigma:
             :return:
             """
-            x_old += random.normal(key=key, shape=(self.ndim, self.n_chains)) * sigma
+            x_old += random.normal(key=self.key, shape=(self.ndim, self.n_chains)) * sigma
             return x_old
 
+        self.chains = self.chains.at[:, :, 0].set(self.x_init)
         # initializing the first values of the log probability
-        self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
+        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
 
         # sampling from a uniform distribution
-        uniform_random_number = random.uniform(key=self.key, minval=0, maxval=1.0,
-                                               shape=(self.n_chains, self.iterations))
+        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0,
+                                               shape=(self.iterations, self.n_chains))
         # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-            for ch in (range(self.n_chains)):  # sampling from each chains
-
-                # generating the sample for each chain
-                self.proposed = self.random_walk_parameter_proposal(self.chains[:, ch, iteration - 1:iteration].copy(),
-                                                                    sigma=0.1)
-                # calculating the log of the posteriori function
-                Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
-                # calculating the hasting ratio
-                hastings = jnp.exp(Ln_prop - self.logprop[ch, iteration - 1])
-                criteria = uniform_random_number[ch, iteration] < hastings
-                if criteria:
-                    self.chains[:, ch, iteration:iteration + 1] = self.proposed
-                    self.logprop[ch, iteration] = Ln_prop
-                    self.n_of_accept[ch, 0] += 1
-                    self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-                else:
-                    self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
-                    self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-                    self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+            # generating the sample for each chain
+            self.proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
+            # calculating the log of the posteriori function
+            Ln_prop = self.logprop_fcn(self.proposed)
+            # calculating the hasting ratio
+            hastings = jnp.exp(Ln_prop - self.logprop[ch, iteration - 1])
+            criteria = uniform_random_number[ch, iteration] < hastings
+            if criteria:
+                self.chains[:, ch, iteration:iteration + 1] = self.proposed
+                self.logprop[ch, iteration] = Ln_prop
+                self.n_of_accept[ch, 0] += 1
+                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+            else:
+                self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
+                self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
+                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
 
         return self.chains, self.accept_rate
 

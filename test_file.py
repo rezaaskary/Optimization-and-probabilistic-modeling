@@ -34,7 +34,7 @@ def model_no_input(par: jnp.ndarray = None) -> jnp.ndarray:
     return (par ** 2).sum()
 
 
-# D = ModelParallelizer(model=model, activate_jit=False, has_input=True)
+D = ModelParallelizer(model=model, activate_jit=False, has_input=True)
 # values = D.model_evaluate(theta2, X_data)
 # values_der = D.diff_model_evaluate(theta2, X_data)
 #
@@ -57,10 +57,10 @@ def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
 
 def log_liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
     return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) -\
-           (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=1)
+           (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=0)
 
 
-def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
+def log_posteriori_function(par: jnp.ndarray = None):
     """
     The log of the posteriori distribution
     :param estimations:
@@ -76,7 +76,7 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     return log_posteriori
 
 
-nchains = 25
+nchains = 7000
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
