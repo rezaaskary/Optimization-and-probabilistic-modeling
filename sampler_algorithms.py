@@ -157,8 +157,9 @@ class ModelParallelizer:
 
 
 class MetropolisHastings:
-    def __init__(self, log_prop_fcn, model, iterations: int = None, burnin: int = None, x_init: jnp.ndarray = None,
-                 activate_jit: bool = False, chains: int = 1, progress_bar: bool = True, random_seed: int = 1):
+    def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
+                 x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
+                 random_seed: int = 1):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
@@ -260,14 +261,6 @@ class MetropolisHastings:
 
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((self.n_chains, 1))
-
-    def parallelized_model(self):
-        """
-        This method returns the parallelized evaluation of the model as well as the parallelized evaluation of the
-        derivatives of the model with respect to the model partameters
-        :return:
-        """
-        return self.model_evaluate, self.model_diff_evaluate
 
     def sample(self):
         """
