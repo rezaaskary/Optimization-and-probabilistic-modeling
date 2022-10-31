@@ -76,7 +76,7 @@ def log_posteriori_function(par: jnp.ndarray = None):
     return log_posteriori
 
 
-nchains = 7000
+nchains = 13
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,

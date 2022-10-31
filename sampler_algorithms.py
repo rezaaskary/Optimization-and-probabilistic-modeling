@@ -294,8 +294,23 @@ class MetropolisHastings:
             # calculating the log of the posteriori function
             ln_prop = self.log_prop_fcn(self.proposed)
             # calculating the hasting ratio
-            hastings = jnp.exp(ln_prop - self.log_prop_values.at[iteration - 1, :])
+            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[iteration - 1, :]), 1)
+
             criteria = uniform_random_number[ch, iteration] < hastings
+            def accepting_proposed_samples():
+                self.chains[:, ch, iteration:iteration + 1] = self.proposed
+                self.logprop[ch, iteration] = Ln_prop
+                self.n_of_accept[ch, 0] += 1
+                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                return
+            def rejecting_proposed_samples():
+                self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
+                self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
+                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                return
+
+
+
             if criteria:
                 self.chains[:, ch, iteration:iteration + 1] = self.proposed
                 self.logprop[ch, iteration] = Ln_prop
