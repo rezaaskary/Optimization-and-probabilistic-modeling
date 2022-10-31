@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import vmap, jit, grad, random
+from jax import vmap, jit, grad, random, lax
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -292,7 +292,7 @@ class MetropolisHastings:
             # calculating the hasting ratio
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[iteration - 1, :]), 1)
             # comparing the hasting ratio with the samples drawn from the uniform distribution
-            criteria = uniform_rand[iteration, :] < hastings
+            # criteria = uniform_rand[iteration, :] < hastings
 
             def accepting_proposed_samples():
                 self.chains[:, :, iteration] = proposed
@@ -308,19 +308,25 @@ class MetropolisHastings:
 
                 self.log_prop_values = self.log_prop_values.at[iteration, :].set(self.log_prop_values[iteration - 1, :])
 
-                self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                # self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
+                # self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+                self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :] / iteration)
                 return
 
-            if criteria:
-                self.chains[:, ch, iteration:iteration + 1] = self.proposed
-                self.logprop[ch, iteration] = Ln_prop
-                self.n_of_accept[ch, 0] += 1
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-            else:
-                self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
-                self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-                self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+            lax.cond(uniform_rand[iteration, :] < hastings, accepting_proposed_samples(), rejecting_proposed_samples())
+
+
+
+
+            # if criteria:
+            #     self.chains[:, ch, iteration:iteration + 1] = self.proposed
+            #     self.logprop[ch, iteration] = Ln_prop
+            #     self.n_of_accept[ch, 0] += 1
+            #     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+            # else:
+            #     self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
+            #     self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
+            #     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
 
         return self.chains, self.accept_rate
 
