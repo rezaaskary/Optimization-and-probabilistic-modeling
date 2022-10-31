@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
-from jnx_Probablity_Distribution_Continuous import Uniform
+from jnx_Probablity_Distribution_Continuous import Uniform, HalfNormal
 from sampler_algorithms import MetropolisHastings, ModelParallelizer
 
 key = random.PRNGKey(23)
@@ -48,6 +48,12 @@ from jnx_Probablity_Distribution_Continuous import Uniform
 theta1 = Uniform(lower=-10, upper=10)
 theta2 = Uniform(lower=-10, upper=10)
 theta3 = Uniform(lower=-10, upper=10)
+sigma =  HalfNormal(sigma=4)
+
+
+def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
+    error = ((estimated - measured) ** 2).sum(axis=1)
+    return ((sigma * jnp.sqrt(2 * jnp.pi)) ** (-N)) * jnp.exp((-0.5 / sigma ** 2) * error)
 
 
 def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
