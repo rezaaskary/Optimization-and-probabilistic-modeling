@@ -295,7 +295,8 @@ class MetropolisHastings:
             # criteria = uniform_rand[iteration, :] < hastings
 
             def accepting_proposed_samples():
-                self.chains[:, :, iteration] = proposed
+                self.chains = self.chains.at[:, :, iteration].set(proposed)
+                # self.chains[:, :, iteration] = proposed
                 self.log_prop_values[iteration, :] = ln_prop
                 self.n_of_accept[0, :] += 1
                 # self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
