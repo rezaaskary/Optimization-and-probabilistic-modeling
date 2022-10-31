@@ -48,12 +48,16 @@ from jnx_Probablity_Distribution_Continuous import Uniform
 theta1 = Uniform(lower=-10, upper=10)
 theta2 = Uniform(lower=-10, upper=10)
 theta3 = Uniform(lower=-10, upper=10)
-sigma =  HalfNormal(sigma=4)
+# sigma =  HalfNormal(sigma=4)
 
 
 def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
     error = ((estimated - measured) ** 2).sum(axis=1)
     return ((sigma * jnp.sqrt(2 * jnp.pi)) ** (-N)) * jnp.exp((-0.5 / sigma ** 2) * error)
+
+def log_liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
+    return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) -\
+           (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=1)
 
 
 def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
@@ -67,7 +71,7 @@ def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = 
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
     log_par3 = theta3.log_pdf(par[2:3, :])
-
+    ll = log_liklihood(N=200,estimated=estimation, measured=)
     log_posteriori = log_par3 + log_par2 + log_par1 +
     return 1
 
