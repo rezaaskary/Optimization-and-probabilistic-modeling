@@ -292,9 +292,9 @@ class MetropolisHastings:
             # generating the sample for each chain
             self.proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
             # calculating the log of the posteriori function
-            Ln_prop = self.logprop_fcn(self.proposed)
+            ln_prop = self.log_prop_fcn(self.proposed)
             # calculating the hasting ratio
-            hastings = jnp.exp(Ln_prop - self.logprop[ch, iteration - 1])
+            hastings = jnp.exp(ln_prop - self.log_prop_values.at[iteration - 1, :])
             criteria = uniform_random_number[ch, iteration] < hastings
             if criteria:
                 self.chains[:, ch, iteration:iteration + 1] = self.proposed
