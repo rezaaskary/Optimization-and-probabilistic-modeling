@@ -62,14 +62,13 @@ def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
 def log_liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
     return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=0)
 
-
 def log_posteriori_function(par: jnp.ndarray = None):
     """
     The log of the posteriori distribution
     :param par: The matrix of the parameters
     :return:
     """
-    estimation = D.model_evaluate(par, X_data)
+    estimation = D.model_evaluate(par[:-1,:], X_data)
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
     log_par3 = theta3.log_pdf(par[2:3, :])
@@ -92,7 +91,7 @@ plt.show()
 plt.figure(dpi=100)
 plt.plot(S1[1, 0, :])
 plt.show()
-
+plt
 # plt.figure(dpi=100)
 # plt.plot(S1[2, 0, :])
 # plt.show()

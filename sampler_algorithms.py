@@ -274,15 +274,12 @@ class MetropolisHastings:
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
-            # hastings = jnp.exp(ln_prop - self.log_prop_values[i - 1, :])
             satis = (uniform_rand[i, :] < hastings)[0, :]
             non_satis = ~satis
             self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
             self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
-
             self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
             self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
-
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
             self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
             return
