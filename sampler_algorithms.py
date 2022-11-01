@@ -289,11 +289,10 @@ class MetropolisHastings:
             self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
 
             self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
-            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(
-                self.log_prop_values[i - 1, non_satis])
+            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
 
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
-            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / iteration)
+            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
             return
 
         if not self.progress_bar:
@@ -302,8 +301,7 @@ class MetropolisHastings:
         else:
             pass
 
-
-        return self.chains[:, :, self.burnin], self.accept_rate
+        return self.chains[:, :, self.burnin:], self.accept_rate
 
     # def mhh_vectorized_sampling(self):
     #     """

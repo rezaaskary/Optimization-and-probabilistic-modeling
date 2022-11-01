@@ -2,6 +2,8 @@ import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
 from jnx_Probablity_Distribution_Continuous import Uniform, HalfNormal
 from sampler_algorithms import MetropolisHastings, ModelParallelizer
+import matplotlib.pyplot as plt
+
 
 key = random.PRNGKey(23)
 x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1, 1))
@@ -76,14 +78,17 @@ def log_posteriori_function(par: jnp.ndarray = None):
     return log_posteriori
 
 
-nchains = 25
+nchains = 10
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
-                       iterations=600, chains=nchains, x_init=theta_init,
-                       progress_bar=True, burnin=30, activate_jit=False)
-T.sample()
+                       iterations=1000, chains=nchains, x_init=theta_init,
+                       progress_bar=True, burnin=0, activate_jit=True, random_seed=21)
+S1,S2 = T.sample()
+S1
 
+plt.plot(S1[0,0,:])
+plt.show()
 #
 #
 #
