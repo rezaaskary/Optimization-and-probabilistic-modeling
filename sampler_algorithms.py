@@ -276,34 +276,32 @@ class MetropolisHastings:
             return x_old
 
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
-        # initializing the first values of the log probability
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
+        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
-        # sampling from a uniform distribution
-        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0,
-                                      shape=(self.iterations, self.n_chains))
-
-        for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-            # generating the sample for each chain
-            proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
-
-            # calculating the log of the posteriori function
+        def main_algorithm(i: int = None) -> None:
+            proposed = par_proposal(self.chains[:, :, i - 1])
             ln_prop = self.log_prop_fcn(proposed)
-            # calculating the hasting ratio
-            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[iteration - 1, :]), 1)
-            # comparing the hasting ratio with the samples drawn from the uniform distribution
-            # criteria = uniform_rand[iteration, :] < hastings
+            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
+            satis = (uniform_rand[i, :] < hastings)[0, :]
+            non_satis = ~satis
+            self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
+            self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
 
-            satis = (uniform_rand[iteration, :] < hastings)[0, :]
-
-            self.chains = self.chains.at[:, satis, iteration].set(proposed[:, satis])
-            self.chains = self.chains.at[:, ~satis, iteration].set(self.chains[:, ~satis, iteration - 1])
-
-            self.log_prop_values = self.log_prop_values.at[iteration, satis].set(ln_prop[0, satis])
-            self.log_prop_values = self.log_prop_values.at[iteration, ~satis].set(self.log_prop_values[iteration - 1, ~satis])
+            self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
+            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(
+                self.log_prop_values[i - 1, non_satis])
 
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
-            self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :] / iteration)
+            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / iteration)
+            return
+
+        if not self.progress_bar:
+            for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
+                main_algorithm(i)
+        else:
+            pass
+
 
         return self.chains[:, :, self.burnin], self.accept_rate
 

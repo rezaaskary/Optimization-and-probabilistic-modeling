@@ -76,11 +76,11 @@ def log_posteriori_function(par: jnp.ndarray = None):
     return log_posteriori
 
 
-nchains = 13
+nchains = 25
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
-                       iterations=150, chains=nchains, x_init=theta_init,
+                       iterations=600, chains=nchains, x_init=theta_init,
                        progress_bar=True, burnin=30, activate_jit=False)
 T.sample()
 
