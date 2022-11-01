@@ -305,7 +305,7 @@ class MetropolisHastings:
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
             self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :] / iteration)
 
-        return self.chains, self.accept_rate
+        return self.chains[:, :, self.burnin], self.accept_rate
 
     # def mhh_vectorized_sampling(self):
     #     """
