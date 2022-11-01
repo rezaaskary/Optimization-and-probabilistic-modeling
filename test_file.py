@@ -60,8 +60,7 @@ def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
     error = ((estimated - measured) ** 2).sum(axis=1)
     return ((sigma * jnp.sqrt(2 * jnp.pi)) ** (-N)) * jnp.exp((-0.5 / sigma ** 2) * error)
 def log_liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
-    er = (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=0)
-    return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - er
+    return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=0)
 
 
 def log_posteriori_function(par: jnp.ndarray = None):
