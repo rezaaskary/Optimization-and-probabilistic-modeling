@@ -264,26 +264,17 @@ class MetropolisHastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-
-        # def par_proposal(x_old, sigma: float = 0.01):
-        #     """
-        #     proposing new samples based on the random walk model.
-        #     :param x_old:
-        #     :param sigma:
-        #     :return:
-        #     """
-        #     return x_old +
-        rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * 0.1
+        sigma = 0.1
+        rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def main_algorithm(i: int = None) -> None:
-            # proposed = par_proposal(self.chains[:, :, i - 1].copy(), sigma=0.1)
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
-            # hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
-            hastings = jnp.exp(ln_prop - self.log_prop_values[i - 1, :])
+            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
+            # hastings = jnp.exp(ln_prop - self.log_prop_values[i - 1, :])
             satis = (uniform_rand[i, :] < hastings)[0, :]
             non_satis = ~satis
             self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])

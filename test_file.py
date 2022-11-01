@@ -72,13 +72,13 @@ def log_posteriori_function(par: jnp.ndarray = None):
     estimation = D.model_evaluate(par, X_data)
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
-    # log_par3 = theta3.log_pdf(par[2:3, :])
-    ll = log_liklihood(N=200, estimated=estimation, measured=y, sigma=0.5)
-    return log_par2 + log_par1 + ll
+    log_par3 = theta3.log_pdf(par[2:3, :])
+    ll = log_liklihood(N=200, estimated=estimation, measured=y, sigma=par[2:3, :])
+    return log_par2 + log_par1 + log_par3 + ll
 
 
 nchains = 4
-theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
+theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(3, nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
                        iterations=1000, chains=nchains, x_init=theta_init,
