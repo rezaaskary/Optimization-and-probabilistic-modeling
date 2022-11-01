@@ -256,7 +256,7 @@ class MetropolisHastings:
         # self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
 
         # in order to calculate the acceptance ration of all chains
-        self.n_of_accept = jnp.zeros((self.n_chains, 1))
+        self.n_of_accept = jnp.zeros((1, self.n_chains))
 
     def sample(self):
         """
@@ -282,11 +282,11 @@ class MetropolisHastings:
         # sampling from a uniform distribution
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0,
                                       shape=(self.iterations, self.n_chains))
-        # uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.n_chains, self.iterations))
 
         for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
             # generating the sample for each chain
             proposed = par_proposal(self.chains[:, :, iteration - 1], sigma=0.1)
+
             # calculating the log of the posteriori function
             ln_prop = self.log_prop_fcn(proposed)
             # calculating the hasting ratio
@@ -294,42 +294,16 @@ class MetropolisHastings:
             # comparing the hasting ratio with the samples drawn from the uniform distribution
             # criteria = uniform_rand[iteration, :] < hastings
 
-            def accepting_proposed_samples():
-                self.chains = self.chains.at[:, :, iteration].set(proposed)
-                # self.chains[:, :, iteration] = proposed
-                self.log_prop_values = self.log_prop_values.at[iteration, :].set(ln_prop)
-                # self.log_prop_values[iteration, :] = ln_prop
-                self.n_of_accept = self.n_of_accept.at[0, :].set(self.n_of_accept[0, :] + 1)
-                # self.n_of_accept[0, :] += 1
-                # self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-                self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :]/iteration)
-                return
+            satis = (uniform_rand[iteration, :] < hastings)[0, :]
 
-            def rejecting_proposed_samples():
-                self.chains = self.chains.at[:, :, iteration].set(self.chains[:, :, iteration - 1])
-                # self.chains[:, :, iteration] = self.chains[:, :, iteration - 1]
+            self.chains = self.chains.at[:, satis, iteration].set(proposed[:, satis])
+            self.chains = self.chains.at[:, ~satis, iteration].set(self.chains[:, ~satis, iteration - 1])
 
-                self.log_prop_values = self.log_prop_values.at[iteration, :].set(self.log_prop_values[iteration - 1, :])
+            self.log_prop_values = self.log_prop_values.at[iteration, satis].set(ln_prop[0, satis])
+            self.log_prop_values = self.log_prop_values.at[iteration, ~satis].set(self.log_prop_values[iteration - 1, ~satis])
 
-                # self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-                # self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-                self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :] / iteration)
-                return
-
-            lax.cond(uniform_rand[iteration, :] < hastings, accepting_proposed_samples(), rejecting_proposed_samples())
-
-
-
-
-            # if criteria:
-            #     self.chains[:, ch, iteration:iteration + 1] = self.proposed
-            #     self.logprop[ch, iteration] = Ln_prop
-            #     self.n_of_accept[ch, 0] += 1
-            #     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-            # else:
-            #     self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1:iteration]
-            #     self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-            #     self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
+            self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
+            self.accept_rate = self.accept_rate.at[iteration, :].set(self.n_of_accept[0, :] / iteration)
 
         return self.chains, self.accept_rate
 
