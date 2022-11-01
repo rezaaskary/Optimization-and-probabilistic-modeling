@@ -270,7 +270,7 @@ class MetropolisHastings:
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
-        def main_algorithm(i: int = None) -> None:
+        def alg_with_progress_bar(i: int = None) -> None:
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
@@ -283,12 +283,16 @@ class MetropolisHastings:
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
             self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
             return
+        def alg_with_lax_acclelrated(i:int = None, dummy: int = None) -> None:
+
+            return
+
 
         if not self.progress_bar:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-                main_algorithm(i)
+                alg_with_progress_bar(i)
         else:
-            pass
+            lax.fori_loop(lower=1, upper=self.iterations, body_fun=main_algorithm, init_val=None)
 
         return self.chains[:, :, self.burnin:], self.accept_rate
 
