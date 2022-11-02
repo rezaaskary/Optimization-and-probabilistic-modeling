@@ -311,7 +311,10 @@ class MetropolisHastings:
         else:
             # for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
             #     alg_with_lax_acclelrated(i)
-            lax.fori_loop(lower=1, upper=self.iterations, body_fun=alg_with_lax_acclelrated, init_val=None)
+            lax.fori_loop(lower=1,
+                          upper=self.iterations,
+                          body_fun=alg_with_lax_acclelrated,
+                          init_val=None)
 
         return self.chains[:, :, self.burnin:], self.accept_rate
 
