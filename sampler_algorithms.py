@@ -288,11 +288,18 @@ class MetropolisHastings:
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
+            hastings
+
+            def accepted(ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
+                         acc_rate: jnp.ndarray = None, n_of_acceptance: jnp.ndarray = None):
+
+                return ln_prop =
 
 
 
-            def vmapping_chains(hs: jnp.ndarray = None) -> jnp.ndarray:
-                jnp.where(hs)
+            def vmapping_chains(hs: jnp.ndarray = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
+                                acc_rate: jnp.ndarray = None, n_of_acceptance: jnp.ndarray = None) -> jnp.ndarray:
+                return jnp.where(u_rand < hs, )
 
             satis = jnp.where(uniform_rand[i, :] < hastings)[1]
             non_satis = jnp.where(uniform_rand[i, :] >= hastings)[1]
@@ -309,8 +316,8 @@ class MetropolisHastings:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
                 alg_with_progress_bar(i)
         else:
-            # for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-            #     alg_with_lax_acclelrated(i)
+            for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
+                alg_with_lax_acclelrated(i)
             lax.fori_loop(lower=1,
                           upper=self.iterations,
                           body_fun=alg_with_lax_acclelrated,
