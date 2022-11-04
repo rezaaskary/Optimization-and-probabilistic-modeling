@@ -290,12 +290,12 @@ class MetropolisHastings:
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
             hastings
 
-            def accepted(ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
-                         acc_rate: jnp.ndarray = None, n_of_acceptance: jnp.ndarray = None):
-
-                return ln_prop =
-
-
+            def accepted(ln_prop_: jnp.ndarray = None, proposed_: jnp.ndarray = None,
+                         n_of_acceptance: jnp.ndarray = None):
+                return ln_prop_, proposed_, n_of_acceptance + 1
+            def rejected(ln_prop_p_: jnp.ndarray = None, past_chain: jnp.ndarray = None,
+                          n_of_acceptance: jnp.ndarray = None):
+                return ln_prop_, proposed_, n_of_acceptance + 1
 
             def vmapping_chains(hs: jnp.ndarray = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
                                 acc_rate: jnp.ndarray = None, n_of_acceptance: jnp.ndarray = None) -> jnp.ndarray:
