@@ -299,20 +299,21 @@ class MetropolisHastings:
 
             def vmapping_chains(hs: jnp.ndarray = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
                                 n_of_acceptance: jnp.ndarray = None, past_ln_prop: jnp.ndarray = None,
-                                past_proposed: jnp.ndarray = None) -> jnp.ndarray:
-                return jnp.where(u_rand < hs, accepted(ln_prop_=ln_prop,
+                                past_proposed: jnp.ndarray = None, rnd: jnp.ndarray = None) -> jnp.ndarray:
+                return jnp.where(rnd < hs, accepted(ln_prop_=ln_prop,
                                                        proposed_=proposed,
                                                        n_of_acceptance=n_of_acceptance),
                                  rejected(ln_prop_=past_ln_prop,
                                           proposed_=past_proposed,
                                           n_of_acceptance=n_of_acceptance))
 
-            P = vmap(fun=vmapping_chains, in_axes=[1, 1, 1, 1, 1, 1], out_axes=[1, 1, 1])(hastings,
+            P = vmap(fun=vmapping_chains, in_axes=[1, 1, 1, 1, 1, 1, 1], out_axes=[1, 1, 1])(hastings,
                                                                                           ln_prop,
                                                                                           proposed,
                                                                                           self.n_of_accept,
                                                                                           self.log_prop_values[i-1, :],
-                                                                                          self.chains[:, :, i - 1])
+                                                                                          self.chains[:, :, i - 1],
+                                                                                          uniform_rand[i, :])
 
 
             satis = jnp.where(uniform_rand[i, :] < hastings)[1]
