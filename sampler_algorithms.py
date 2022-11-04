@@ -271,11 +271,11 @@ class MetropolisHastings:
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def accepted(ln_prop_: jnp.ndarray, proposed_: jnp.ndarray, n_of_acceptance: jnp.ndarray) -> jnp.ndarray:
-            # , proposed_, n_of_acceptance + 1
+            #, proposed_, n_of_acceptance + 1
             return ln_prop_
 
         def rejected(ln_prop_: jnp.ndarray, proposed_: jnp.ndarray, n_of_acceptance: jnp.ndarray) -> jnp.ndarray:
-            # , proposed_, n_of_acceptance
+            #, proposed_, n_of_acceptance
             return ln_prop_
 
         def alg_with_progress_bar(i: int = None) -> None:
@@ -296,28 +296,27 @@ class MetropolisHastings:
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
-
-            def vmapping_chains(hs: jnp.ndarray = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
+            F = jnp.where(uniform_rand[i, :] < hastings, ln_prop,self.log_prop_values[i - 1, :])[0, :]
+            self.log_prop_values.at[i, :].set(F)
+            self
+            def vmapping_chains(has: bool = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
                                 n_of_acceptance: jnp.ndarray = None, past_ln_prop: jnp.ndarray = None,
-                                past_proposed: jnp.ndarray = None, rnd: jnp.ndarray = None) -> jnp.ndarray:
-                # return jnp.where(rnd < hs, accepted(ln_prop_=ln_prop,
-                #                                        proposed_=proposed,
-                #                                        n_of_acceptance=n_of_acceptance),
-                #                  rejected(ln_prop_=past_ln_prop,
-                #                           proposed_=past_proposed,
-                #                           n_of_acceptance=n_of_acceptance))
-                return lax.cond(rnd < hs, accepted, rejected , (ln_prop, proposed, n_of_acceptance))
+                                past_proposed: jnp.ndarray = None,rnd:jnp.ndarray = None) -> jnp.ndarray:
 
-            P = vmap(vmapping_chains, in_axes=[0, 0, 1,0, 0, 1, 0], out_axes=[1])(hastings[0,:],
-                                                                                 ln_prop[0,:],
-                                                                                 proposed,
-                                                                                 self.n_of_accept[0,:],
-                                                                                 self.log_prop_values[
-                                                                                 i - 1, :],
-                                                                                 self.chains[:, :,
-                                                                                 i - 1],
-                                                                                 uniform_rand[
-                                                                                 i, :])
+                return jnp.where(rnd<has,
+                                 accepted(ln_prop, proposed, n_of_acceptance),
+                                 rejected(past_ln_prop, past_proposed, n_of_acceptance)
+                                 )
+
+            P1 = vmap(fun=vmapping_chains, in_axes=[1, 1, 1, 1, 1, 1, 1], out_axes=[1])(hastings,
+                                                                                  ln_prop,
+                                                                                   proposed,
+                                                                                   self.n_of_accept,
+                                                                                   self.log_prop_values[
+                                                                                   i - 1: i, :],
+                                                                                   self.chains[:, :,
+                                                                                   i - 1],
+                                                                                     uniform_rand[i: i + 1, :])
 
             satis = jnp.where(uniform_rand[i, :] < hastings)[1]
             non_satis = jnp.where(uniform_rand[i, :] >= hastings)[1]
@@ -335,11 +334,11 @@ class MetropolisHastings:
                 alg_with_progress_bar(i)
         else:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-                alg_with_lax_acclelrated(i)
-            lax.fori_loop(lower=1,
-                          upper=self.iterations,
-                          body_fun=alg_with_lax_acclelrated,
-                          init_val=None)
+                # alg_with_lax_acclelrated(i)
+                lax.fori_loop(lower=1,
+                              upper=self.iterations,
+                              body_fun=alg_with_lax_acclelrated,
+                              init_val=1)
 
         return self.chains[:, :, self.burnin:], self.accept_rate
 
