@@ -81,7 +81,7 @@ theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(3, nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
                        iterations=1000, chains=nchains, x_init=theta_init,
-                       progress_bar=True, burnin=0, activate_jit=True, random_seed=63)
+                       progress_bar=False, burnin=0, activate_jit=True, random_seed=63)
 S1,S2 = T.sample()
 
 plt.figure(dpi=100)
@@ -91,64 +91,3 @@ plt.show()
 plt.figure(dpi=100)
 plt.plot(S1[1, 0, :])
 plt.show()
-plt
-# plt.figure(dpi=100)
-# plt.plot(S1[2, 0, :])
-# plt.show()
-
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# key = random.PRNGKey(23)
-# x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1, 1))
-# x_data_2 = random.shuffle(key=key, x=jnp.linspace(-3, 6, 200).reshape((-1, 1)))
-# X_data = jnp.concatenate((x_data_1, x_data_2, jnp.ones((200, 1))), axis=1)
-# std_ = 1.5
-# noise = random.normal(key, shape=(200, 1)) * std_
-# theta = jnp.array([2, -6, 4]).reshape((-1, 1))
-# y = X_data @ theta + noise
-#
-#
-# def model(par: jnp.ndarray = None) -> jnp.ndarray:
-#     """
-#     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
-#      write in the vectorized format
-#     :param par: The array of model parameters given by the sampler (ndimx1)
-#     :return:
-#     """
-#     return X_data @ par
-#
-#
-# theta1 = Uniform(lower=-10, upper=10)
-# theta2 = Uniform(lower=-10, upper=10)
-# theta3 = Uniform(lower=-10, upper=10)
-#
-#
-# def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
-#     """
-#     The log of the posteriori distribution
-#     :param estimations:
-#     :param par: The matrix of the parmaeters
-#     :return:
-#     """
-#     lg1 = theta1.log_pdf()
-#     return 1
-#
-#
-# nchains = 25
-# theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
-#
-# from sampler_algorithms import MetropolisHastings
-#
-# T = MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
-#                        iterations=150, chains=nchains,
-#                        progress_bar=True, burnin=30, activate_jit=False)
