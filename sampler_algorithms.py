@@ -118,6 +118,7 @@ class ModelParallelizer:
                   '----------------------------------------------------------')
         return
 
+
 class MetropolisHastings:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
@@ -233,14 +234,6 @@ class MetropolisHastings:
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
-        def accepted(ln_prop_: jnp.ndarray, proposed_: jnp.ndarray, n_of_acceptance: jnp.ndarray) -> jnp.ndarray:
-            # , proposed_, n_of_acceptance + 1
-            return ln_prop_
-
-        def rejected(ln_prop_: jnp.ndarray, proposed_: jnp.ndarray, n_of_acceptance: jnp.ndarray) -> jnp.ndarray:
-            # , proposed_, n_of_acceptance
-            return ln_prop_
-
         def alg_with_progress_bar(i: int = None) -> None:
             proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
@@ -291,69 +284,75 @@ class MetropolisHastings:
 
         return self.chains[:, :, self.burnin:], self.accept_rate
 
-    # def mhh_vectorized_sampling(self):
-    #     """
-    #     vectorized metropolis-hastings sampling algorithm used for sampling from the posteriori distribution
-    #     :returns: chains: The chains of samples drawn from the posteriori distribution
-    #               acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
-    #     """
-    #
-    #     uniform_random_number = np.random.uniform(low=0.0, high=1.0, size=(self.Nchain, self.iterations))
-    #
-    #     for iteration in tqdm(range(1, self.iterations), disable=self.progress_bar):  # sampling from the distribution
-    #         # generating the sample for each chain
-    #         self.proposed = self.gaussian_proposed_distribution(self.chains[:, :, iteration - 1:iteration].copy(),
-    #                                                             sigma=0.1)
-    #         # calculating the log of the posteriori function
-    #         Ln_prop = self.logprop_fcn(self.proposed, Covariance=1)
-    #         # calculating the hasting ratio
-    #         hastings = np.exp(Ln_prop - self.logprop[:, iteration - 1])
-    #         criteria = uniform_random_number[ch, iteration] < hastings
-    #         if criteria:
-    #             self.chains[:, ch, iteration:iteration + 1] = self.proposed
-    #             self.logprop[ch, iteration] = Ln_prop
-    #             self.n_of_accept[ch, 0] += 1
-    #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-    #         else:
-    #             self.chains[:, ch, iteration:iteration + 1] = self.chains[:, ch, iteration - 1: iteration]
-    #             self.logprop[ch, iteration] = self.logprop[ch, iteration - 1]
-    #             self.accept_rate[ch, iteration] = self.n_of_accept[ch, 0] / iteration
-    #     return 1
 
-# class MCMCHammer:
-#     def __init__(self, logprop_fcn, iterations: int = None, rng: int = None, x0: jnp.ndarray = None,
-#                  vectorized: bool = False,
-#                  chains: int = 1, progress_bar: bool = True):
-#
-#         self.key = random.PRNGKey(rng)
-#         # checking the correctness of log probability function
-#         if hasattr(logprop_fcn, "__call__"):
-#             self.logprop_fcn = logprop_fcn
-#         else:
-#             raise Exception('The log(probability) function is not defined properly!')
-#
-#         # checking the correctness of the iteration
-#         if isinstance(iterations, int):
-#             self.iterations = iterations
-#         else:
-#             self.iterations = 1000
-#             print(
-#                 f'--------------------------------------------------------------------------------------------------\n '
-#                 f'The iteration is not an integer value.\n'
-#                 f' The default value of {self.iterations} is selectd as the number of iterations\n'
-#                 f'---------------------------------------------------------------------------------------------------')
-#
-#         # checking the correctness of the iteration
-#         if isinstance(chains, int):
-#             self.Nchain = chains
-#         else:
-#             self.Nchain = 1
-#             print(
-#                 f'---------------------------------------------------------------------------------------------------\n'
-#                 f'The number of chains is not an integer value. '
-#                 f'The default value of {self.Nchain} is selected as the number of chains\n'
-#                 f'----------------------------------------------------------------------------------------------------')
-#
+class MCMCHammer:
+    def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
+                 x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
+                 random_seed: int = 1):
+
+        self.key = random.PRNGKey(random_seed)
+        # checking the correctness of log probability function
+        if hasattr(log_prop_fcn, "__call__"):
+            self.log_prop_fcn = log_prop_fcn
+        else:
+            raise Exception('The log probability function is not defined properly!')
+
+        # checking the correctness of the iteration
+        if isinstance(iterations, int):
+            self.iterations = iterations
+        else:
+            self.iterations = 1000
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'The iteration is not an integer value.\n'
+                  f' The default value of {self.iterations} is selected as the number of iterations\n'
+                  f'--------------------------------------------------------------------------------------------------')
+
+        if isinstance(burnin, int):
+            self.burnin = burnin
+        elif burnin is None:
+            self.burnin = 0
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'The number samples from dropping after simulation is not an integer value.\n'
+                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
+                  f'--------------------------------------------------------------------------------------------------')
+        else:
+            self.burnin = 0
+            print(f'-------------------------------------------------------------------------------------------------\n'
+                  f'The number samples from dropping after simulation is not an integer value.\n'
+                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
+                  f'--------------------------------------------------------------------------------------------------')
+        if self.burnin >= self.iterations:
+            raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
+
+            # checking the correctness of the vectorized simulation
+        if isinstance(activate_jit, bool):
+            self.activate_jit = activate_jit
+        else:
+            self.activate_jit = False
+            print(
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
+                f'----------------------------------------------------------------------------------------------------')
+
+        # checking the correctness of the progressbar
+        if isinstance(progress_bar, bool):
+            self.progress_bar = not progress_bar
+        else:
+            self.progress_bar = False
+            print(
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The progress bar is activated by default since the it is not entered by the user\n'
+                f'----------------------------------------------------------------------------------------------------')
+
+        # initializing chain values
+        self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
+        # initializing the log of the posteriori values
+        self.log_prop_values = jnp.zeros((self.iterations, self.n_chains))
+        # initializing the track of hasting ratio values
+        self.accept_rate = jnp.zeros((self.iterations, self.n_chains))
+        # in order to calculate the acceptance ration of all chains
+        self.n_of_accept = jnp.zeros((1, self.n_chains))
+
 #     def mcmc_hammer_non_vectorized_sampling(self):
 #         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
 #
