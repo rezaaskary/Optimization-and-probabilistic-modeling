@@ -323,6 +323,27 @@ class MCMCHammer:
                   f'--------------------------------------------------------------------------------------------------')
         if self.burnin >= self.iterations:
             raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
+        # checking the correctness of the iteration
+        if isinstance(chains, int):
+            self.n_chains = chains
+        else:
+            self.n_chains = 1
+            print(
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The number of chains is not an integer value.\n'
+                f' The default value of {self.n_chains} is selected as the number of chains\n'
+                f'----------------------------------------------------------------------------------------------------')
+        # checking the correctness of initial condition
+        if isinstance(x_init, jnp.ndarray):
+            dim1, dim2 = x_init.shape
+            if dim2 != self.n_chains:
+                raise Exception('The initial condition is not consistent with the number of chains!')
+            else:
+                self.ndim = dim1
+                self.x_init = x_init
+        else:
+            raise Exception('The initial condition is not selected properly!')
+
 
             # checking the correctness of the vectorized simulation
         if isinstance(activate_jit, bool):
@@ -352,6 +373,22 @@ class MCMCHammer:
         self.accept_rate = jnp.zeros((self.iterations, self.n_chains))
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
+
+
+    def sample(self):
+        """
+        vectorized MCMC Hammer sampling algorithm used for sampling from the posteriori distribution. Developed based on
+         the paper published in 2013:
+         <<Foreman-Mackey, Daniel, et al. "emcee: the MCMC hammer." Publications of the Astronomical
+          Society of the Pacific 125.925 (2013): 306.>>
+        :returns: chains: The chains of samples drawn from the posteriori distribution
+                  acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
+        """
+        sigma = 0.1
+        rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
+        self.chains = self.chains.at[:, :, 0].set(self.x_init)
+        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
+        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
 #     def mcmc_hammer_non_vectorized_sampling(self):
 #         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
