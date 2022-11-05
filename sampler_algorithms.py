@@ -181,7 +181,7 @@ class MetropolisHastings:
                 f' The default value of {self.n_chains} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-            # checking the correctness of initial condition
+        # checking the correctness of initial condition
         if isinstance(x_init, jnp.ndarray):
             dim1, dim2 = x_init.shape
             if dim2 != self.n_chains:
@@ -276,6 +276,7 @@ class MetropolisHastings:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
                 alg_with_progress_bar(i)
         else:
+            print('Simulating...')
             self.chains, \
             self.log_prop_values, \
             self.n_of_accept, \
