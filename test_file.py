@@ -15,7 +15,7 @@ std_ = 0.5
 noise = random.normal(key, shape=(200, 1)) * std_
 theta = jnp.array([2, -6]).reshape((-1, 1))
 y = X_data @ theta + noise
-y = jnp.tile(y,(1,4))
+# y = jnp.tile(y,(1,4))
 theta2 = random.normal(key, shape=(2, 45))
 
 
@@ -76,7 +76,7 @@ def log_posteriori_function(par: jnp.ndarray = None):
     return log_par2 + log_par1 + log_par3 + ll
 
 
-nchains = 4
+nchains = 5
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(3, nchains))
 
 T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
