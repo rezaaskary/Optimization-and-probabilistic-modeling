@@ -303,8 +303,11 @@ class MetropolisHastings:
             self.chains = self.chains.at[:, :, i].set(jnp.where(uniform_rand[i, :] < hastings,
                                                                 proposed,
                                                                 self.chains[:, :, i - 1]))
+            self.n_of_accept = self.n_of_accept.at[0, :].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                                       self.n_of_accept[0, :] + 1,
+                                                                       self.n_of_accept[0, :])[0, :])
+            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
             self
-
             def vmapping_chains(has: bool = None, ln_prop: jnp.ndarray = None, proposed: jnp.ndarray = None,
                                 n_of_acceptance: jnp.ndarray = None, past_ln_prop: jnp.ndarray = None,
                                 past_proposed: jnp.ndarray = None, rnd: jnp.ndarray = None) -> jnp.ndarray:
