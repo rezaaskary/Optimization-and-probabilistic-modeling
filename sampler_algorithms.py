@@ -118,40 +118,6 @@ class ModelParallelizer:
                   '----------------------------------------------------------')
         return
 
-        # if self.activate_jit:
-        #     self.model_evaluate = jit(vmap(self.model_eval, in_axes=[None, 0], out_axes=0))
-        #     self.diff_model_evaluate = jit(vmap(vmap(grad(self.model_eval,
-        #                                                   argnums=0),  # parameter 0 means model parameters
-        #                                              in_axes=[1, None],  # [1, None] means that we loop over chains
-        #                                              out_axes=1),
-        #                                         # means that chains are stacked in the second dimension
-        #                                         in_axes=[None, 0],  # [None, 0] looping over model inputs
-        #                                         out_axes=2))  # staking
-        # else:
-        #     self.model_evaluate = vmap(self.model_eval, in_axes=[None, 0], out_axes=0)
-        #     self.diff_model_evaluate = vmap(vmap(grad(self.model_eval,
-        #                                               argnums=0),  # parameter 0 means model parameters
-        #                                          in_axes=[1, None],  # [1, None] means that we loop over chains
-        #                                          out_axes=1),
-        #                                     # means that chains are stacked in the second dimension
-        #                                     in_axes=[None, 0],  # [None, 0] looping over model inputs
-        #                                     out_axes=2)  # staking
-
-    # def model_evaluate(self):
-    #     """
-    #     Parallelized model
-    #     :return: The callable function for evaluating the model
-    #     """
-    #     return self.mdl_eval
-    #
-    # def diff_model_evaluate(self):
-    #     """
-    #     Parallelized derivatives of the model
-    #     :return: The callable function for evaluating the model
-    #     """
-    #     return self.mdl_der_eval
-
-
 class MetropolisHastings:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
@@ -164,11 +130,12 @@ class MetropolisHastings:
         :param x_init: The initialized value of parameters
         :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
         :param chains: the number of chains used for simulation
-        :param progress_bar: A boolean variable used to activate or deactivate the progress bar
+        :param progress_bar: A boolean variable used to activate or deactivate the progress bar. Deactivation of the
+         progress bar results in activating XLA -accelerated iteration for the fast  evaluation  of the
+          chains(recommended!)
         :param model: The model function (a function that input parameters and returns estimations)
         """
         self.key = random.PRNGKey(random_seed)
-
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
             self.log_prop_fcn = log_prop_fcn
@@ -251,10 +218,6 @@ class MetropolisHastings:
         self.log_prop_values = jnp.zeros((self.iterations, self.n_chains))
         # initializing the track of hasting ratio values
         self.accept_rate = jnp.zeros((self.iterations, self.n_chains))
-
-        # initializing the first values of the log probability
-        # self.log_prop_values[:, 0] = self.log_prop_fcn(self.x_init)
-
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
