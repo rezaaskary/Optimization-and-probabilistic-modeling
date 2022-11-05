@@ -344,8 +344,7 @@ class MCMCHammer:
         else:
             raise Exception('The initial condition is not selected properly!')
 
-
-            # checking the correctness of the vectorized simulation
+        # checking the correctness of the vectorized simulation
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
         else:
@@ -384,6 +383,9 @@ class MCMCHammer:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
+        a = 2
+        z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
+                       (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)), 2)
         sigma = 0.1
         rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
