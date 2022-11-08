@@ -386,6 +386,10 @@ class MCMCHammer:
         a = 2
         z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                        (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)), 2)
+
+        ii = random.randint(shape=(self.iterations, self.n_chains))
+
+
         sigma = 0.1
         rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
