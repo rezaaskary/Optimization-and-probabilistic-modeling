@@ -288,7 +288,7 @@ class MetropolisHastings:
 class MCMCHammer:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1):
+                 random_seed: int = 1, parallel_Stretch: bool = False):
 
         self.key = random.PRNGKey(random_seed)
         # checking the correctness of log probability function
@@ -354,6 +354,11 @@ class MCMCHammer:
                 f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
+        if isinstance(parallel_Stretch, bool):
+            self.parallel_Stretch = parallel_Stretch
+        else:
+            raise Exception('The correct algorithm is not selected')
+
         # checking the correctness of the progressbar
         if isinstance(progress_bar, bool):
             self.progress_bar = not progress_bar
@@ -372,6 +377,11 @@ class MCMCHammer:
         self.accept_rate = jnp.zeros((self.iterations, self.n_chains))
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
+
+
+        if not self.parallel_Stretch:
+            random.choice(key=self.key,)
+                randint(key=self.key, minval=0, maxval=self.chains-1,dtype=int)
 
 
     def sample(self):
