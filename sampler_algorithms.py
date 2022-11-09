@@ -378,11 +378,31 @@ class MCMCHammer:
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
-
         if not self.parallel_Stretch:
-            random.choice(key=self.key,)
-                randint(key=self.key, minval=0, maxval=self.chains-1,dtype=int)
+            index = jnp.zeros((self.iterations, self.n_chains)).astype(int)
+            order = jnp.arange(start=0, stop=self.n_chains).astype(int)
+            shuffle_iter_i = order.copy()
+            for i in range(self.iterations):
+                shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
+                while jnp.any(shuffle_iter_i == order):
+                    shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
+                index = index.at[i, :].set(shuffle_iter_i)
 
+            def true_index_gen(index, j):
+                return index, j
+
+            def false_index_gen(index, shuffle_iter_i, j):
+                index = index.at[j, :].set(shuffle_iter_i)
+                j += 1
+                return index, j
+
+            def index_gen(index, order, shuffle_iter_i, j):
+                shuffle_iter_i = random.shuffle(key=key, x=shuffle_iter_i)
+                jnp.where(jnp.any(shuffle_iter_i == order), )
+
+            lax.while_loop(body_fun=index_gen, init_val=(index, order, shuffle_iter_i, 0))
+
+            lax.fori_loop(body_fun=index_gen, lower=0, upper=self.n_chain, init_val=(index, order))
 
     def sample(self):
         """
@@ -393,12 +413,12 @@ class MCMCHammer:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
+        self.indexes
         a = 2
         z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
-                       (jnp.sqrt(a) - jnp.sqrt(1/a)) + jnp.sqrt(1/a)), 2)
+                       (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)), 2)
 
         ii = random.randint(shape=(self.iterations, self.n_chains))
-
 
         sigma = 0.1
         rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
