@@ -381,28 +381,27 @@ class MCMCHammer:
         if not self.parallel_Stretch:
             index = jnp.zeros((self.iterations, self.n_chains)).astype(int)
             order = jnp.arange(start=0, stop=self.n_chains).astype(int)
-            shuffle_iter_i = order.copy()
-            for i in range(self.iterations):
-                shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
-                while jnp.any(shuffle_iter_i == order):
+            shuffle_iter_i = random.shuffle(key=self.key, x=order.copy())
+            i = 0
+            while i < self.chains:
+                if jnp.any(shuffle_iter_i == order):
                     shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
-                index = index.at[i, :].set(shuffle_iter_i)
+                else:
+                    index = index.at[i, :].set(shuffle_iter_i)
+                    i += 1
 
-            def true_index_gen(index, j):
-                return index, j
+            def index_gen(body_fcn_input: tuple) -> tuple:
+                index, order, shuffle_iter_i, ind = body_fcn_input
+                shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
+                ind = lax.cond(jnp.any(order == shuffle_iter_i), ind, ind + 1)
+                index = lax.cond(jnp.any(order == shuffle_iter_i), index, index.at[ind, :].set(shuffle_iter_i))
+                return index, order, shuffle_iter_i, ind
 
-            def false_index_gen(index, shuffle_iter_i, j):
-                index = index.at[j, :].set(shuffle_iter_i)
-                j += 1
-                return index, j
+            def index_cond(body_fcn_input: tuple) -> bool:
+                index, order, shuffle_iter_i, ind = body_fcn_input
+                return lax.cond(ind == index.shape[0], False, True)
 
-            def index_gen(index, order, shuffle_iter_i, j):
-                shuffle_iter_i = random.shuffle(key=key, x=shuffle_iter_i)
-                jnp.where(jnp.any(shuffle_iter_i == order), )
-
-            lax.while_loop(body_fun=index_gen, init_val=(index, order, shuffle_iter_i, 0))
-
-            lax.fori_loop(body_fun=index_gen, lower=0, upper=self.n_chain, init_val=(index, order))
+            RR = lax.while_loop(body_fun=index_gen, cond_fun=cond_fcn, init_val=(index, order, shuffle_iter_i, -1))
 
     def sample(self):
         """
