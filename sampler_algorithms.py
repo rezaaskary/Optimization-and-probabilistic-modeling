@@ -378,44 +378,10 @@ class MCMCHammer:
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
-        # if not self.parallel_Stretch:
-        #     ordered_index = jnp.arange(self.n_chains).astype(int)
-        #     self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
-        #                                 axis=1)
-        #     i = 0
-        #     while i < self.chains:
-        #         if jnp.any(self.index[i, :] == ordered_index):
-        #             self.index = self.index.at[i, :].set(random.shuffle(key=self.key, x=self.index[i, :]))
-        #         else:
-        #             i += 1
-
-
-        #     self.index = random.shuffle(key=self.key, x=order.copy())
-        #
-        #
-        #     index = jnp.zeros((self.iterations, self.n_chains)).astype(int)
-        #     order = jnp.arange(start=0, stop=self.n_chains).astype(int)
-        #     shuffle_iter_i = random.shuffle(key=self.key, x=order.copy())
-        #     i = 0
-        #     while i < self.chains:
-        #         if jnp.any(shuffle_iter_i == order):
-        #             shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
-        #         else:
-        #             index = index.at[i, :].set(shuffle_iter_i)
-        #             i += 1
-
-            # def index_gen(body_fcn_input: tuple) -> tuple:
-            #     index, order, shuffle_iter_i, ind = body_fcn_input
-            #     shuffle_iter_i = random.shuffle(key=self.key, x=shuffle_iter_i)
-            #     ind = lax.cond(jnp.any(order == shuffle_iter_i), ind, ind + 1)
-            #     index = lax.cond(jnp.any(order == shuffle_iter_i), index, index.at[ind, :].set(shuffle_iter_i))
-            #     return index, order, shuffle_iter_i, ind
-            #
-            # def index_cond(body_fcn_input: tuple) -> bool:
-            #     index, order, shuffle_iter_i, ind = body_fcn_input
-            #     return lax.cond(ind == index.shape[0], False, True)
-            #
-            # RR = lax.while_loop(body_fun=index_gen, cond_fun=index_cond, init_val=(index, order, shuffle_iter_i, -1))
+        if not self.parallel_Stretch:
+            ordered_index = jnp.arange(self.n_chains).astype(int)
+            self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
+                                        axis=1)
 
     def sample(self):
         """
@@ -427,10 +393,7 @@ class MCMCHammer:
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
 
-        if not self.parallel_Stretch:
-            ordered_index = jnp.arange(self.n_chains).astype(int)
-            self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
-                                        axis=1)
+
 
 
 
