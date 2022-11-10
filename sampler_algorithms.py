@@ -382,8 +382,10 @@ class MCMCHammer:
             ordered_index = jnp.arange(self.n_chains).astype(int)
             self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
                                         axis=1)
+            if self.progress_bar:  # selecting
+                self.sample = self.sample_with_pb
 
-    def sample(self):
+    def sample_with_pb(self):
         """
         vectorized MCMC Hammer sampling algorithm used for sampling from the posteriori distribution. Developed based on
          the paper published in 2013:
@@ -393,25 +395,31 @@ class MCMCHammer:
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
 
-
-
-
-
-
-
-
-
-
-
-        self.index
-
-
-
-
-        self.indexes
+        self.chains = self.chains.at[:, :, 0].set(self.x_init)
+        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
+        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
         a = 2
         z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                        (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)), 2)
+
+        def alg_with_progress_bar(i: int = None) -> None:
+            proposed = self.chains[:, self.index[i - 1, :], i - 1] + z[i - 1, :] * (
+                        self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
+            ln_prop = self.log_prop_fcn(proposed)
+            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim-1) *
+                                   jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
+            satis = (uniform_rand[i, :] < hastings)[0, :]
+            non_satis = ~satis
+            self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
+            self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
+            self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
+            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
+            self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
+            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
+            return
+
+        for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
+            alg_with_progress_bar(i=i)
 
         ii = random.randint(shape=(self.iterations, self.n_chains))
 
