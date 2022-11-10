@@ -385,7 +385,7 @@ class MCMCHammer:
             if self.progress_bar:  # selecting
                 self.sample = self.sample_with_pb
 
-    def sample_with_pb(self):
+    def sample(self):
         """
         vectorized MCMC Hammer sampling algorithm used for sampling from the posteriori distribution. Developed based on
          the paper published in 2013:
@@ -418,8 +418,39 @@ class MCMCHammer:
             self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
             return
 
-        for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-            alg_with_progress_bar(i=i)
+        def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
+            lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
+
+            proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
+            ln_prop = self.log_prop_fcn(proposed)
+            hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
+
+
+
+
+
+        if not self.parallel_Stretch:
+            if not self.progress_bar:
+                for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
+                    alg_with_progress_bar(i=i)
+            else:
+                print('Simulating...')
+                self.chains, \
+                self.log_prop_values, \
+                self.n_of_accept, \
+                self.accept_rate = lax.fori_loop(lower=1,
+                                                 upper=self.iterations,
+                                                 body_fun=alg_with_lax_acclelrated,
+                                                 init_val=(
+                                                     self.chains.copy(),
+                                                     self.log_prop_values.copy(),
+                                                     self.n_of_accept.copy(),
+                                                     self.accept_rate.copy()))
+
+
+
+
+
 
         ii = random.randint(shape=(self.iterations, self.n_chains))
 
