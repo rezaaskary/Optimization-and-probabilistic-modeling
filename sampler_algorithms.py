@@ -404,9 +404,9 @@ class MCMCHammer:
 
         def alg_with_progress_bar(i: int = None) -> None:
             proposed = self.chains[:, self.index[i - 1, :], i - 1] + z[i - 1, :] * (
-                        self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
+                    self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
             ln_prop = self.log_prop_fcn(proposed)
-            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim-1) *
+            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
                                    jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
             satis = (uniform_rand[i, :] < hastings)[0, :]
             non_satis = ~satis
@@ -419,15 +419,25 @@ class MCMCHammer:
             return
 
         def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
-            lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
-
-            proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
+            lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed = recursive_variables
+            proposed = lax_chains[:, lax_indexed[i - 1, :], i - 1] + z[i - 1, :] * (
+                    lax_chains[:, :, i - 1] - lax_chains[:, lax_indexed[i - 1, :], i - 1])
             ln_prop = self.log_prop_fcn(proposed)
-            hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
 
+            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
+                                   jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
 
-
-
+            lax_log_prop_values = lax_log_prop_values.at[i, :].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                                             ln_prop,
+                                                                             lax_log_prop_values[i - 1, :])[0, :])
+            lax_chains = lax_chains.at[:, :, i].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                              proposed,
+                                                              lax_chains[:, :, i - 1]))
+            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                                     lax_n_of_accept[0, :] + 1,
+                                                                     lax_n_of_accept[0, :])[0, :])
+            lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
+            return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed)
 
         if not self.parallel_Stretch:
             if not self.progress_bar:
@@ -438,27 +448,29 @@ class MCMCHammer:
                 self.chains, \
                 self.log_prop_values, \
                 self.n_of_accept, \
-                self.accept_rate = lax.fori_loop(lower=1,
-                                                 upper=self.iterations,
-                                                 body_fun=alg_with_lax_acclelrated,
-                                                 init_val=(
-                                                     self.chains.copy(),
-                                                     self.log_prop_values.copy(),
-                                                     self.n_of_accept.copy(),
-                                                     self.accept_rate.copy()))
+                self.accept_rate, \
+                self.index = lax.fori_loop(lower=1,
+                                           upper=self.iterations,
+                                           body_fun=alg_with_lax_acclelrated,
+                                           init_val=(
+                                               self.chains.copy(),
+                                               self.log_prop_values.copy(),
+                                               self.n_of_accept.copy(),
+                                               self.accept_rate.copy(),
+                                               self.index.copy()))
+        else:
+            pass
 
 
 
 
-
-
-        ii = random.randint(shape=(self.iterations, self.n_chains))
-
-        sigma = 0.1
-        rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
-        self.chains = self.chains.at[:, :, 0].set(self.x_init)
-        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
-        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
+        # ii = random.randint(shape=(self.iterations, self.n_chains))
+        #
+        # sigma = 0.1
+        # rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
+        # self.chains = self.chains.at[:, :, 0].set(self.x_init)
+        # self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
+        # uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
 #     def mcmc_hammer_non_vectorized_sampling(self):
 #         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
