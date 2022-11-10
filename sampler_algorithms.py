@@ -433,7 +433,6 @@ class MCMCHammer:
                                         axis=1)
 
 
-            self
 
 
 
