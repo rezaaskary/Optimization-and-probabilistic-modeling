@@ -238,9 +238,11 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The value of a is not specified correctly')
 
-        if self.move == 'random_walk':
+        if self.move == 'random_walk' and self.cov_proposal:
             self.rndw_samples = self.cov_proposal @ random.normal(key=self.key,
                                                                   shape=(self.ndim, self.n_chains, self.iterations))
+        elif not self.cov_proposal:
+            raise Exception('The covariance of updating parameters should be entered')
 
     def random_walk_proposal(self, itr: int = None):
         return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
@@ -249,7 +251,7 @@ class ParameterProposalInitialization:
 class MetropolisHastings(ParameterProposalInitialization):
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1):
+                 random_seed: int = 1, cov: jnp.ndarray = None):
         """
         Metropolis Hastings sampling algorithm
         :param log_prop_fcn: Takes the log posteriori function
