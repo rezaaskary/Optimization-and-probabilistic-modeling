@@ -128,8 +128,17 @@ class ParameterProposalInitialization:
                  chains: int = 1,
                  progress_bar: bool = True,
                  random_seed: int = 1,
+                 move: str = 'single_stretch',
                  cov: jnp.ndarray = None,
                  a: float = None):
+
+        if isinstance(move, str):
+            if move in ['single_stretch', 'random_walk']:
+                self.move = move
+        elif not move:
+            self.move = 'random_walk'
+        else:
+            raise Exception('The algorithm of updating proposal parameters is not specified correctly')
 
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
@@ -225,8 +234,15 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The value of a is not specified correctly')
 
+        if self.move == 'random_walk':
+            self.rndw_samples = self.cov_proposal @ random.normal(key=self.key,
+                                                                  shape=(self.ndim, self.n_chains, self.iterations))
 
-class MetropolisHastings:
+    def random_walk_proposal(self, itr: int = None):
+        return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+
+
+class MetropolisHastings(ParameterProposalInitialization):
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
                  random_seed: int = 1):
@@ -247,7 +263,7 @@ class MetropolisHastings:
                                                  x_init=x_init, activate_jit=activate_jit, chains=chains,
                                                  progress_bar=progress_bar, random_seed=random_seed)
 
-
+        self.proposal_alg = ParameterProposalInitialization
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
@@ -263,8 +279,6 @@ class MetropolisHastings:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-        sigma = 0.1
-        rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
@@ -323,7 +337,7 @@ class MetropolisHastings:
 class MCMCHammer:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1, move: str = 'single_stretch', n_split: int = 1, a: float = 2.0):
+                 random_seed: int = 1, move: str = 'single_stretch'):
         """
         MCMC Hammer empowered with jax to large scale simulation
         :param log_prop_fcn: A callable function returning the log-likelihood (or posteriori) of the distribution
