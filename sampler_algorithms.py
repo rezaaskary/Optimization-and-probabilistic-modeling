@@ -118,56 +118,26 @@ class ModelParallelizer:
                   '----------------------------------------------------------')
         return
 
+
 class ParameterProposalInitialization:
-    def __init__(self, cov: jnp.ndarray = None, a: float = None):
+    def __init__(self, log_prop_fcn: callable = None,
+                 iterations: int = None,
+                 burnin: int = None,
+                 x_init: jnp.ndarray = None,
+                 activate_jit: bool = False,
+                 chains: int = 1,
+                 progress_bar: bool = True,
+                 random_seed: int = 1,
+                 cov: jnp.ndarray = None,
+                 a: float = None):
 
-        if isinstance(cov, jnp.ndarray):
-            self.cov_proposal = cov
-        elif not cov:
-            self.cov_proposal = None
-        else:
-            raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
-
-        if isinstance(a, float):
-            if a>1: self.a_proposal = a
-            else: raise Exception('The value of a should be greater than 1')
-        elif not a:
-            self.a_proposal = None
-        else:
-            raise Exception('The value of a is not specified correctly')
-
-
-
-
-
-
-
-
-
-class MetropolisHastings:
-    def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
-                 x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1):
-        """
-        Metropolis Hastings sampling algorithm
-        :param log_prop_fcn: Takes the log posteriori function
-        :param iterations: The number of iteration
-        :param burnin: The number of initial samples to be droped sowing to non-stationary behaviour
-        :param x_init: The initialized value of parameters
-        :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
-        :param chains: the number of chains used for simulation
-        :param progress_bar: A boolean variable used to activate or deactivate the progress bar. Deactivation of the
-         progress bar results in activating XLA -accelerated iteration for the fast  evaluation  of the
-          chains(recommended!)
-        :param model: The model function (a function that input parameters and returns estimations)
-        """
-        self.key = random.PRNGKey(random_seed)
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
             self.log_prop_fcn = log_prop_fcn
         else:
             raise Exception('The log probability function is not defined properly!')
 
+        self.key = random.PRNGKey(random_seed)
         # checking the correctness of the iteration
         if isinstance(iterations, int):
             self.iterations = iterations
@@ -237,6 +207,46 @@ class MetropolisHastings:
                 f'---------------------------------------------------------------------------------------------------\n'
                 f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'----------------------------------------------------------------------------------------------------')
+
+        if isinstance(cov, jnp.ndarray):
+            self.cov_proposal = cov
+        elif not cov:
+            self.cov_proposal = None
+        else:
+            raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
+
+        if isinstance(a, float):
+            if a > 1:
+                self.a_proposal = a
+            else:
+                raise Exception('The value of a should be greater than 1')
+        elif not a:
+            self.a_proposal = None
+        else:
+            raise Exception('The value of a is not specified correctly')
+
+
+class MetropolisHastings:
+    def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
+                 x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
+                 random_seed: int = 1):
+        """
+        Metropolis Hastings sampling algorithm
+        :param log_prop_fcn: Takes the log posteriori function
+        :param iterations: The number of iteration
+        :param burnin: The number of initial samples to be droped sowing to non-stationary behaviour
+        :param x_init: The initialized value of parameters
+        :param parallelized: A boolean variable used to activate or deactivate the parallelized calculation
+        :param chains: the number of chains used for simulation
+        :param progress_bar: A boolean variable used to activate or deactivate the progress bar. Deactivation of the
+         progress bar results in activating XLA -accelerated iteration for the fast  evaluation  of the
+          chains(recommended!)
+        :param model: The model function (a function that input parameters and returns estimations)
+        """
+        super(MetropolisHastings, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
+                                                 x_init=x_init, activate_jit=activate_jit, chains=chains,
+                                                 progress_bar=progress_bar, random_seed=random_seed)
+
 
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
@@ -426,8 +436,6 @@ class MCMCHammer:
     def single_stretch(self):
         return
 
-
-
     def sample(self):
         """
         vectorized MCMC Hammer sampling algorithm used for sampling from the posteriori distribution. Developed based on
@@ -492,10 +500,6 @@ class MCMCHammer:
             lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
             return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed)
 
-
-
-
-
         # Calculating proposal samples from the main group of the  samples
         if not self.parallel_Stretch:
             if not self.progress_bar:
@@ -518,9 +522,6 @@ class MCMCHammer:
                                                self.index.copy()))
         else:
             pass
-
-
-
 
         # ii = random.randint(shape=(self.iterations, self.n_chains))
         #
