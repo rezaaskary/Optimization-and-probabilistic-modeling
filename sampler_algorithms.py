@@ -218,7 +218,11 @@ class ParameterProposalInitialization:
                 f'----------------------------------------------------------------------------------------------------')
 
         if isinstance(cov, jnp.ndarray):
-            self.cov_proposal = cov
+            if cov.shape[0] != cov.shape[0] or cov.shape[0] != self.ndim:
+                raise Exception('The size of the covariance matrix is either incorrect or inconsistent with the'
+                                ' dimension of the parameters')
+            else:
+                self.cov_proposal = cov
         elif not cov:
             self.cov_proposal = None
         else:
@@ -263,7 +267,7 @@ class MetropolisHastings(ParameterProposalInitialization):
                                                  x_init=x_init, activate_jit=activate_jit, chains=chains,
                                                  progress_bar=progress_bar, random_seed=random_seed)
 
-        self.proposal_alg = ParameterProposalInitialization
+        self.proposal_alg = ParameterProposalInitialization.random_walk_proposal
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
@@ -284,7 +288,8 @@ class MetropolisHastings(ParameterProposalInitialization):
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def alg_with_progress_bar(i: int = None) -> None:
-            proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
+            proposed = self.proposal_alg(itr=i)
+            # proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
             satis = (uniform_rand[i, :] < hastings)[0, :]
@@ -299,7 +304,8 @@ class MetropolisHastings(ParameterProposalInitialization):
 
         def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
-            proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
+            # proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
+            proposed = self.proposal_alg(itr=i)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
             lax_log_prop_values = lax_log_prop_values.at[i, :].set(jnp.where(uniform_rand[i, :] < hastings,
