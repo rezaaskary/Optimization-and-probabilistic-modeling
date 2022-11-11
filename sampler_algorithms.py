@@ -289,7 +289,19 @@ class MCMCHammer:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
                  random_seed: int = 1, parallel_Stretch: bool = False):
-
+        """
+        MCMC Hammer empowered with jax to large scale simulation
+        :param log_prop_fcn: A callable function returning the log-likelihood (or posteriori) of the distribution
+        :param iterations: An integer indicating the number of steps(or samples)
+        :param burnin: An integer used for truncating chains of samples to remove the transient variation of chains
+        :param x_init: An matrix (NxC) encompassing the initial condition for each chain
+        :param activate_jit: A boolean variable for activating/deactivating just-in-time evaluation of functions
+        :param chains: An integer determining the number of chains
+        :param progress_bar: A boolean variable used for activating or deactivating the progress bar
+        :param random_seed: An integer for fixing rng
+        :param parallel_Stretch: A boolean variable used to determine whether "single stretch move update" algorithm
+        or "parallel stretch move update step" algorithm should be used
+        """
         self.key = random.PRNGKey(random_seed)
         # checking the correctness of log probability function
         if hasattr(log_prop_fcn, "__call__"):
@@ -403,6 +415,11 @@ class MCMCHammer:
                        (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)), 2)
 
         def alg_with_progress_bar(i: int = None) -> None:
+            """
+            main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
+            :param i: The iterator
+            :return:  None
+            """
             proposed = self.chains[:, self.index[i - 1, :], i - 1] + z[i - 1, :] * (
                     self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
             ln_prop = self.log_prop_fcn(proposed)
@@ -419,6 +436,11 @@ class MCMCHammer:
             return
 
         def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
+            """
+            lax-accelerated main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
+            :param i: The iterator
+            :return:  None
+            """
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed = recursive_variables
             proposed = lax_chains[:, lax_indexed[i - 1, :], i - 1] + z[i - 1, :] * (
                     lax_chains[:, :, i - 1] - lax_chains[:, lax_indexed[i - 1, :], i - 1])
@@ -439,6 +461,11 @@ class MCMCHammer:
             lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
             return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed)
 
+
+
+
+
+        # Calculating proposal samples from the main group of the  samples
         if not self.parallel_Stretch:
             if not self.progress_bar:
                 for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
