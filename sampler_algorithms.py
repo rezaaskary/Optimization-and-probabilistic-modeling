@@ -118,6 +118,31 @@ class ModelParallelizer:
                   '----------------------------------------------------------')
         return
 
+class ParameterProposalInitialization:
+    def __init__(self, cov: jnp.ndarray = None, a: float = None):
+
+        if isinstance(cov, jnp.ndarray):
+            self.cov_proposal = cov
+        elif not cov:
+            self.cov_proposal = None
+        else:
+            raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
+
+        if isinstance(a, float):
+            if a>1: self.a_proposal = a
+            else: raise Exception('The value of a should be greater than 1')
+        elif not a:
+            self.a_proposal = None
+        else:
+            raise Exception('The value of a is not specified correctly')
+
+
+
+
+
+
+
+
 
 class MetropolisHastings:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
@@ -288,7 +313,7 @@ class MetropolisHastings:
 class MCMCHammer:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1, parallel_Stretch: bool = False):
+                 random_seed: int = 1, move: str = 'single_stretch', n_split: int = 1, a: float = 2.0):
         """
         MCMC Hammer empowered with jax to large scale simulation
         :param log_prop_fcn: A callable function returning the log-likelihood (or posteriori) of the distribution
@@ -299,8 +324,9 @@ class MCMCHammer:
         :param chains: An integer determining the number of chains
         :param progress_bar: A boolean variable used for activating or deactivating the progress bar
         :param random_seed: An integer for fixing rng
-        :param parallel_Stretch: A boolean variable used to determine whether "single stretch move update" algorithm
-        or "parallel stretch move update step" algorithm should be used
+        :param move: A string variable used to determine the algorithm for calculating the proposal parameters. Options
+        are "single_stretch", "parallel_stretch"
+        :param a: An adjustable scale parameter (1<a) used for calculating the proposal parameters
         """
         self.key = random.PRNGKey(random_seed)
         # checking the correctness of log probability function
@@ -396,6 +422,11 @@ class MCMCHammer:
                                         axis=1)
             if self.progress_bar:  # selecting
                 self.sample = self.sample_with_pb
+
+    def single_stretch(self):
+        return
+
+
 
     def sample(self):
         """
