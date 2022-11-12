@@ -366,7 +366,6 @@ class MCMCHammer(ParameterProposalInitialization):
                                          x_init=x_init, activate_jit=activate_jit, chains=chains,
                                          progress_bar=progress_bar, random_seed=random_seed, move=move)
 
-
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
@@ -381,8 +380,8 @@ class MCMCHammer(ParameterProposalInitialization):
         #     self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
         #                                 axis=1)
 
-            # if self.progress_bar:  # selecting
-            #     self.sample = self.sample_with_pb
+        # if self.progress_bar:  # selecting
+        #     self.sample = self.sample_with_pb
 
     def single_stretch(self):
         return
@@ -396,11 +395,27 @@ class MCMCHammer(ParameterProposalInitialization):
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
+
+        # for single streatch
         self.index = jnp.zeros((self.iterations, self.n_chains))
         ordered_index = jnp.arange(self.n_chains).astype(int)
         for i in range(self.n_chains):
-            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(ordered_index, i),
+            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=aordered_index, obj=i),
                                                                replace=True, shape=(self.iterations,)))
+        n_split = 4
+        self.n_split = n_split
+        self.split_len = self.chains // self.n_split
+        ordered_index = jnp.arange(self.n_split).astype(int)
+        split_ind = jnp.zeros((self.iterations, self.n_chains))
+        for i in range(self.n_split):
+            begin = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
+                                  shape=(self.iterations, 1))
+            end = (begin + 1) * begin
+            vmap(jnp.arange, in_axes=[0, 0], out_axes=0, axis_size=self.iterations)(begin, end)
+
+
+
+
 
 
 
