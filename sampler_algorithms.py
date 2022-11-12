@@ -237,11 +237,12 @@ class ParameterProposalInitialization:
             self.a_proposal = None
         else:
             raise Exception('The value of a is not specified correctly')
-        print(self.cov_proposal)
+
         if self.move == 'random_walk':
             self.rndw_samples = jnp.transpose(random.multivariate_normal(key=self.key, mean=jnp.zeros((1, self.ndim)),
-                                       cov=self.cov_proposal[jnp.newaxis, :, :],
-                                       shape=(self.iterations, self.n_chains)), axes=(2, 1, 0))
+                                                                         cov=self.cov_proposal[jnp.newaxis, :, :],
+                                                                         shape=(self.iterations, self.n_chains)),
+                                              axes=(2, 1, 0))
         else:
             raise Exception('The covariance of updating parameters should be entered')
 
@@ -310,17 +311,17 @@ class MetropolisHastings(ParameterProposalInitialization):
             proposed = self.proposal_alg(self, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[itr - 1, :]), 1)
-            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(uniform_rand[i, :] < hastings,
-                                                                             ln_prop,
-                                                                             lax_log_prop_values[itr - 1, :])[0, :])
+            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(uniform_rand[itr, :] < hastings,
+                                                                               ln_prop,
+                                                                               lax_log_prop_values[itr - 1, :])[0, :])
             lax_chains = lax_chains.at[:, :, itr].set(jnp.where(uniform_rand[itr, :] < hastings,
-                                                              proposed,
-                                                              lax_chains[:, :, itr - 1]))
+                                                                proposed,
+                                                                lax_chains[:, :, itr - 1]))
             lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[itr, :] < hastings,
                                                                      lax_n_of_accept[0, :] + 1,
                                                                      lax_n_of_accept[0, :])[0, :])
             lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / itr)
-            return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate)
+            return lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate
 
         if not self.progress_bar:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
