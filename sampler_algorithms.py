@@ -238,21 +238,18 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The value of a is not specified correctly')
 
-        def random_walk_proposal(itr: int = None):
-            return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
-
         if self.move == 'random_walk':
             self.rndw_samples = jnp.transpose(random.multivariate_normal(key=self.key, mean=jnp.zeros((1, self.ndim)),
                                                                          cov=self.cov_proposal[jnp.newaxis, :, :],
                                                                          shape=(self.iterations, self.n_chains)),
                                               axes=(2, 1, 0))
-            self.proposal_alg = random_walk_proposal
+            self.proposal_alg = self.random_walk_proposal
 
         else:
             raise Exception('The covariance of updating parameters should be entered')
 
-    # def random_walk_proposal(self, itr: int = None):
-    #     return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+    def random_walk_proposal(self, whole_chains: jnp.ndarray = None, itr: int = None):
+        return whole_chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
 
 
 class MetropolisHastings(ParameterProposalInitialization):
@@ -296,7 +293,7 @@ class MetropolisHastings(ParameterProposalInitialization):
         self.uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def alg_with_progress_bar(itr: int = None) -> None:
-            proposed = self.proposal_alg(self, itr=itr)
+            proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
             satis = (self.uniform_rand[itr, :] < hastings)[0, :]
@@ -311,11 +308,7 @@ class MetropolisHastings(ParameterProposalInitialization):
 
         def alg_with_lax_acclelrated(itr: int, recursive_variables: tuple) -> tuple:
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
-            # proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
-            # proposed = CJ(self, itr=itr)
-            # proposed = self.proposal_alg(itr=itr)
-            # proposed = self.random_walk_proposal(itr=itr)
-            proposed = lax_chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+            proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[itr - 1, :]), 1)
             lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(self.uniform_rand[itr, :] < hastings,
