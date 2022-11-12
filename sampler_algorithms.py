@@ -338,7 +338,6 @@ class MetropolisHastings(ParameterProposalInitialization):
                                                  self.log_prop_values.copy(),
                                                  self.n_of_accept.copy(),
                                                  self.accept_rate.copy()))
-
         return self.chains[:, :, self.burnin:], self.accept_rate
 
 
@@ -360,84 +359,6 @@ class MCMCHammer:
         are "single_stretch", "parallel_stretch"
         :param a: An adjustable scale parameter (1<a) used for calculating the proposal parameters
         """
-        self.key = random.PRNGKey(random_seed)
-        # checking the correctness of log probability function
-        if hasattr(log_prop_fcn, "__call__"):
-            self.log_prop_fcn = log_prop_fcn
-        else:
-            raise Exception('The log probability function is not defined properly!')
-
-        # checking the correctness of the iteration
-        if isinstance(iterations, int):
-            self.iterations = iterations
-        else:
-            self.iterations = 1000
-            print(f'-------------------------------------------------------------------------------------------------\n'
-                  f'The iteration is not an integer value.\n'
-                  f' The default value of {self.iterations} is selected as the number of iterations\n'
-                  f'--------------------------------------------------------------------------------------------------')
-
-        if isinstance(burnin, int):
-            self.burnin = burnin
-        elif burnin is None:
-            self.burnin = 0
-            print(f'-------------------------------------------------------------------------------------------------\n'
-                  f'The number samples from dropping after simulation is not an integer value.\n'
-                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
-                  f'--------------------------------------------------------------------------------------------------')
-        else:
-            self.burnin = 0
-            print(f'-------------------------------------------------------------------------------------------------\n'
-                  f'The number samples from dropping after simulation is not an integer value.\n'
-                  f' The default value of {self.burnin} is selected as the number of burnin samples\n'
-                  f'--------------------------------------------------------------------------------------------------')
-        if self.burnin >= self.iterations:
-            raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
-        # checking the correctness of the iteration
-        if isinstance(chains, int):
-            self.n_chains = chains
-        else:
-            self.n_chains = 1
-            print(
-                f'---------------------------------------------------------------------------------------------------\n'
-                f'The number of chains is not an integer value.\n'
-                f' The default value of {self.n_chains} is selected as the number of chains\n'
-                f'----------------------------------------------------------------------------------------------------')
-        # checking the correctness of initial condition
-        if isinstance(x_init, jnp.ndarray):
-            dim1, dim2 = x_init.shape
-            if dim2 != self.n_chains:
-                raise Exception('The initial condition is not consistent with the number of chains!')
-            else:
-                self.ndim = dim1
-                self.x_init = x_init
-        else:
-            raise Exception('The initial condition is not selected properly!')
-
-        # checking the correctness of the vectorized simulation
-        if isinstance(activate_jit, bool):
-            self.activate_jit = activate_jit
-        else:
-            self.activate_jit = False
-            print(
-                f'---------------------------------------------------------------------------------------------------\n'
-                f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
-                f'----------------------------------------------------------------------------------------------------')
-
-        if isinstance(parallel_Stretch, bool):
-            self.parallel_Stretch = parallel_Stretch
-        else:
-            raise Exception('The correct algorithm is not selected')
-
-        # checking the correctness of the progressbar
-        if isinstance(progress_bar, bool):
-            self.progress_bar = not progress_bar
-        else:
-            self.progress_bar = False
-            print(
-                f'---------------------------------------------------------------------------------------------------\n'
-                f'The progress bar is activated by default since the it is not entered by the user\n'
-                f'----------------------------------------------------------------------------------------------------')
 
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
