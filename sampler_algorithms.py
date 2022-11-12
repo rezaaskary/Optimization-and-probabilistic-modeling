@@ -244,7 +244,8 @@ class ParameterProposalInitialization:
                                                                          shape=(self.iterations, self.n_chains)),
                                               axes=(2, 1, 0))
             self.proposal_alg = self.random_walk_proposal
-
+        elif self.move == 'single_stretch':
+            pass
         else:
             raise Exception('The covariance of updating parameters should be entered')
 
@@ -343,7 +344,7 @@ class MetropolisHastings(ParameterProposalInitialization):
         return self.chains[:, :, self.burnin:], self.accept_rate
 
 
-class MCMCHammer:
+class MCMCHammer(ParameterProposalInitialization):
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
                  random_seed: int = 1, move: str = 'single_stretch'):
@@ -361,6 +362,10 @@ class MCMCHammer:
         are "single_stretch", "parallel_stretch"
         :param a: An adjustable scale parameter (1<a) used for calculating the proposal parameters
         """
+        super(MCMCHammer, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
+                                         x_init=x_init, activate_jit=activate_jit, chains=chains,
+                                         progress_bar=progress_bar, random_seed=random_seed, move=move)
+
 
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
@@ -371,12 +376,13 @@ class MCMCHammer:
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
-        if not self.parallel_Stretch:
-            ordered_index = jnp.arange(self.n_chains).astype(int)
-            self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
-                                        axis=1)
-            if self.progress_bar:  # selecting
-                self.sample = self.sample_with_pb
+        # if not self.parallel_Stretch:
+        #     ordered_index = jnp.arange(self.n_chains).astype(int)
+        #     self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
+        #                                 axis=1)
+
+            # if self.progress_bar:  # selecting
+            #     self.sample = self.sample_with_pb
 
     def single_stretch(self):
         return
@@ -390,6 +396,14 @@ class MCMCHammer:
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
+        self.index = jnp.zeros((self.iterations, self.n_chains))
+        ordered_index = jnp.arange(self.n_chains).astype(int)
+        for i in range(self.n_chains):
+            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(ordered_index, i),
+                                                               replace=True, shape=(self.iterations,)))
+
+
+
 
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
