@@ -238,16 +238,21 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The value of a is not specified correctly')
 
+        def random_walk_proposal(itr: int = None):
+            return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+
         if self.move == 'random_walk':
             self.rndw_samples = jnp.transpose(random.multivariate_normal(key=self.key, mean=jnp.zeros((1, self.ndim)),
                                                                          cov=self.cov_proposal[jnp.newaxis, :, :],
                                                                          shape=(self.iterations, self.n_chains)),
                                               axes=(2, 1, 0))
+            self.proposal_alg = random_walk_proposal
+
         else:
             raise Exception('The covariance of updating parameters should be entered')
 
-    def random_walk_proposal(self, itr: int = None):
-        return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+    # def random_walk_proposal(self, itr: int = None):
+    #     return self.chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
 
 
 class MetropolisHastings(ParameterProposalInitialization):
@@ -271,7 +276,6 @@ class MetropolisHastings(ParameterProposalInitialization):
                                                  x_init=x_init, activate_jit=activate_jit, chains=chains, cov=cov,
                                                  progress_bar=progress_bar, random_seed=random_seed, move='random_walk')
 
-        self.proposal_alg = ParameterProposalInitialization.random_walk_proposal
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
         # initializing the log of the posteriori values
@@ -289,13 +293,13 @@ class MetropolisHastings(ParameterProposalInitialization):
         """
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
-        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
+        self.uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def alg_with_progress_bar(itr: int = None) -> None:
             proposed = self.proposal_alg(self, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
-            satis = (uniform_rand[itr, :] < hastings)[0, :]
+            satis = (self.uniform_rand[itr, :] < hastings)[0, :]
             non_satis = ~satis
             self.chains = self.chains.at[:, satis, itr].set(proposed[:, satis])
             self.chains = self.chains.at[:, non_satis, itr].set(self.chains[:, non_satis, itr - 1])
@@ -308,16 +312,19 @@ class MetropolisHastings(ParameterProposalInitialization):
         def alg_with_lax_acclelrated(itr: int, recursive_variables: tuple) -> tuple:
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
             # proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
-            proposed = self.proposal_alg(self, itr=itr)
+            # proposed = CJ(self, itr=itr)
+            # proposed = self.proposal_alg(itr=itr)
+            # proposed = self.random_walk_proposal(itr=itr)
+            proposed = lax_chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[itr - 1, :]), 1)
-            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(uniform_rand[itr, :] < hastings,
+            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(self.uniform_rand[itr, :] < hastings,
                                                                                ln_prop,
                                                                                lax_log_prop_values[itr - 1, :])[0, :])
-            lax_chains = lax_chains.at[:, :, itr].set(jnp.where(uniform_rand[itr, :] < hastings,
+            lax_chains = lax_chains.at[:, :, itr].set(jnp.where(self.uniform_rand[itr, :] < hastings,
                                                                 proposed,
                                                                 lax_chains[:, :, itr - 1]))
-            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[itr, :] < hastings,
+            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(self.uniform_rand[itr, :] < hastings,
                                                                      lax_n_of_accept[0, :] + 1,
                                                                      lax_n_of_accept[0, :])[0, :])
             lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / itr)
@@ -338,7 +345,8 @@ class MetropolisHastings(ParameterProposalInitialization):
                                                  self.chains.copy(),
                                                  self.log_prop_values.copy(),
                                                  self.n_of_accept.copy(),
-                                                 self.accept_rate.copy()))
+                                                 self.accept_rate.copy()
+                                             ))
         return self.chains[:, :, self.burnin:], self.accept_rate
 
 
