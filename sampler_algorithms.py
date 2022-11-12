@@ -218,7 +218,7 @@ class ParameterProposalInitialization:
                 f'----------------------------------------------------------------------------------------------------')
 
         if isinstance(cov, jnp.ndarray):
-            if cov.shape[0] != cov.shape[0] or cov.shape[0] != self.ndim:
+            if (cov.shape[0] != cov.shape[1]) or (cov.shape[0] != self.ndim):
                 raise Exception('The size of the covariance matrix is either incorrect or inconsistent with the'
                                 ' dimension of the parameters')
             else:
@@ -237,22 +237,12 @@ class ParameterProposalInitialization:
             self.a_proposal = None
         else:
             raise Exception('The value of a is not specified correctly')
-
-        if self.move == 'random_walk' and self.cov_proposal:
-            # self.rndw_samples = self.cov_proposal @ random.normal(key=self.key,
-            #                                                       shape=(self.ndim, self.n_chains, self.iterations))
-            # self.rndw = random.multivariate_normal(key=self.key, mean=jnp.zeros((self.ndim, 1)), cov=self.cov_proposal)
-
-            self.rndw = jnp.transpose((random.multivariate_normal(key=key, mean=jnp.zeros((1, self.ndim)),
-                                                             cov=self.cov_proposal,
-                                                             shape=(self.iterations, self.n_chains, 1))).reshape(
-                                                            (self.iterations,
-                                                             self.n_chains,
-                                                             self.ndim)),
-                                                            axes=(2, 1, 0))
-            self.rndw
-
-        elif not self.cov_proposal:
+        print(self.cov_proposal)
+        if self.move == 'random_walk':
+            self.rndw_samples = jnp.transpose(random.multivariate_normal(key=self.key, mean=jnp.zeros((1, self.ndim)),
+                                       cov=self.cov_proposal[jnp.newaxis, :, :],
+                                       shape=(self.iterations, self.n_chains)), axes=(2, 1, 0))
+        else:
             raise Exception('The covariance of updating parameters should be entered')
 
     def random_walk_proposal(self, itr: int = None):
@@ -277,8 +267,8 @@ class MetropolisHastings(ParameterProposalInitialization):
         :param model: The model function (a function that input parameters and returns estimations)
         """
         super(MetropolisHastings, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
-                                                 x_init=x_init, activate_jit=activate_jit, chains=chains,
-                                                 progress_bar=progress_bar, random_seed=random_seed)
+                                                 x_init=x_init, activate_jit=activate_jit, chains=chains, cov=cov,
+                                                 progress_bar=progress_bar, random_seed=random_seed, move='random_walk')
 
         self.proposal_alg = ParameterProposalInitialization.random_walk_proposal
         # initializing chain values
@@ -300,37 +290,36 @@ class MetropolisHastings(ParameterProposalInitialization):
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
-        def alg_with_progress_bar(i: int = None) -> None:
-            proposed = self.proposal_alg(itr=i)
-            # proposed = self.chains[:, :, i - 1] + rndw_samples[:, :, i]
+        def alg_with_progress_bar(itr: int = None) -> None:
+            proposed = self.proposal_alg(self, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
-            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
-            satis = (uniform_rand[i, :] < hastings)[0, :]
+            hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
+            satis = (uniform_rand[itr, :] < hastings)[0, :]
             non_satis = ~satis
-            self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
-            self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
-            self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
-            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
+            self.chains = self.chains.at[:, satis, itr].set(proposed[:, satis])
+            self.chains = self.chains.at[:, non_satis, itr].set(self.chains[:, non_satis, itr - 1])
+            self.log_prop_values = self.log_prop_values.at[itr, satis].set(ln_prop[0, satis])
+            self.log_prop_values = self.log_prop_values.at[itr, non_satis].set(self.log_prop_values[i - 1, non_satis])
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
-            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
+            self.accept_rate = self.accept_rate.at[itr, :].set(self.n_of_accept[0, :] / itr)
             return
 
-        def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
+        def alg_with_lax_acclelrated(itr: int, recursive_variables: tuple) -> tuple:
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
             # proposed = lax_chains[:, :, i - 1] + rndw_samples[:, :, i]
-            proposed = self.proposal_alg(itr=i)
+            proposed = self.proposal_alg(self, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
-            hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
-            lax_log_prop_values = lax_log_prop_values.at[i, :].set(jnp.where(uniform_rand[i, :] < hastings,
+            hastings = jnp.minimum(jnp.exp(ln_prop - lax_log_prop_values[itr - 1, :]), 1)
+            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(uniform_rand[i, :] < hastings,
                                                                              ln_prop,
-                                                                             lax_log_prop_values[i - 1, :])[0, :])
-            lax_chains = lax_chains.at[:, :, i].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                                             lax_log_prop_values[itr - 1, :])[0, :])
+            lax_chains = lax_chains.at[:, :, itr].set(jnp.where(uniform_rand[itr, :] < hastings,
                                                               proposed,
-                                                              lax_chains[:, :, i - 1]))
-            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[i, :] < hastings,
+                                                              lax_chains[:, :, itr - 1]))
+            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[itr, :] < hastings,
                                                                      lax_n_of_accept[0, :] + 1,
                                                                      lax_n_of_accept[0, :])[0, :])
-            lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
+            lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / iitr
             return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate)
 
         if not self.progress_bar:
