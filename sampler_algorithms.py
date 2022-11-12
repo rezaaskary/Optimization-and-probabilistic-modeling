@@ -239,8 +239,19 @@ class ParameterProposalInitialization:
             raise Exception('The value of a is not specified correctly')
 
         if self.move == 'random_walk' and self.cov_proposal:
-            self.rndw_samples = self.cov_proposal @ random.normal(key=self.key,
-                                                                  shape=(self.ndim, self.n_chains, self.iterations))
+            # self.rndw_samples = self.cov_proposal @ random.normal(key=self.key,
+            #                                                       shape=(self.ndim, self.n_chains, self.iterations))
+            # self.rndw = random.multivariate_normal(key=self.key, mean=jnp.zeros((self.ndim, 1)), cov=self.cov_proposal)
+
+            self.rndw = jnp.transpose((random.multivariate_normal(key=key, mean=jnp.zeros((1, self.ndim)),
+                                                             cov=self.cov_proposal,
+                                                             shape=(self.iterations, self.n_chains, 1))).reshape(
+                                                            (self.iterations,
+                                                             self.n_chains,
+                                                             self.ndim)),
+                                                            axes=(2, 1, 0))
+            self.rndw
+
         elif not self.cov_proposal:
             raise Exception('The covariance of updating parameters should be entered')
 

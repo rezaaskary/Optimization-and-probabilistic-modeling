@@ -79,12 +79,12 @@ def log_posteriori_function(par: jnp.ndarray = None):
 nchains = 17
 theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(3, nchains))
 
-T = MCMCHammer(log_prop_fcn=log_posteriori_function, iterations=100, burnin=0, chains=nchains, x_init=theta_init,
-               progress_bar=False, activate_jit=True, random_seed=63)
-T.sample()
-# T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
-#                        iterations=1000, chains=nchains, x_init=theta_init,
-#                        progress_bar=False, burnin=0, activate_jit=True, random_seed=63)
+# T = MCMCHammer(log_prop_fcn=log_posteriori_function, iterations=100, burnin=0, chains=nchains, x_init=theta_init,
+#                progress_bar=False, activate_jit=True, random_seed=63)
+# T.sample()
+T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
+                       iterations=1000, chains=nchains, x_init=theta_init,
+                       progress_bar=True, burnin=0, activate_jit=True, cov=jnp.eye(3) ,random_seed=63)
 S1,S2 = T.sample()
 
 plt.figure(dpi=100)
