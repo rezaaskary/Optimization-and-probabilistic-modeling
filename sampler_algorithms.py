@@ -319,7 +319,7 @@ class MetropolisHastings(ParameterProposalInitialization):
             lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[itr, :] < hastings,
                                                                      lax_n_of_accept[0, :] + 1,
                                                                      lax_n_of_accept[0, :])[0, :])
-            lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / iitr
+            lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / itr)
             return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate)
 
         if not self.progress_bar:
