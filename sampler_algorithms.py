@@ -133,8 +133,15 @@ class ParameterProposalInitialization:
                  n_split: int = 2,
                  a: float = None):
 
+        if isinstance(n_split, int):
+            self.n_split = n_split
+        elif not n_split:
+            self.n_split = 2
+        else:
+            raise Exception('The number of splits for ensemble sampling is not specified correctly')
+
         if isinstance(move, str):
-            if move in ['single_stretch', 'random_walk']:
+            if move in ['single_stretch', 'random_walk', 'parallel_stretch']:
                 self.move = move
         elif not move:
             self.move = 'random_walk'
