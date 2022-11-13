@@ -130,6 +130,7 @@ class ParameterProposalInitialization:
                  random_seed: int = 1,
                  move: str = 'single_stretch',
                  cov: jnp.ndarray = None,
+                 n_split: int = 2,
                  a: float = None):
 
         if isinstance(move, str):
@@ -238,14 +239,45 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The value of a is not specified correctly')
 
-        if self.move == 'random_walk':
+        if self.move == 'random_walk':  # using random walk proposal algorithm
             self.rndw_samples = jnp.transpose(random.multivariate_normal(key=self.key, mean=jnp.zeros((1, self.ndim)),
                                                                          cov=self.cov_proposal[jnp.newaxis, :, :],
                                                                          shape=(self.iterations, self.n_chains)),
                                               axes=(2, 1, 0))
             self.proposal_alg = self.random_walk_proposal
-        elif self.move == 'single_stretch':
-            pass
+
+        elif self.move == 'single_stretch':  # using single stretch proposal algorithm
+            self.z = jnp.power(
+                (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
+                 (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
+                2)
+            self.index = jnp.zeros((self.iterations, self.n_chains))
+            ordered_index = jnp.arange(self.n_chains).astype(int)
+            for i in range(self.n_chains):
+                self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
+                                                                   replace=True, shape=(self.iterations,)))
+                self.key += 1
+
+        elif self.move == 'parallel_stretch':
+            self.z = jnp.power(
+                (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
+                 (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
+                2)
+
+            self.n_split = n_split
+            self.split_len = self.n_chains // self.n_split
+            ordered_index = jnp.arange(self.n_split).astype(int)
+            single_split = jnp.arange(start=0, step=1, stop=self.split_len)
+            for i in range(self.n_split):
+                selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
+                                               shape=(self.iterations, 1))
+                self.index = self.index.at[:, i * self.split_len:(i + 1) * self.split_len].set(random.permutation(
+                    key=self.key,
+                    x=selected_split * self.split_len + single_split,
+                    axis=1,
+                    independent=True))
+                self.key += 1
+
         else:
             raise Exception('The covariance of updating parameters should be entered')
 
@@ -396,29 +428,48 @@ class MCMCHammer(ParameterProposalInitialization):
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
 
-        # for single streatch
+        # # for single streatch
         self.index = jnp.zeros((self.iterations, self.n_chains))
         ordered_index = jnp.arange(self.n_chains).astype(int)
         for i in range(self.n_chains):
-            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=aordered_index, obj=i),
+            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
                                                                replace=True, shape=(self.iterations,)))
+
         n_split = 4
         self.n_split = n_split
-        self.split_len = self.chains // self.n_split
+        self.split_len = self.n_chains // self.n_split
         ordered_index = jnp.arange(self.n_split).astype(int)
-        split_ind = jnp.zeros((self.iterations, self.n_chains))
+        single_split = jnp.arange(start=0, step=1, stop=self.split_len)
         for i in range(self.n_split):
-            begin = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
-                                  shape=(self.iterations, 1))
-            end = (begin + 1) * begin
-            vmap(jnp.arange, in_axes=[0, 0], out_axes=0, axis_size=self.iterations)(begin, end)
+            selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
+                                           shape=(self.iterations, 1))
+            # XX = random.permutation(key=self.key, x=selected_split * self.split_len + single_split, axis=1, independent=True)
+            self.index = self.index.at[:, i * self.split_len:(i + 1) * \
+                                                             self.split_len].set(random.permutation(key=self.key,
+                                                                                                    x=selected_split * self.split_len + single_split,
+                                                                                                    axis=1,
+                                                                                                    independent=True))
+            self.key += 1
 
+        def parallel_streatch_indexing(itr, inputs) -> tuple:
+            lax_index, lax_single_split, key = inputs
+            ordered_index = jnp.arange(self.n_split).astype(int)
+            vd = jnp.setdiff1d(ordered_index, itr)
+            selected_split = random.choice(key=key, a=vd, replace=True,
+                                           shape=(self.iterations, 1))
+            premuted_split = random.permutation(key=key, x=selected_split * self.split_len + lax_single_split,
+                                                axis=1,
+                                                independent=True)
+            lax_index = lax_index.at[:, i * self.split_len:(i + 1) * self.split_len].set(premuted_split)
+            key += 1
+            return lax_index, key
 
-
-
-
-
-
+        VV = lax.fori_loop(lower=0,
+                           upper=self.n_split,
+                           body_fun=parallel_streatch_indexing,
+                           init_val=(self.index,
+                                     single_split,
+                                     self.key))
 
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
