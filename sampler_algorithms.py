@@ -133,13 +133,6 @@ class ParameterProposalInitialization:
                  n_split: int = 2,
                  a: float = None):
 
-        if isinstance(n_split, int):
-            self.n_split = n_split
-        elif not n_split:
-            self.n_split = 2
-        else:
-            raise Exception('The number of splits for ensemble sampling is not specified correctly')
-
         if isinstance(move, str):
             if move in ['single_stretch', 'random_walk', 'parallel_stretch']:
                 self.move = move
@@ -194,12 +187,24 @@ class ParameterProposalInitialization:
                 f' The default value of {self.n_chains} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
+        if isinstance(n_split, int):
+            if self.move == 'parallel_stretch' and self.n_chains // n_split:
+                raise Exception(f'The number of chains should be a multiplication of the number of splits.\n'
+                                f'As a suggestion, you may use {((self.n_chains // n_split) + 1) * n_split} as the number\n'
+                                f'of chains.')
+            if self.move == 'parallel_stretch' and not self.n_chains // n_split:
+                self.n_split = n_split
+        elif not n_split:
+            self.n_split = 2
+        else:
+            raise Exception('The number of splits for ensemble sampling is not specified correctly')
+
         # checking the correctness of initial condition
         if isinstance(x_init, jnp.ndarray):
             dim1, dim2 = x_init.shape
             if dim2 != self.n_chains:
                 raise Exception('The initial condition is not consistent with the number of chains!')
-            elif dim1*2 > self.n_chains:
+            elif dim1 * 2 > self.n_chains:
                 raise Exception('The number of chains should be least two times of the dimension of the parameters')
             else:
                 self.ndim = dim1
