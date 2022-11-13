@@ -199,6 +199,8 @@ class ParameterProposalInitialization:
             dim1, dim2 = x_init.shape
             if dim2 != self.n_chains:
                 raise Exception('The initial condition is not consistent with the number of chains!')
+            elif dim1*2 > self.n_chains:
+                raise Exception('The number of chains should be least two times of the dimension of the parameters')
             else:
                 self.ndim = dim1
                 self.x_init = x_init
