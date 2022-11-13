@@ -194,8 +194,15 @@ class ParameterProposalInitialization:
                                 f'of chains.')
             if self.move == 'parallel_stretch' and not self.n_chains // n_split:
                 self.n_split = n_split
+                self.split_len = self.n_chains // self.n_split
         elif not n_split:
             self.n_split = 2
+            print(
+                f'---------------------------------------------------------------------------------------------------\n'
+                f'The number of solit is not specified.\n'
+                f' The default value of {self.n_split} is selected as the number of splits\n'
+                f'----------------------------------------------------------------------------------------------------')
+
         else:
             raise Exception('The number of splits for ensemble sampling is not specified correctly')
 
@@ -278,8 +285,7 @@ class ParameterProposalInitialization:
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
                 2)
 
-            self.n_split = n_split
-            self.split_len = self.n_chains // self.n_split
+
             ordered_index = jnp.arange(self.n_split).astype(int)
             single_split = jnp.arange(start=0, step=1, stop=self.split_len)
             for i in range(self.n_split):
