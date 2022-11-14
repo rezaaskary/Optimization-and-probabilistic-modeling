@@ -175,8 +175,7 @@ class ParameterProposalInitialization:
         if self.burnin >= self.iterations:  # checking the correctness of iteration and burnin period
             raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
 
-        # checking the correctness of the iteration
-        if isinstance(chains, int):
+        if isinstance(chains, int):  # checking the correctness of the number of chains
             self.n_chains = chains
         else:
             self.n_chains = 1
@@ -186,7 +185,7 @@ class ParameterProposalInitialization:
                 f' The default value of {self.n_chains} is selected as the number of chains\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        if isinstance(n_split, int):
+        if isinstance(n_split, int):  # checking the correctness of the number of split
             if self.move == 'parallel_stretch' and self.n_chains // n_split:
                 raise Exception(f'The number of chains should be a multiplication of the number of splits.\n'
                                 f'As a suggestion, you may use {((self.n_chains // n_split) + 1) * n_split} as the number\n'
@@ -216,7 +215,7 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The initial condition is not selected properly!')
 
-        if isinstance(activate_jit, bool):  # checking the correctness of the vectorized simulation
+        if isinstance(activate_jit, bool):  # checking the correctness of the just-in-time simulation
             self.activate_jit = activate_jit
         else:
             self.activate_jit = False
@@ -225,8 +224,7 @@ class ParameterProposalInitialization:
                 f'The default value of {self.activate_jit} is selected for parallelized simulations\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        # checking the correctness of the progressbar
-        if isinstance(progress_bar, bool):
+        if isinstance(progress_bar, bool):  # checking the correctness of the progressbar
             self.progress_bar = not progress_bar
         else:
             self.progress_bar = False
@@ -235,18 +233,21 @@ class ParameterProposalInitialization:
                 f'The progress bar is activated by default since the it is not entered by the user\n'
                 f'----------------------------------------------------------------------------------------------------')
 
-        if isinstance(cov, jnp.ndarray):
+        if isinstance(cov, jnp.ndarray):  # checking the correctness of the covariance
             if (cov.shape[0] != cov.shape[1]) or (cov.shape[0] != self.ndim):
                 raise Exception('The size of the covariance matrix is either incorrect or inconsistent with the'
                                 ' dimension of the parameters')
             else:
-                self.cov_proposal = cov
+                if jnp.all(jnp.linalg.eigvals(cov) > 0):
+                    self.cov_proposal = cov
+                else:
+                    raise Exception('The covariance matrix of updating parameters should be positive definite')
         elif not cov:
             self.cov_proposal = None
         else:
             raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
 
-        if isinstance(a, float):
+        if isinstance(a, float):  # checking the correctness of the scaling factor a (for single/parallel stretch)
             if a > 1:
                 self.a_proposal = a
             else:
@@ -292,12 +293,15 @@ class ParameterProposalInitialization:
                     axis=1,
                     independent=True))
                 self.key += 1
-
         else:
-            raise Exception('The covariance of updating parameters should be entered')
+            raise Exception('A method for updating parameters should be entered')
 
     def random_walk_proposal(self, whole_chains: jnp.ndarray = None, itr: int = None):
         return whole_chains[:, :, itr - 1] + self.rndw_samples[:, :, itr - 1]
+
+    def single_strech_move(self, whole_chains: jnp.ndarray = None, itr: int = None):
+        return whole_chains[:, self.index[itr - 1, :], itr - 1] + self.z[itr, :] * (
+                    whole_chains[:, :, itr - 1] - whole_chains[:, self.index[itr - 1, :], itr - 1])
 
 
 class MetropolisHastings(ParameterProposalInitialization):
