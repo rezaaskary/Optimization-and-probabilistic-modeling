@@ -275,8 +275,11 @@ class ParameterProposalInitialization:
                 self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
                                                                    replace=True, shape=(self.iterations,)))
                 self.key += 1
+            self.proposal_alg = self.single_strech_move
 
-        elif self.move == 'parallel_stretch':
+        elif self.move == 'parallel_stretch':  # using parallel stretch move parameter proposal by dividing chains into
+            # n_split sub walkers
+            self.iterations *= 2
             self.z = jnp.power(
                 (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
@@ -293,6 +296,7 @@ class ParameterProposalInitialization:
                     axis=1,
                     independent=True))
                 self.key += 1
+            self.proposal_alg = self.single_strech_move
         else:
             raise Exception('A method for updating parameters should be entered')
 
@@ -345,6 +349,7 @@ class MetropolisHastings(ParameterProposalInitialization):
         self.uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
 
         def alg_with_progress_bar(itr: int = None) -> None:
+            # The function suited for using progress bar
             proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
@@ -359,6 +364,7 @@ class MetropolisHastings(ParameterProposalInitialization):
             return
 
         def alg_with_lax_acclelrated(itr: int, recursive_variables: tuple) -> tuple:
+            # The function suited for fast and efficient evaluation of chains
             lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
             proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
