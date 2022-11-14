@@ -133,7 +133,7 @@ class ParameterProposalInitialization:
                  n_split: int = 2,
                  a: float = None):
 
-        if isinstance(move, str):
+        if isinstance(move, str):  # checking the correctness of parameter proposal algorithm
             if move in ['single_stretch', 'random_walk', 'parallel_stretch']:
                 self.move = move
         elif not move:
@@ -141,15 +141,14 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The algorithm of updating proposal parameters is not specified correctly')
 
-        # checking the correctness of log probability function
-        if hasattr(log_prop_fcn, "__call__"):
+        if hasattr(log_prop_fcn, "__call__"):  # checking the correctness of log probability function
             self.log_prop_fcn = log_prop_fcn
         else:
             raise Exception('The log probability function is not defined properly!')
 
         self.key = random.PRNGKey(random_seed)
-        # checking the correctness of the iteration
-        if isinstance(iterations, int):
+
+        if isinstance(iterations, int):  # checking the correctness of the iteration
             self.iterations = iterations
         else:
             self.iterations = 1000
@@ -158,7 +157,7 @@ class ParameterProposalInitialization:
                   f' The default value of {self.iterations} is selected as the number of iterations\n'
                   f'--------------------------------------------------------------------------------------------------')
 
-        if isinstance(burnin, int):
+        if isinstance(burnin, int):  # checking the correctness of the burnin period
             self.burnin = burnin
         elif burnin is None:
             self.burnin = 0
@@ -173,7 +172,7 @@ class ParameterProposalInitialization:
                   f' The default value of {self.burnin} is selected as the number of burnin samples\n'
                   f'--------------------------------------------------------------------------------------------------')
 
-        if self.burnin >= self.iterations:
+        if self.burnin >= self.iterations:  # checking the correctness of iteration and burnin period
             raise Exception('The number of samples selected for burnin cannot be greater than the simulation samples!')
 
         # checking the correctness of the iteration
@@ -202,12 +201,10 @@ class ParameterProposalInitialization:
                 f'The number of solit is not specified.\n'
                 f' The default value of {self.n_split} is selected as the number of splits\n'
                 f'----------------------------------------------------------------------------------------------------')
-
         else:
             raise Exception('The number of splits for ensemble sampling is not specified correctly')
 
-        # checking the correctness of initial condition
-        if isinstance(x_init, jnp.ndarray):
+        if isinstance(x_init, jnp.ndarray):  # checking the correctness of initial condition
             dim1, dim2 = x_init.shape
             if dim2 != self.n_chains:
                 raise Exception('The initial condition is not consistent with the number of chains!')
@@ -219,8 +216,7 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The initial condition is not selected properly!')
 
-        # checking the correctness of the vectorized simulation
-        if isinstance(activate_jit, bool):
+        if isinstance(activate_jit, bool):  # checking the correctness of the vectorized simulation
             self.activate_jit = activate_jit
         else:
             self.activate_jit = False
@@ -284,7 +280,6 @@ class ParameterProposalInitialization:
                 (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
                 2)
-
 
             ordered_index = jnp.arange(self.n_split).astype(int)
             single_split = jnp.arange(start=0, step=1, stop=self.split_len)
