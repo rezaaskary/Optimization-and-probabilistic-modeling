@@ -432,16 +432,6 @@ class MCMCHammer(ParameterProposalInitialization):
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
-        # if not self.parallel_Stretch:
-        #     ordered_index = jnp.arange(self.n_chains).astype(int)
-        #     self.index = random.shuffle(key=self.key, x=jnp.tile(ordered_index.copy(), reps=(self.iterations, 1)),
-        #                                 axis=1)
-
-        # if self.progress_bar:  # selecting
-        #     self.sample = self.sample_with_pb
-
-    def single_stretch(self):
-        return
 
     def sample(self):
         """
