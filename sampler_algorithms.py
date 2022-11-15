@@ -305,7 +305,7 @@ class ParameterProposalInitialization:
 
     def single_strech_move(self, whole_chains: jnp.ndarray = None, itr: int = None):
         return whole_chains[:, self.index[itr - 1, :], itr - 1] + self.z[itr, :] * (
-                    whole_chains[:, :, itr - 1] - whole_chains[:, self.index[itr - 1, :], itr - 1])
+                whole_chains[:, :, itr - 1] - whole_chains[:, self.index[itr - 1, :], itr - 1])
 
 
 class MetropolisHastings(ParameterProposalInitialization):
@@ -350,7 +350,7 @@ class MetropolisHastings(ParameterProposalInitialization):
 
         def alg_with_progress_bar(itr: int = None) -> None:
             # The function suited for using progress bar
-            proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
+            proposed = self.proposal_alg(whole_chains=self.chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
             satis = (self.uniform_rand[itr, :] < hastings)[0, :]
@@ -432,7 +432,6 @@ class MCMCHammer(ParameterProposalInitialization):
         # in order to calculate the acceptance ration of all chains
         self.n_of_accept = jnp.zeros((1, self.n_chains))
 
-
     def sample(self):
         """
         vectorized MCMC Hammer sampling algorithm used for sampling from the posteriori distribution. Developed based on
@@ -444,201 +443,155 @@ class MCMCHammer(ParameterProposalInitialization):
         """
 
         # # for single streatch
-        self.index = jnp.zeros((self.iterations, self.n_chains))
-        ordered_index = jnp.arange(self.n_chains).astype(int)
-        for i in range(self.n_chains):
-            self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
-                                                               replace=True, shape=(self.iterations,)))
+        # self.index = jnp.zeros((self.iterations, self.n_chains))
+        # ordered_index = jnp.arange(self.n_chains).astype(int)
+        # for i in range(self.n_chains):
+        #     self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
+        #                                                        replace=True, shape=(self.iterations,)))
+        #
+        # n_split = 4
+        # self.n_split = n_split
+        # self.split_len = self.n_chains // self.n_split
+        # ordered_index = jnp.arange(self.n_split).astype(int)
+        # single_split = jnp.arange(start=0, step=1, stop=self.split_len)
+        # for i in range(self.n_split):
+        #     selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
+        #                                    shape=(self.iterations, 1))
+        #     # XX = random.permutation(key=self.key, x=selected_split * self.split_len + single_split, axis=1, independent=True)
+        #     self.index = self.index.at[:, i * self.split_len:(i + 1) * \
+        #                                                      self.split_len].set(random.permutation(key=self.key,
+        #                                                                                             x=selected_split * self.split_len + single_split,
+        #                                                                                             axis=1,
+        #                                                                                             independent=True))
+        #     self.key += 1
 
-        n_split = 4
-        self.n_split = n_split
-        self.split_len = self.n_chains // self.n_split
-        ordered_index = jnp.arange(self.n_split).astype(int)
-        single_split = jnp.arange(start=0, step=1, stop=self.split_len)
-        for i in range(self.n_split):
-            selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
-                                           shape=(self.iterations, 1))
-            # XX = random.permutation(key=self.key, x=selected_split * self.split_len + single_split, axis=1, independent=True)
-            self.index = self.index.at[:, i * self.split_len:(i + 1) * \
-                                                             self.split_len].set(random.permutation(key=self.key,
-                                                                                                    x=selected_split * self.split_len + single_split,
-                                                                                                    axis=1,
-                                                                                                    independent=True))
-            self.key += 1
-
-        def parallel_streatch_indexing(itr, inputs) -> tuple:
-            lax_index, lax_single_split, key = inputs
-            ordered_index = jnp.arange(self.n_split).astype(int)
-            vd = jnp.setdiff1d(ordered_index, itr)
-            selected_split = random.choice(key=key, a=vd, replace=True,
-                                           shape=(self.iterations, 1))
-            premuted_split = random.permutation(key=key, x=selected_split * self.split_len + lax_single_split,
-                                                axis=1,
-                                                independent=True)
-            lax_index = lax_index.at[:, i * self.split_len:(i + 1) * self.split_len].set(premuted_split)
-            key += 1
-            return lax_index, key
-
-        VV = lax.fori_loop(lower=0,
-                           upper=self.n_split,
-                           body_fun=parallel_streatch_indexing,
-                           init_val=(self.index,
-                                     single_split,
-                                     self.key))
-
-        self.chains = self.chains.at[:, :, 0].set(self.x_init)
-        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
-        uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
-        a = 2
-        z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
-                       (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)), 2)
-
-        def alg_with_progress_bar(i: int = None) -> None:
-            """
-            main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
-            :param i: The iterator
-            :return:  None
-            """
-            proposed = self.chains[:, self.index[i - 1, :], i - 1] + z[i - 1, :] * (
-                    self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
+        def alg_with_progress_bar(itr: int = None) -> None:
+            # The function suited for using progress bar
+            proposed = self.proposal_alg(whole_chains=elf.chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
-            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
-                                   jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
-            satis = (uniform_rand[i, :] < hastings)[0, :]
+            hastings = jnp.minimum(jnp.power(self.z[itr - 1, :], self.ndim - 1) *
+                                   jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
+            satis = (self.uniform_rand[itr, :] < hastings)[0, :]
             non_satis = ~satis
-            self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
-            self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
-            self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
-            self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
+            self.chains = self.chains.at[:, satis, itr].set(proposed[:, satis])
+            self.chains = self.chains.at[:, non_satis, itr].set(self.chains[:, non_satis, itr - 1])
+            self.log_prop_values = self.log_prop_values.at[itr, satis].set(ln_prop[0, satis])
+            self.log_prop_values = self.log_prop_values.at[itr, non_satis].set(self.log_prop_values[i - 1, non_satis])
             self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
-            self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
+            self.accept_rate = self.accept_rate.at[itr, :].set(self.n_of_accept[0, :] / itr)
             return
 
-        def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
-            """
-            lax-accelerated main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
-            :param i: The iterator
-            :return:  None
-            """
-            lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed = recursive_variables
-            proposed = lax_chains[:, lax_indexed[i - 1, :], i - 1] + z[i - 1, :] * (
-                    lax_chains[:, :, i - 1] - lax_chains[:, lax_indexed[i - 1, :], i - 1])
+        def alg_with_lax_acclelrated(itr: int, recursive_variables: tuple) -> tuple:
+            # The function suited for fast and efficient evaluation of chains
+            lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate = recursive_variables
+            proposed = self.proposal_alg(whole_chains=lax_chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
-
-            hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
-                                   jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
-
-            lax_log_prop_values = lax_log_prop_values.at[i, :].set(jnp.where(uniform_rand[i, :] < hastings,
-                                                                             ln_prop,
-                                                                             lax_log_prop_values[i - 1, :])[0, :])
-            lax_chains = lax_chains.at[:, :, i].set(jnp.where(uniform_rand[i, :] < hastings,
-                                                              proposed,
-                                                              lax_chains[:, :, i - 1]))
-            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[i, :] < hastings,
+            hastings = jnp.minimum(jnp.power(self.z[itr - 1, :], self.ndim - 1) *
+                                   jnp.exp(ln_prop - lax_log_prop_values[itr - 1, :]), 1)
+            lax_log_prop_values = lax_log_prop_values.at[itr, :].set(jnp.where(self.uniform_rand[itr, :] < hastings,
+                                                                               ln_prop,
+                                                                               lax_log_prop_values[itr - 1, :])[0, :])
+            lax_chains = lax_chains.at[:, :, itr].set(jnp.where(self.uniform_rand[itr, :] < hastings,
+                                                                proposed,
+                                                                lax_chains[:, :, itr - 1]))
+            lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(self.uniform_rand[itr, :] < hastings,
                                                                      lax_n_of_accept[0, :] + 1,
                                                                      lax_n_of_accept[0, :])[0, :])
-            lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
-            return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed)
+            lax_accept_rate = lax_accept_rate.at[itr, :].set(lax_n_of_accept[0, :] / itr)
+            return lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate
 
-        # Calculating proposal samples from the main group of the  samples
-        if not self.parallel_Stretch:
-            if not self.progress_bar:
-                for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-                    alg_with_progress_bar(i=i)
-            else:
-                print('Simulating...')
-                self.chains, \
-                self.log_prop_values, \
-                self.n_of_accept, \
-                self.accept_rate, \
-                self.index = lax.fori_loop(lower=1,
-                                           upper=self.iterations,
-                                           body_fun=alg_with_lax_acclelrated,
-                                           init_val=(
-                                               self.chains.copy(),
-                                               self.log_prop_values.copy(),
-                                               self.n_of_accept.copy(),
-                                               self.accept_rate.copy(),
-                                               self.index.copy()))
-        else:
-            pass
-
-        # ii = random.randint(shape=(self.iterations, self.n_chains))
+        # def parallel_streatch_indexing(itr, inputs) -> tuple:
+        #     lax_index, lax_single_split, key = inputs
+        #     ordered_index = jnp.arange(self.n_split).astype(int)
+        #     vd = jnp.setdiff1d(ordered_index, itr)
+        #     selected_split = random.choice(key=key, a=vd, replace=True,
+        #                                    shape=(self.iterations, 1))
+        #     premuted_split = random.permutation(key=key, x=selected_split * self.split_len + lax_single_split,
+        #                                         axis=1,
+        #                                         independent=True)
+        #     lax_index = lax_index.at[:, i * self.split_len:(i + 1) * self.split_len].set(premuted_split)
+        #     key += 1
+        #     return lax_index, key
         #
-        # sigma = 0.1
-        # rndw_samples = random.normal(key=self.key, shape=(self.ndim, self.n_chains, self.iterations)) * sigma
+        # VV = lax.fori_loop(lower=0,
+        #                    upper=self.n_split,
+        #                    body_fun=parallel_streatch_indexing,
+        #                    init_val=(self.index,
+        #                              single_split,
+        #                              self.key))
+        #
         # self.chains = self.chains.at[:, :, 0].set(self.x_init)
         # self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         # uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
+        # a = 2
+        # z = jnp.power((random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
+        #                (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)), 2)
 
-#     def mcmc_hammer_non_vectorized_sampling(self):
-#         random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0, size=(self.n_chains, self.iterations))
-#
-#         def sample_proposal(a: float = None, chains: int = None, iterations: int = None):
-#             random_uniform = random.uniform(key=self.key, minval=0, maxval=1.0)
-#             return random_uniform * (jnp.sqrt(a) - jnp.sqrt(1 / a)) + jnp.sqrt(1 / a)
-#
-#         samples_of_gz = sample_proposal(a=2, chains=self.n_chains, iterations=self.iterations)
-#
-#         U_random = random.randint(self.C, size=(self.C, 1), dtype=int)
+        # def alg_with_progress_bar(i: int = None) -> None:
+        #     """
+        #     main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
+        #     :param i: The iterator
+        #     :return:  None
+        #     """
+        #     proposed = self.chains[:, self.index[i - 1, :], i - 1] + z[i - 1, :] * (
+        #             self.chains[:, :, i - 1] - self.chains[:, self.index[i - 1, :], i - 1])
+        #     ln_prop = self.log_prop_fcn(proposed)
+        #     hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
+        #                            jnp.exp(ln_prop - self.log_prop_values[i - 1, :]), 1)
+        #     satis = (uniform_rand[i, :] < hastings)[0, :]
+        #     non_satis = ~satis
+        #     self.chains = self.chains.at[:, satis, i].set(proposed[:, satis])
+        #     self.chains = self.chains.at[:, non_satis, i].set(self.chains[:, non_satis, i - 1])
+        #     self.log_prop_values = self.log_prop_values.at[i, satis].set(ln_prop[0, satis])
+        #     self.log_prop_values = self.log_prop_values.at[i, non_satis].set(self.log_prop_values[i - 1, non_satis])
+        #     self.n_of_accept = self.n_of_accept.at[0, satis].set(self.n_of_accept[0, satis] + 1)
+        #     self.accept_rate = self.accept_rate.at[i, :].set(self.n_of_accept[0, :] / i)
+        #     return
 
+        # def alg_with_lax_acclelrated(i: int, recursive_variables: tuple) -> tuple:
+        #     """
+        #     lax-accelerated main algorithm of Ensemble MCMC Hammer (Algorithm 2: A single stretch move update step)
+        #     :param i: The iterator
+        #     :return:  None
+        #     """
+        #     lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed = recursive_variables
+        #     proposed = lax_chains[:, lax_indexed[i - 1, :], i - 1] + z[i - 1, :] * (
+        #             lax_chains[:, :, i - 1] - lax_chains[:, lax_indexed[i - 1, :], i - 1])
+        #     ln_prop = self.log_prop_fcn(proposed)
+        #
+        #     hastings = jnp.minimum(jnp.power(z[i - 1, :], self.ndim - 1) *
+        #                            jnp.exp(ln_prop - lax_log_prop_values[i - 1, :]), 1)
+        #
+        #     lax_log_prop_values = lax_log_prop_values.at[i, :].set(jnp.where(uniform_rand[i, :] < hastings,
+        #                                                                      ln_prop,
+        #                                                                      lax_log_prop_values[i - 1, :])[0, :])
+        #     lax_chains = lax_chains.at[:, :, i].set(jnp.where(uniform_rand[i, :] < hastings,
+        #                                                       proposed,
+        #                                                       lax_chains[:, :, i - 1]))
+        #     lax_n_of_accept = lax_n_of_accept.at[0, :].set(jnp.where(uniform_rand[i, :] < hastings,
+        #                                                              lax_n_of_accept[0, :] + 1,
+        #                                                              lax_n_of_accept[0, :])[0, :])
+        #     lax_accept_rate = lax_accept_rate.at[i, :].set(lax_n_of_accept[0, :] / i)
+        #     return (lax_chains, lax_log_prop_values, lax_n_of_accept, lax_accept_rate, lax_indexed)
 
-# logprop_fcn,
-# logprop_fcn = Gaussian_liklihood,
+        # Calculating proposal samples from the main group of the  samples
 
-#
-# if __name__ == '__main__':
-#     x0 = 15 * np.ones((1, 1))
-#     x0 = np.tile(x0, (1, 5))
-#     priori_distribution = dict()
-# priori_distribution.update({'parameter1':})
+        if not self.progress_bar:
+            for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
+                alg_with_progress_bar(iir=i)
+        else:
+            print('Simulating...')
+            self.chains, \
+            self.log_prop_values, \
+            self.n_of_accept, \
+            self.accept_rate, \
+            self.index = lax.fori_loop(lower=1,
+                                       upper=self.iterations,
+                                       body_fun=alg_with_lax_acclelrated,
+                                       init_val=(
+                                           self.chains.copy(),
+                                           self.log_prop_values.copy(),
+                                           self.n_of_accept.copy(),
+                                           self.accept_rate.copy(),
+                                           self.index.copy()))
 
-# G = MetropolisHastings(logprop_fcn = gaussian_liklihood_single_variable, iterations=10000,
-#                         x0 = x0, vectorized = False, chains=5, progress_bar=True)
-
-#
-# key = random.PRNGKey(23)
-# x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1, 1))
-# x_data_2 = random.shuffle(key=key, x=jnp.linspace(-3, 6, 200).reshape((-1, 1)))
-# X_data = jnp.concatenate((x_data_1, x_data_2, jnp.ones((200, 1))), axis=1)
-# std_ = 1.5
-# noise = random.normal(key, shape=(200, 1)) * std_
-# theta = jnp.array([2, -6, 4]).reshape((-1, 1))
-# y = X_data @ theta + noise
-#
-#
-# def model(par: jnp.ndarray = None) -> jnp.ndarray:
-#     """
-#     given an input of the data, the output of the model is returned. There is no need to parallelize the function or
-#      write in the vectorized format
-#     :param par: The array of model parameters given by the sampler (ndimx1)
-#     :return:
-#     """
-#     return X_data @ par
-#
-#
-# from jnx_Probablity_Distribution_Continuous import Uniform
-#
-# theta1 = Uniform(lower=-10, upper=10)
-# theta2 = Uniform(lower=-10, upper=10)
-# theta3 = Uniform(lower=-10, upper=10)
-#
-#
-# def log_posteriori_function(par: jnp.ndarray = None, estimations: jnp.ndarray = None):
-#     """
-#     The log of the posteriori distribution
-#     :param estimations:
-#     :param par: The matrix of the parmaeters
-#     :return:
-#     """
-#     # lg1 = theta1.log_pdf()
-#     return 1
-#
-#
-# nchains = 25
-# theta_init = random.uniform(key=key, minval=0, maxval=1.0, shape=(len(theta), nchains))
-#
-# T = MetropolisHastings(log_prop_fcn=log_posteriori_function, model=model,
-#                        iterations=150, chains=nchains, x_init=theta_init,
-#                        progress_bar=True, burnin=30, activate_jit=False)
-# T.sample()
