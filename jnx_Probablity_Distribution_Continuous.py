@@ -1319,6 +1319,20 @@ class AsymmetricLaplace(ContinuousDistributions):
                   }
         return values
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
 # activate_jit = False
