@@ -73,6 +73,7 @@ def log_posteriori_function(par: jnp.ndarray = None):
     :return:
     """
     estimation = D.model_evaluation(parameter=par[:-1, :], x=X_data)
+    # der = D.model_derivatives(parameter=par[:-1, :], x=X_data)
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
     log_par3 = theta3.log_pdf(par[2:3, :])

@@ -986,7 +986,6 @@ class Exponential(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-
         return jnp.where(x < 0, -jnp.inf, jnp.log(self.lambd) - self.lambd * x)
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
