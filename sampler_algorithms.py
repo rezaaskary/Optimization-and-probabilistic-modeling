@@ -247,7 +247,7 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
 
-        if isinstance(a, float):  # checking the correctness of the scaling factor a (for single/parallel stretch)
+        if isinstance(a, (float, int)):  # checking the correctness of the scaling factor a (for single/parallel stretch)
             if a > 1:
                 self.a_proposal = a
             else:
