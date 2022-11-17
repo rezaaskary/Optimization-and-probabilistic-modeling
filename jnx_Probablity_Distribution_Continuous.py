@@ -2,6 +2,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
 from tensorflow_probability.substrates.jax.math.special import owens_t, betaincinv
+from tensorflow_probability.substrates.jax.math.hypergeometric import _hyp2f1_fraction
 from jax.lax import switch
 
 
@@ -1362,9 +1363,9 @@ class StudentT(ContinuousDistributions):
         """
         coefficient = (jnp.exp(scipy.special.gammaln((self.nu + 1) / 2)) /
                        jnp.exp(scipy.special.gammaln(self.nu / 2))) * \
-                      jnp.sqrt(self.lambd / (jnp.pi * self.nu))
+                      jnp.sqrt(1 / (jnp.pi * self.nu))
 
-        return coefficient * (1 + (self.lambd / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
+        return coefficient * (1 + (1 / self.nu) * x ** 2) ** (-(self.nu + 1) / 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1376,7 +1377,7 @@ class StudentT(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of --------- probability distribution
+        The log of Student-t probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1385,7 +1386,7 @@ class StudentT(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of Student-t probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1393,11 +1394,14 @@ class StudentT(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative Student-t probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
+        coefficient = (jnp.exp(scipy.special.gammaln((self.nu + 1) / 2)) /
+                       jnp.exp(scipy.special.gammaln(self.nu / 2))) * \
+                      jnp.sqrt(1 / (jnp.pi * self.nu))
+        0.5 + x * coefficient * _hyp2f1_fraction(a=0.5, b=(self.nu + 1) / 2, c=1.5, z=-(x**2)/self.nu)
         return jnp.where(x >= self.mu, 1, 1)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
