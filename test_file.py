@@ -80,7 +80,7 @@ nchains = 20
 theta_init = random.uniform(key=key, minval=3, maxval=4.0, shape=(3, nchains))
 
 T = MCMCHammer(log_prop_fcn=log_posteriori_function, iterations=100, burnin=0, chains=nchains, x_init=theta_init,
-               progress_bar=True, activate_jit=True, random_seed=63, move='single_stretch')
+               progress_bar=False, activate_jit=True, random_seed=63, move='single_stretch')
 
 
 S1,S2 =T.sample()

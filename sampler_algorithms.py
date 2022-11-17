@@ -594,8 +594,10 @@ class MCMCHammer(ParameterProposalInitialization):
                                            self.chains.copy(),
                                            self.log_prop_values.copy(),
                                            self.n_of_accept.copy(),
-                                           self.accept_rate.copy(),
-                                           self.index.copy()))
+                                           self.accept_rate.copy()
+                                           ))
+
+        return self.chains[:, :, self.burnin:], self.accept_rate
 
 
 
