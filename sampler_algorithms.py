@@ -186,11 +186,11 @@ class ParameterProposalInitialization:
                 f'----------------------------------------------------------------------------------------------------')
 
         if isinstance(n_split, int):  # checking the correctness of the number of split
-            if self.move == 'parallel_stretch' and self.n_chains // n_split:
+            if self.move == 'parallel_stretch' and self.n_chains % n_split:
                 raise Exception(f'The number of chains should be a multiplication of the number of splits.\n'
                                 f'As a suggestion, you may use {((self.n_chains // n_split) + 1) * n_split} as the number\n'
                                 f'of chains.')
-            if self.move == 'parallel_stretch' and not self.n_chains // n_split:
+            if self.move == 'parallel_stretch' and not self.n_chains % n_split:
                 self.n_split = n_split
                 self.split_len = self.n_chains // self.n_split
         elif not n_split:
@@ -285,7 +285,7 @@ class ParameterProposalInitialization:
                 (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
                 2)
-
+            self.index = jnp.zeros((self.iterations, self.n_chains), dtype=int)
             ordered_index = jnp.arange(self.n_split).astype(int)
             single_split = jnp.arange(start=0, step=1, stop=self.split_len)
             for i in range(self.n_split):
