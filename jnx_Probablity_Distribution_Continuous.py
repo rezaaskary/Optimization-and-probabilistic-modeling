@@ -1347,24 +1347,26 @@ class StudentT(ContinuousDistributions):
                                        activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
-
-        if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+        if self.nu <= 0:
+            raise Exception('The value of nu should be positive (Student-t distribution)!')
+        if self.sigma <= 0:
+            raise Exception('The value of sigma should be positive (Student-t distribution)!')
+        if self.lambd <= 0:
+            raise Exception('The value of lambda should be positive (Student-t distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the Student-t distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        coefficient = (jnp.exp(scipy.special.gammaln((self.nu + 1) / 2)) /
+                       jnp.exp(scipy.special.gammaln(self.nu / 2))) * \
+                      jnp.sqrt(self.lambd / (jnp.pi * self.nu))
+
+        return coefficient * (1 + (self.lambd / self.nu) * (x - self.mu) ** 2) ** (-(self.nu + 1) / 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
