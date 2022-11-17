@@ -404,7 +404,7 @@ class MetropolisHastings(ParameterProposalInitialization):
 class MCMCHammer(ParameterProposalInitialization):
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
-                 random_seed: int = 1, move: str = 'single_stretch'):
+                 random_seed: int = 1, move: str = 'single_stretch', a: float = 2):
         """
         MCMC Hammer empowered with jax to large scale simulation
         :param log_prop_fcn: A callable function returning the log-likelihood (or posteriori) of the distribution
@@ -421,7 +421,7 @@ class MCMCHammer(ParameterProposalInitialization):
         """
         super(MCMCHammer, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
                                          x_init=x_init, activate_jit=activate_jit, chains=chains,
-                                         progress_bar=progress_bar, random_seed=random_seed, move=move)
+                                         progress_bar=progress_bar, random_seed=random_seed, move=move, a=a)
 
         # initializing chain values
         self.chains = jnp.zeros((self.ndim, self.n_chains, self.iterations))
