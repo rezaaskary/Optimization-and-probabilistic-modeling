@@ -247,7 +247,8 @@ class ParameterProposalInitialization:
         else:
             raise Exception('The covariance matrix for calculating proposal parameters are not entered correctly')
 
-        if isinstance(a, (float, int)):  # checking the correctness of the scaling factor a (for single/parallel stretch)
+        if isinstance(a,
+                      (float, int)):  # checking the correctness of the scaling factor a (for single/parallel stretch)
             if a > 1:
                 self.a_proposal = a
             else:
@@ -444,6 +445,7 @@ class MCMCHammer(ParameterProposalInitialization):
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
         self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
         self.uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
+
         # # for single streatch
         # self.index = jnp.zeros((self.iterations, self.n_chains))
         # ordered_index = jnp.arange(self.n_chains).astype(int)
@@ -586,27 +588,23 @@ class MCMCHammer(ParameterProposalInitialization):
             self.chains, \
             self.log_prop_values, \
             self.n_of_accept, \
-            self.accept_rate, \
-            self.index = lax.fori_loop(lower=1,
-                                       upper=self.iterations,
-                                       body_fun=alg_with_lax_acclelrated,
-                                       init_val=(
-                                           self.chains.copy(),
-                                           self.log_prop_values.copy(),
-                                           self.n_of_accept.copy(),
-                                           self.accept_rate.copy()
-                                           ))
+            self.accept_rate = lax.fori_loop(lower=1,
+                                             upper=self.iterations,
+                                             body_fun=alg_with_lax_acclelrated,
+                                             init_val=(
+                                                 self.chains.copy(),
+                                                 self.log_prop_values.copy(),
+                                                 self.n_of_accept.copy(),
+                                                 self.accept_rate.copy()
+                                             ))
 
         return self.chains[:, :, self.burnin:], self.accept_rate
-
-
 
 
 class HMC:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
                  x_init: jnp.ndarray = None, activate_jit: bool = False, chains: int = 1, progress_bar: bool = True,
                  random_seed: int = 1, move: str = 'single_stretch'):
-
         """
 
         :param log_prop_fcn:
@@ -620,5 +618,5 @@ class HMC:
         :param move:
         """
         super(HMC, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
-                                         x_init=x_init, activate_jit=activate_jit, chains=chains,
-                                         progress_bar=progress_bar, random_seed=random_seed, move=move)
+                                  x_init=x_init, activate_jit=activate_jit, chains=chains,
+                                  progress_bar=progress_bar, random_seed=random_seed, move=move)
