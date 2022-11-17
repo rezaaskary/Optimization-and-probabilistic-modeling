@@ -269,8 +269,8 @@ class ParameterProposalInitialization:
                 (random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains)) *
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
                 2)
-            self.index = jnp.zeros((self.iterations, self.n_chains))
-            ordered_index = jnp.arange(self.n_chains,dtype=int)
+            self.index = jnp.zeros((self.iterations, self.n_chains), dtype=int)
+            ordered_index = jnp.arange(self.n_chains, dtype=int)
             for i in range(self.n_chains):
                 self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
                                                                    replace=True, shape=(self.iterations,)))
@@ -441,7 +441,7 @@ class MCMCHammer(ParameterProposalInitialization):
         :returns: chains: The chains of samples drawn from the posteriori distribution
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
-
+        self.chains = self.chains.at[:, :, 0].set(self.x_init)
         # # for single streatch
         # self.index = jnp.zeros((self.iterations, self.n_chains))
         # ordered_index = jnp.arange(self.n_chains).astype(int)
