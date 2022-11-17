@@ -12,6 +12,7 @@ class ContinuousDistributions:
                  lambd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  mu: jnp.ndarray = None,
+                 nu: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
                  variance: jnp.ndarray = None,
                  sigma: jnp.ndarray = None,
@@ -27,12 +28,21 @@ class ContinuousDistributions:
         else:
             raise Exception('The random seed is not specified correctly!')
 
+        if isinstance(nu, (jnp.ndarray, float, int)):
+            self.nu = kappa
+        elif nu is None:
+            self.nu = None
+        else:
+            raise Exception('The value of nu is not specified correctly!')
+
         if isinstance(kappa, (jnp.ndarray, float, int)):
             self.kappa = kappa
         elif kappa is None:
             self.kappa = None
         else:
             raise Exception('The value of kappa is not specified correctly!')
+
+
 
         if isinstance(lambd, (jnp.ndarray, float, int)):
             self.lambd = lambd
@@ -143,7 +153,8 @@ class ContinuousDistributions:
 
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False, random_seed: int = 1) -> None:
+    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
+                 random_seed: int = 1) -> None:
         """
         Continuous uniform distribution
         :param lower: The lower limit of uniform distribution
@@ -1320,20 +1331,20 @@ class AsymmetricLaplace(ContinuousDistributions):
         return values
 
 
+class StudentT(ContinuousDistributions):
 
-
-class PDF(ContinuousDistributions):
-
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, nu: float = None, mu: float = None, lambd: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
-        :param b:
-        :param mu
+        Tstudent Distribution
+        :param nu:
+        :param mu:
+        :param Lambda:
         :param activate_jit:
+        :param random_seed:
         """
-        super(PDF, self).__init__(mu=mu, b=b, kappa=kappa,
-                                                activate_jit=activate_jit, random_seed=random_seed)
+        super(StudentT, self).__init__(nu=nu, mu=mu, lambd=lambd,
+                                       activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.b <= 0:
@@ -1353,7 +1364,7 @@ class PDF(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1,1)
+        return jnp.where(x >= self.mu, 1, 1)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1387,7 +1398,8 @@ class PDF(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1,1)
+        return jnp.where(x >= self.mu, 1, 1)
+
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         The derivatives of the cumulative ----- probability distribution
@@ -1416,8 +1428,7 @@ class PDF(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-
-            return jnp.where(y <= threshold, 1,1)
+            return jnp.where(y <= threshold, 1, 1)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -1438,15 +1449,120 @@ class PDF(ContinuousDistributions):
         return values
 
 
+class PDF(ContinuousDistributions):
 
+    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        ------- distribution
+        :param b:
+        :param mu
+        :param activate_jit:
+        """
+        super(PDF, self).__init__(mu=mu, b=b, kappa=kappa,
+                                  activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
 
+        if self.b <= 0:
+            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
 
+        if self.kappa <= 0:
+            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
+        if self.b <= 0:
+            raise Exception(
+                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
 
+        ContinuousDistributions.parallelization(self)
 
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the -------- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return jnp.where(x >= self.mu, 1, 1)
 
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of -------------- distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
 
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of --------- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
 
+        return -jnp.log(self.pdf_(x))
 
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of ------------ probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative --------- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative ----- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative ----- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the --- distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.where(y <= threshold, 1, 1)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        values = {'median': median_,
+                  'mean': mean_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
+                  'entropy': entropy_
+                  }
+        return values
 
 #
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
