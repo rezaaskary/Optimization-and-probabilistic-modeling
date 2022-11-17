@@ -42,8 +42,6 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of kappa is not specified correctly!')
 
-
-
         if isinstance(lambd, (jnp.ndarray, float, int)):
             self.lambd = lambd
         elif lambd is None:
@@ -1370,7 +1368,7 @@ class StudentT(ContinuousDistributions):
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of -------------- distribution
+        The derivatives of Student-t distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
