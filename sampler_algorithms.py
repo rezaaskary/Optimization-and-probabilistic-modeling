@@ -107,6 +107,16 @@ class ModelParallelizer:
         """
         return self.diff_model_evaluate(parameter, x)
 
+    def model_full_evaluation(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
+        """
+        Vectorized evaluation of the model and the first derivatives of the model
+        :param parameter: The matrix (vector) of model parameters
+        :param x: The matrix of model input
+        :return: The vectorized evaluation the first derivative of the model with respect to each parameter
+        """
+        return self.model_evaluate(parameter, x), self.diff_model_evaluate(parameter, x)
+
+
 
 
 
