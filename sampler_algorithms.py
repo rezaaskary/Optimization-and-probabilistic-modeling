@@ -442,6 +442,8 @@ class MCMCHammer(ParameterProposalInitialization):
                   acceptance rate: The acceptance rate of the samples drawn form the posteriori distributions
         """
         self.chains = self.chains.at[:, :, 0].set(self.x_init)
+        self.log_prop_values = self.log_prop_values.at[0:1, :].set(self.log_prop_fcn(self.x_init))
+        self.uniform_rand = random.uniform(key=self.key, minval=0, maxval=1.0, shape=(self.iterations, self.n_chains))
         # # for single streatch
         # self.index = jnp.zeros((self.iterations, self.n_chains))
         # ordered_index = jnp.arange(self.n_chains).astype(int)
