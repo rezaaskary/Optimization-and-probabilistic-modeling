@@ -598,8 +598,10 @@ class MCMCHammer(ParameterProposalInitialization):
                                                  self.n_of_accept.copy(),
                                                  self.accept_rate.copy()
                                              ))
-
-        return self.chains[:, :, self.burnin:], self.accept_rate
+        if self.move == 'parallel_stretch':
+            return self.chains[::2, :, self.burnin:], self.accept_rate[::2,:]
+        elif self.move == 'single_stretch':
+            return self.chains[:, :, self.burnin:], self.accept_rate
 
 
 class HMC:
