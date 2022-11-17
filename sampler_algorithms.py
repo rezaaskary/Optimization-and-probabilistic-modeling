@@ -599,10 +599,9 @@ class MCMCHammer(ParameterProposalInitialization):
                                                  self.accept_rate.copy()
                                              ))
         if self.move == 'parallel_stretch':
-            return self.chains[::2, :, self.burnin:], self.accept_rate[::2,:]
+            return self.chains[::2, :, self.burnin:], self.accept_rate[::2, :]
         elif self.move == 'single_stretch':
             return self.chains[:, :, self.burnin:], self.accept_rate
-
 
 class HMC:
     def __init__(self, log_prop_fcn: callable = None, iterations: int = None, burnin: int = None,
