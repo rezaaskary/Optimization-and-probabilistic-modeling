@@ -91,14 +91,23 @@ class ModelParallelizer:
 
     def model_evaluation(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
         """
-
+        Vectorized evaluation of the model
         :param parameter: The matrix (vector) of model parameters
         :param x: The matrix of model input
-        :return: The vectorized evaluation of the model and the first derivative of the model with respect to each parameter
+        :return: The vectorized evaluation of the model
         """
         return self.model_evaluate(parameter, x)
 
-    def model_derivatives
+    def model_derivatives(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
+        """
+        Vectorized evaluation of the model derivatives
+        :param parameter: The matrix (vector) of model parameters
+        :param x: The matrix of model input
+        :return: The vectorized evaluation the first derivative of the model with respect to each parameter
+        """
+        return self.diff_model_evaluate(parameter, x)
+
+
 
 
 
