@@ -270,7 +270,7 @@ class ParameterProposalInitialization:
                  (jnp.sqrt(self.a_proposal) - jnp.sqrt(1 / self.a_proposal)) + jnp.sqrt(1 / self.a_proposal)),
                 2)
             self.index = jnp.zeros((self.iterations, self.n_chains))
-            ordered_index = jnp.arange(self.n_chains).astype(int)
+            ordered_index = jnp.arange(self.n_chains,dtype=int)
             for i in range(self.n_chains):
                 self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
                                                                    replace=True, shape=(self.iterations,)))
@@ -467,7 +467,7 @@ class MCMCHammer(ParameterProposalInitialization):
 
         def alg_with_progress_bar(itr: int = None) -> None:
             # The function suited for using progress bar
-            proposed = self.proposal_alg(whole_chains=elf.chains, itr=itr)
+            proposed = self.proposal_alg(whole_chains=self.chains, itr=itr)
             ln_prop = self.log_prop_fcn(proposed)
             hastings = jnp.minimum(jnp.power(self.z[itr - 1, :], self.ndim - 1) *
                                    jnp.exp(ln_prop - self.log_prop_values[itr - 1, :]), 1)
@@ -578,7 +578,7 @@ class MCMCHammer(ParameterProposalInitialization):
 
         if not self.progress_bar:
             for i in tqdm(range(1, self.iterations), disable=self.progress_bar):
-                alg_with_progress_bar(iir=i)
+                alg_with_progress_bar(itr=i)
         else:
             print('Simulating...')
             self.chains, \
