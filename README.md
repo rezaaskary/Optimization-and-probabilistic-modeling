@@ -1,5 +1,5 @@
 # Optimization-and-probabilistic-modeling
-### A comprehensive library is being developed for probablistic programming, linear and nonlinear optimization, with the capablity of vectorized computation for efficient execution, empowered by jax. (The project is still in progress)
+### A CPU/GPU accelerated package is being developed for probablistic programming, Bayesian inference, linear and nonlinear optimization, with the capablity of vectorized computation for efficient execution, empowered by jax. (The project is still in progress)
 
 
 
