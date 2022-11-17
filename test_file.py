@@ -52,7 +52,7 @@ from jnx_Probablity_Distribution_Continuous import Uniform
 
 theta1 = Uniform(lower=-10, upper=10, activate_jit=True)
 theta2 = Uniform(lower=-10, upper=10, activate_jit=True)
-theta3 = Uniform(lower=-10, upper=10, activate_jit=True)
+theta3 = Uniform(lower=0, upper=10, activate_jit=True)
 # sigma =  HalfNormal(sigma=4)
 
 
@@ -83,7 +83,7 @@ T = MCMCHammer(log_prop_fcn=log_posteriori_function, iterations=100, burnin=0, c
                progress_bar=True, activate_jit=True, random_seed=63, move='single_stretch')
 
 
-T.sample()
+S1,S2 =T.sample()
 # T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
 #                        iterations=1000, chains=nchains, x_init=theta_init,
 #                        progress_bar=False, burnin=0, activate_jit=True, cov=jnp.eye(3)*0.1, random_seed=12)
