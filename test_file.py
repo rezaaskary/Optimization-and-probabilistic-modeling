@@ -4,7 +4,6 @@ from jnx_Probablity_Distribution_Continuous import Uniform, HalfNormal
 from sampler_algorithms import MetropolisHastings, ModelParallelizer, MCMCHammer
 import matplotlib.pyplot as plt
 
-
 key = random.PRNGKey(23)
 x_data_1 = (jnp.linspace(0, 10, 200)).reshape((-1, 1))
 x_data_2 = random.shuffle(key=key, x=jnp.linspace(-3, 6, 200).reshape((-1, 1)))
@@ -53,14 +52,19 @@ from jnx_Probablity_Distribution_Continuous import Uniform
 theta1 = Uniform(lower=-10, upper=10, activate_jit=True)
 theta2 = Uniform(lower=-10, upper=10, activate_jit=True)
 theta3 = Uniform(lower=0, upper=10, activate_jit=True)
+
+
 # sigma =  HalfNormal(sigma=4)
 
 
 def liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma):
     error = ((estimated - measured) ** 2).sum(axis=1)
     return ((sigma * jnp.sqrt(2 * jnp.pi)) ** (-N)) * jnp.exp((-0.5 / sigma ** 2) * error)
+
+
 def log_liklihood(N, estimated: jnp.ndarray, measured: jnp.ndarray, sigma) -> jnp.ndarray:
     return -N * jnp.log(sigma * jnp.sqrt(2 * jnp.pi)) - (0.5 / sigma ** 2) * ((estimated - measured) ** 2).sum(axis=0)
+
 
 def log_posteriori_function(par: jnp.ndarray = None):
     """
@@ -68,7 +72,7 @@ def log_posteriori_function(par: jnp.ndarray = None):
     :param par: The matrix of the parameters
     :return:
     """
-    estimation = D.model_evaluate(par[:-1,:], X_data)
+    estimation = D.model_evaluation(parameter=par[:-1, :], x=X_data)
     log_par1 = theta1.log_pdf(par[0:1, :])
     log_par2 = theta2.log_pdf(par[1:2, :])
     log_par3 = theta3.log_pdf(par[2:3, :])
@@ -82,7 +86,7 @@ theta_init = random.uniform(key=key, minval=3, maxval=4.0, shape=(3, nchains))
 T = MCMCHammer(log_prop_fcn=log_posteriori_function, iterations=200, burnin=0, chains=nchains, x_init=theta_init,
                progress_bar=True, activate_jit=True, random_seed=63, move="parallel_stretch")
 
-S1,S2 =T.sample()
+S1, S2 = T.sample()
 # T = MetropolisHastings(log_prop_fcn=log_posteriori_function,
 #                        iterations=1000, chains=nchains, x_init=theta_init,
 #                        progress_bar=False, burnin=0, activate_jit=True, cov=jnp.eye(3)*0.1, random_seed=12)
