@@ -83,11 +83,11 @@ class ModelParallelizer:
             raise Exception('The function of the model is not defined properly!')
 
         if self.activate_jit:
-            self.model_evaluate = jit(model_val)
-            self.diff_model_evaluate = jit(model_der)
+            self.model_evaluate_ = jit(model_val)
+            self.diff_model_evaluate_ = jit(model_der)
         else:
-            self.model_evaluate = model_val
-            self.diff_model_evaluate = model_der
+            self.model_evaluate_ = model_val
+            self.diff_model_evaluate_ = model_der
 
     def model_evaluation(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
         """
@@ -96,7 +96,7 @@ class ModelParallelizer:
         :param x: The matrix of model input
         :return: The vectorized evaluation of the model
         """
-        return self.model_evaluate(parameter, x)
+        return self.model_evaluate_(parameter, x)
 
     def model_derivatives(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
         """
@@ -105,7 +105,7 @@ class ModelParallelizer:
         :param x: The matrix of model input
         :return: The vectorized evaluation the first derivative of the model with respect to each parameter
         """
-        return self.diff_model_evaluate(parameter, x)
+        return self.diff_model_evaluate_(parameter, x)
 
     def model_full_evaluation(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
         """
@@ -114,13 +114,7 @@ class ModelParallelizer:
         :param x: The matrix of model input
         :return: The vectorized evaluation the first derivative of the model with respect to each parameter
         """
-        return self.model_evaluate(parameter, x), self.diff_model_evaluate(parameter, x)
-
-
-
-
-
-
+        return self.model_evaluate_(parameter, x), self.diff_model_evaluate_(parameter, x)
 
     @property
     def info(self):
