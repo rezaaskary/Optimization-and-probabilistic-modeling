@@ -89,6 +89,20 @@ class ModelParallelizer:
             self.model_evaluate = model_val
             self.diff_model_evaluate = model_der
 
+    def model_evaluation(self, parameter: jnp.ndarray = None, x: jnp.ndarray = None):
+        """
+
+        :param parameter: The matrix (vector) of model parameters
+        :param x: The matrix of model input
+        :return: The vectorized evaluation of the model and the first derivative of the model with respect to each parameter
+        """
+        return self.model_evaluate(parameter, x)
+
+    def model_derivatives
+
+
+
+
     @property
     def info(self):
         if self.has_input:
@@ -599,7 +613,7 @@ class MCMCHammer(ParameterProposalInitialization):
                                                  self.accept_rate.copy()
                                              ))
         if self.move == 'parallel_stretch':
-            return self.chains[::2, :, self.burnin:], self.accept_rate[::2, :]
+            return self.chains[:, :, self.burnin::2], self.accept_rate[::2, :]
         elif self.move == 'single_stretch':
             return self.chains[:, :, self.burnin:], self.accept_rate
 
