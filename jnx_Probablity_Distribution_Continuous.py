@@ -2310,8 +2310,8 @@ class LogNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        return 0.5 * (1 + scipy.special.erf((jnp.log(x) - self.mu) / (self.sigma * jnp.sqrt(2))))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
