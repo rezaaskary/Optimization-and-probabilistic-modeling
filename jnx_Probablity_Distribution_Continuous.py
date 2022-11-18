@@ -2250,10 +2250,12 @@ class LogNormal(ContinuousDistributions):
     def __init__(self, mu: float = None, sigma: float = None, variance: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
-        :param b:
-        :param mu
+        LogNormal distribution
+        :param mu:
+        :param sigma:
+        :param variance:
         :param activate_jit:
+        :param random_seed:
         """
         super(LogNormal, self).__init__(mu=mu, variance=variance, sigma=sigma,
                                         activate_jit=activate_jit, random_seed=random_seed)
@@ -2269,15 +2271,17 @@ class LogNormal(ContinuousDistributions):
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the LogNormal distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        return (1 / (x * self.sigma * jnp.sqrt(2 * jnp.pi))) * jnp.exp(
+            -0.5 * (1 / self.sigma ** 2) * (jnp.log(x) - self.mu) ** 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of -------------- distribution
+        The derivatives of LogNormal distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -2285,7 +2289,7 @@ class LogNormal(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of --------- probability distribution
+        The log of LogNormal probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -2294,7 +2298,7 @@ class LogNormal(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of LogNormal probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -2302,7 +2306,7 @@ class LogNormal(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative LogNormal probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2311,7 +2315,7 @@ class LogNormal(ContinuousDistributions):
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative LogNormal probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2319,7 +2323,7 @@ class LogNormal(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative LogNormal probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2330,7 +2334,7 @@ class LogNormal(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the LogNormal distribution
         :param size:
         :return:
         """
