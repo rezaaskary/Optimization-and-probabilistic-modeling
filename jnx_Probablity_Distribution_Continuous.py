@@ -1342,10 +1342,8 @@ class StudentT(ContinuousDistributions):
 
     def __init__(self, nu: float = None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        Tstudent Distribution
+        T student Distribution
         :param nu:
-        :param mu:
-        :param Lambda:
         :param activate_jit:
         :param random_seed:
         """
@@ -1414,7 +1412,7 @@ class StudentT(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative T student  probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1425,7 +1423,7 @@ class StudentT(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the T student distribution
         :param size:
         :return:
         """
@@ -1439,7 +1437,7 @@ class StudentT(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the  T student distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
 
@@ -1456,13 +1454,12 @@ class StudentT(ContinuousDistributions):
 
 
 class HalfStudentT(ContinuousDistributions):
-
     def __init__(self, nu: jnp.ndarray = None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        Half Student T distribution
-        :param b:
-        :param mu
+        Half Student-T distribution
+        :param nu:
         :param activate_jit:
+        :param random_seed:
         """
         super(HalfStudentT, self).__init__(nu=nu, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
@@ -1503,7 +1500,7 @@ class HalfStudentT(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of half student T probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1511,7 +1508,7 @@ class HalfStudentT(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative half student t probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1524,7 +1521,7 @@ class HalfStudentT(ContinuousDistributions):
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative half student t probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1532,7 +1529,7 @@ class HalfStudentT(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative half student t probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1543,7 +1540,7 @@ class HalfStudentT(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the half student t distribution
         :param size:
         :return:
         """
@@ -1557,7 +1554,7 @@ class HalfStudentT(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the  half student t distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
 
@@ -1577,9 +1574,10 @@ class Cauchy(ContinuousDistributions):
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Cauchy distribution
-        :param b:
-        :param mu
+        :param gamma:
+        :param mu:
         :param activate_jit:
+        :param random_seed:
         """
         super(Cauchy, self).__init__(gamma=gamma, mu=mu,
                                      activate_jit=activate_jit, random_seed=random_seed)
@@ -1660,7 +1658,8 @@ class Cauchy(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.gamma * jnp.tan((y-0.5) * jnp.pi) + self.mu
+            return self.gamma * jnp.tan((y - 0.5) * jnp.pi) + self.mu
+
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -1669,15 +1668,131 @@ class Cauchy(ContinuousDistributions):
         Statistics calculated for the Cauchy distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        first_quantile = self.gamma * jnp.tan((0.25-0.5) * jnp.pi) + self.mu
-        third_quantile = self.gamma * jnp.tan((0.75-0.5) * jnp.pi) + self.mu
+        first_quantile = self.gamma * jnp.tan((0.25 - 0.5) * jnp.pi) + self.mu
+        third_quantile = self.gamma * jnp.tan((0.75 - 0.5) * jnp.pi) + self.mu
         values = {'median': self.mu,
                   'mode': self.mu,
                   'first_quantile': first_quantile,
                   'third_quantile': third_quantile,
                   'MAD': self.gamma,
-                  'fisher_information': 1/(2 * self.gamma ** 2),
-                  'entropy': jnp.log(4*jnp.pi*self.gamma)
+                  'fisher_information': 1 / (2 * self.gamma ** 2),
+                  'entropy': jnp.log(4 * jnp.pi * self.gamma)
+                  }
+        return values
+
+
+class HalfCauchy(ContinuousDistributions):
+
+    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        ------- distribution
+        :param b:
+        :param mu
+        :param activate_jit:
+        """
+        super(HalfCauchy, self).__init__(mu=mu, b=b, kappa=kappa,
+                                         activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.b <= 0:
+            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
+
+        if self.kappa <= 0:
+            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
+        if self.b <= 0:
+            raise Exception(
+                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the -------- distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of -------------- distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of --------- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of ------------ probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative --------- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative ----- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative ----- probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the --- distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.where(y <= threshold, 1, 1)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        values = {'median': median_,
+                  'mean': mean_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
+                  'entropy': entropy_
                   }
         return values
 
