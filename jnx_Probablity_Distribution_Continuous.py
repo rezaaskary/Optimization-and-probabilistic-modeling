@@ -1987,8 +1987,7 @@ class InverseGamma(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
-
+            return
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
