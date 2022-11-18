@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
-from tensorflow_probability.substrates.jax.math.special import owens_t, betaincinv
+from tensorflow_probability.substrates.jax.math.special import owens_t, betaincinv, igammainv
 from tensorflow_probability.substrates.jax.math.hypergeometric import _hyp2f1_fraction
 from jax.lax import switch
 
@@ -1846,7 +1846,7 @@ class GammaDistribution(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1, 1)
+        return (1/jnp.exp(scipy.special.gammaln(self.alpha))) * scipy.special.gammainc(a=self.alpha, x=self.beta*x)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1876,8 +1876,7 @@ class GammaDistribution(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
-
+            return igammainv(a=self.alpha, p=y*jnp.exp(scipy.special.gammaln(self.alpha)))/self.beta
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
