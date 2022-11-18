@@ -1885,13 +1885,11 @@ class GammaDistribution(ContinuousDistributions):
         Statistics calculated for the Gamma distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
-        values = {'median': median_,
-                  'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+        values = {'mode': jnp.where(self.alpha >= 1,(self.alpha - 1)/self.beta, 0),
+                  'mean': self.alpha/self.beta,
+                  'variance': self.alpha/self.beta**2,
+                  'skewness': 2/self.alpha**0.5,
+                  'kurtosis': 6/self.alpha,
                   }
         return values
 
