@@ -1441,12 +1441,14 @@ class StudentT(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        values = {'median': median_,
-                  'mean': mean_,
+        variance_ = jnp.where(self.nu > 2, self.nu/(self.nu - 2), jnp.where(self.nu <= 1, None,  jnp.inf))
+        skewness_ = jnp.where(self.nu > 3, 0, None)
+
+        values = {'median': 0,
+                  'mean': 0,
+                  'mode': 0,
                   'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+                  'skewness': skewness_
                   }
         return values
 
