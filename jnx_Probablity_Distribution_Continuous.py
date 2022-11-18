@@ -1737,7 +1737,7 @@ class HalfCauchy(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= 0, (2 / np.pi) * jnp.arctan(x / self.beta), 0)
+        return jnp.where(x >= 0, (2 / jnp.pi) * jnp.arctan(x / self.beta), 0)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1778,12 +1778,12 @@ class HalfCauchy(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        values = {'median': median_,
-                  'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+        values = {'median': None,
+                  'mean': None,
+                  'variance': None,
+                  'skewness': None,
+                  'kurtosis': None,
+                  'entropy': None
                   }
         return values
 
@@ -1811,8 +1811,8 @@ class GammaDistribution(ContinuousDistributions):
         :return: The probability of the occurrence of the given variable Cx1
         """
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
-        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
-        return coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
+        coefficient = ((self.beta ** self.alpha) / jnp.exp(scipy.special.gammaln(self.alpha)))
+        return coefficient * (x ** (self.alpha - 1)) * (jnp.exp(-self.beta * x))
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
