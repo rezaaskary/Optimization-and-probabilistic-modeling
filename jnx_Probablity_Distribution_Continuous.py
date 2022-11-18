@@ -2118,13 +2118,15 @@ class Weibull(ContinuousDistributions):
         Statistics calculated for the  Weibull distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
-        values = {'median': median_,
+        mean_ = jnp.exp(scipy.special.gammaln(1 + 1/self.kappa)) * self.lambd
+        mode_ = jnp.where(self.kappa > 1, self.lambd * ((self.kappa - 1)/self.kappa)**(1/self.kappa), 0)
+        values = {'median': self.lambd * (jnp.log(2))**(1/self.kappa),
+                  'mode': mode_,
                   'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+                  'variance': None,
+                  'skewness': None,
+                  'kurtosis': None,
+                  'entropy': None
                   }
         return values
 
