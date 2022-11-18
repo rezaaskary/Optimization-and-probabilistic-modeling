@@ -2041,7 +2041,7 @@ class Weibull(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
         return jnp.where(x >= 0, (self.kappa / self.lambd) * \
                          ((x / self.lambd) ** (self.kappa - 1)) * \
                          jnp.exp(-(x / self.lambd) ** self.kappa), 0)
@@ -2077,8 +2077,8 @@ class Weibull(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        return jnp.where(x >= 0, 1 - jnp.exp(-(x / self.lambd) ** self.kappa))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2108,7 +2108,7 @@ class Weibull(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return -self.lambd * (jnp.log(1-y))**(1/self.kappa)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
