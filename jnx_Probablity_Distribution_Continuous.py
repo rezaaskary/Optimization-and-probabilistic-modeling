@@ -1901,10 +1901,12 @@ class InverseGamma(ContinuousDistributions):
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Inverse Gamma distribution
-        :param b:
-        :param mu
+        :param alpha:
+        :param beta:
         :param activate_jit:
+        :param random_seed:
         """
+
         super(InverseGamma, self).__init__(alpha=alpha, beta=beta,
                                            activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
@@ -1922,7 +1924,7 @@ class InverseGamma(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        x = jnp.clip(a=x, a_min=np.finfo(float).eps, a_max=np.inf)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
         coefficient = ((self.beta ** self.alpha) / jnp.exp(scipy.special.gammaln(self.alpha)))
         return coefficient * (x ** (-self.alpha - 1)) * (jnp.exp(-self.beta / x))
 
@@ -1957,7 +1959,7 @@ class InverseGamma(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        return scipy.special.gammaincc(a=self.alpha, x=self.beta/x)
+        return scipy.special.gammaincc(a=self.alpha, x=self.beta / x)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1988,6 +1990,7 @@ class InverseGamma(ContinuousDistributions):
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
             return
+
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -1996,18 +1999,134 @@ class InverseGamma(ContinuousDistributions):
         Statistics calculated for the Inverse Gamma distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        variance_ = jnp.where(self.alpha > 2,  (self.beta**2)/((self.alpha-2) * (self.alpha-1)**2))
-        skewness_ = jnp.where(self.alpha > 3, (4 * jnp.sqrt(self.alpha - 2))/(self.alpha - 3), None)
-        kurtosis_ = (6 * (5 * self.alpha - 11)) / ((self.alpha - 3)*(self.alpha - 4))
+        variance_ = jnp.where(self.alpha > 2, (self.beta ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2))
+        skewness_ = jnp.where(self.alpha > 3, (4 * jnp.sqrt(self.alpha - 2)) / (self.alpha - 3), None)
+        kurtosis_ = (6 * (5 * self.alpha - 11)) / ((self.alpha - 3) * (self.alpha - 4))
         kurtosis_ = jnp.where(self.alpha > 4, kurtosis_, None)
         values = {'mean': jnp.where(self.alpha > 1, self.beta / (self.alpha - 1), None),
                   'mode': self.beta / (self.alpha + 1),
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_
+                  }
+        return values
+
+
+class Weibull(ContinuousDistributions):
+
+    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        Weibull distribution
+        :param b:
+        :param mu
+        :param activate_jit:
+        """
+        super(Weibull, self).__init__(mu=mu, b=b, kappa=kappa,
+                                  activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.b <= 0:
+            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
+
+        if self.kappa <= 0:
+            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
+        if self.b <= 0:
+            raise Exception(
+                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Weibull distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Weibull distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Weibull probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Weibull probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Weibull probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Weibull probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Weibull probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the --- distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.where(y <= threshold, 1, 1)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  Weibull distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        values = {'median': median_,
+                  'mean': mean_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
                   'entropy': entropy_
                   }
         return values
+
 
 
 class PDF(ContinuousDistributions):
