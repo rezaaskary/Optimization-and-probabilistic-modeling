@@ -2194,8 +2194,7 @@ class ChiSquared(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        return scipy.special.gammainc(a=0.5*self.kappa, x=x/2)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
