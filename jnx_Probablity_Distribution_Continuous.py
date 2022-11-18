@@ -1683,40 +1683,33 @@ class Cauchy(ContinuousDistributions):
 
 class HalfCauchy(ContinuousDistributions):
 
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, beta: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
+        HalfCauchy distribution
         :param b:
         :param mu
         :param activate_jit:
         """
-        super(HalfCauchy, self).__init__(mu=mu, b=b, kappa=kappa,
-                                         activate_jit=activate_jit, random_seed=random_seed)
+        super(HalfCauchy, self).__init__(beta=beta, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
-
-        if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
-
+        if self.beta <= 0:
+            raise Exception('The value of beta should be positive (Half Cauchy)!')
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the Half Cauchy distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        denominator = (1 + (x / self.beta) ** 2)
+        return jnp.where(x >= 0, (2 / (self.beta * jnp.pi)) * (1 / denominator), 0)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of -------------- distribution
+        The derivatives of Half Cauchy distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -1724,16 +1717,15 @@ class HalfCauchy(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of --------- probability distribution
+        The log of Half Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-
         return -jnp.log(self.pdf_(x))
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of Half Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1741,16 +1733,15 @@ class HalfCauchy(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative Half Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        return jnp.where(x >= 0, (2 / np.pi) * jnp.arctan(x / self.beta), 0)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative Half Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1758,7 +1749,7 @@ class HalfCauchy(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative Half Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1769,7 +1760,116 @@ class HalfCauchy(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the Half Cauchy distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return self.beta * jnp.tan(0.5 * y * jnp.pi)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  ---- distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        values = {'median': median_,
+                  'mean': mean_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
+                  'entropy': entropy_
+                  }
+        return values
+
+
+class GammaDistribution(ContinuousDistributions):
+    def __init__(self, alpha: float = None, beta: float = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+
+        super(GammaDistribution, self).__init__(alpha=alpha, beta=beta,
+                                                activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.alpha <= 0:
+            raise Exception('Parameter alpha (for calculating the Gamma distribution) should be positive')
+
+        if self.beta <= 0:
+            raise Exception('Parameter beta (for calculating the Gamma distribution) should be positive')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Gamma distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        coefficient = ((self.beta ** self.alpha) / self.Gamma(self.alpha))
+        return coefficient * (x ** (self.alpha - 1)) * (np.exp(-self.beta * x))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Gamma distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Gamma probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Gamma probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Gamma probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Gamma probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Gamma probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Gamma distribution
         :param size:
         :return:
         """
@@ -1783,7 +1883,7 @@ class HalfCauchy(ContinuousDistributions):
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the Gamma distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
 
