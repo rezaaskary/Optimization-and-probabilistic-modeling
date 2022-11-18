@@ -1996,9 +1996,12 @@ class InverseGamma(ContinuousDistributions):
         Statistics calculated for the Inverse Gamma distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
-        values = {'median': median_,
-                  'mean': mean_,
+        variance_ = jnp.where(self.alpha > 2,  (self.beta**2)/((self.alpha-2) * (self.alpha-1)**2))
+        skewness_ = jnp.where(self.alpha > 3, (4 * jnp.sqrt(self.alpha - 2))/(self.alpha - 3), None)
+        kurtosis_ = (6 * (5 * self.alpha - 11)) / ((self.alpha - 3)*(self.alpha - 4))
+        kurtosis_ = jnp.where(self.alpha > 4, kurtosis_, None)
+        values = {'mean': jnp.where(self.alpha > 1, self.beta / (self.alpha - 1), None),
+                  'mode': self.beta / (self.alpha + 1),
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
