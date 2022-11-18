@@ -2014,26 +2014,24 @@ class InverseGamma(ContinuousDistributions):
 
 class Weibull(ContinuousDistributions):
 
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, kappa: jnp.ndarray = None, lambd: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
         Weibull distribution
-        :param b:
-        :param mu
+        :param kappa:
+        :param lambd:
         :param activate_jit:
+        :param random_seed:
         """
-        super(Weibull, self).__init__(mu=mu, b=b, kappa=kappa,
-                                  activate_jit=activate_jit, random_seed=random_seed)
+
+        super(Weibull, self).__init__(lambd=lambd, kappa=kappa,
+                                      activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
-
         if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+            raise Exception('The value of kappa should be positive (Weibull distribution)!')
+        if self.lambd <= 0:
+            raise Exception('The value of lambda should be positive (Weibull distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -2043,7 +2041,10 @@ class Weibull(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+
+        return jnp.where(x >= 0, (self.kappa / self.lambd) * \
+                         ((x / self.lambd) ** (self.kappa - 1)) * \
+                         jnp.exp(-(x / self.lambd) ** self.kappa), 0)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2126,7 +2127,6 @@ class Weibull(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
 
 
 class PDF(ContinuousDistributions):
