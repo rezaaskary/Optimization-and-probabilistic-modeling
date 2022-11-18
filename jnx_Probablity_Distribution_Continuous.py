@@ -1364,7 +1364,6 @@ class StudentT(ContinuousDistributions):
         coefficient = (jnp.exp(scipy.special.gammaln((self.nu + 1) / 2)) /
                        jnp.exp(scipy.special.gammaln(self.nu / 2))) * \
                       jnp.sqrt(1 / (jnp.pi * self.nu))
-
         return coefficient * (1 + (1 / self.nu) * x ** 2) ** (-(self.nu + 1) / 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -1401,8 +1400,7 @@ class StudentT(ContinuousDistributions):
         coefficient = (jnp.exp(scipy.special.gammaln((self.nu + 1) / 2)) /
                        jnp.exp(scipy.special.gammaln(self.nu / 2))) * \
                       jnp.sqrt(1 / (jnp.pi * self.nu))
-        0.5 + x * coefficient * _hyp2f1_fraction(a=0.5, b=(self.nu + 1) / 2, c=1.5, z=-(x**2)/self.nu)
-        return jnp.where(x >= self.mu, 1, 1)
+        return 0.5 + x * coefficient * _hyp2f1_fraction(a=0.5, b=(self.nu + 1) / 2, c=1.5, z=-(x ** 2) / self.nu)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -1432,7 +1430,7 @@ class StudentT(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
