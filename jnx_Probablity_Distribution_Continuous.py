@@ -2224,7 +2224,7 @@ class ChiSquared(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2235,12 +2235,12 @@ class ChiSquared(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        values = {'median': median_,
-                  'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+        values = {'median': self.kappa * (1-2/(9*self.kappa))**3,
+                  'mean': self.kappa,
+                  'mode': jnp.where(self.kappa-2>=0, self.kappa-2, 0),
+                  'variance': 2*self.kappa,
+                  'skewness': (8/self.kappa)**0.5,
+                  'kurtosis': 12/self.kappa
                   }
         return values
 
