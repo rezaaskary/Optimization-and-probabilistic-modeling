@@ -1576,37 +1576,32 @@ class Cauchy(ContinuousDistributions):
     def __init__(self, gamma: float = None, mu: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
+        Cauchy distribution
         :param b:
         :param mu
         :param activate_jit:
         """
-        super(Cauchy, self).__init__(ç=gamma, mu=mu,
+        super(Cauchy, self).__init__(gamma=gamma, mu=mu,
                                      activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
-
-        if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+        if self.gamma <= 0:
+            raise Exception('The value of the gamma should be positive!')
 
         ContinuousDistributions.parallelization(self)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the Cauchy distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        denominator = (1 + ((x - self.mu) / self.gamma) ** 2)
+        return (1 / (jnp.pi * self.gamma)) * (1 / denominator)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of -------------- distribution
+        The derivatives of Cauchy distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -1614,7 +1609,7 @@ class Cauchy(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of --------- probability distribution
+        The log of Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1623,7 +1618,7 @@ class Cauchy(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -1631,16 +1626,15 @@ class Cauchy(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        return jnp.arctan((x - self.mu) / self.gamma) * (1 / jnp.pi) + 0.5
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1648,7 +1642,7 @@ class Cauchy(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative Cauchy probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -1659,30 +1653,31 @@ class Cauchy(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the Cauchy distribution
         :param size:
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
-
+            return self.gamma * jnp.tan((y-0.5) * jnp.pi) + self.mu
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the Cauchy distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
-        values = {'median': median_,
-                  'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+        first_quantile = self.gamma * jnp.tan((0.25-0.5) * jnp.pi) + self.mu
+        third_quantile = self.gamma * jnp.tan((0.75-0.5) * jnp.pi) + self.mu
+        values = {'median': self.mu,
+                  'mode': self.mu,
+                  'first_quantile': first_quantile,
+                  'third_quantile': third_quantile,
+                  'MAD': self.gamma,
+                  'fisher_information': 1/(2 * self.gamma ** 2),
+                  'entropy': jnp.log(4*jnp.pi*self.gamma)
                   }
         return values
 
