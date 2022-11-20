@@ -3179,7 +3179,9 @@ class LogitNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * (1 / (x * (1 - x))) * jnp.exp(
+            (-0.5 / self.sigma ** 2) * (jnp.log(x / (1 - x)) - self.mu) ** 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
