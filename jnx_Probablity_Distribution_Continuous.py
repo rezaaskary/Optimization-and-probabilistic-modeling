@@ -2642,13 +2642,13 @@ class ExModifiedGaussian(ContinuousDistributions):
                                                  activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.Lambda <= 0 :
+        if self.Lambda <= 0:
             raise Exception('The value of lambda should be positive (Exponentially modified Gaussian distribution)!')
 
-        if self.sigma <= 0 :
+        if self.sigma <= 0:
             raise Exception('The value of sigma should be positive (Exponentially modified Gaussian distribution)!')
 
-        if self.variance <= 0 :
+        if self.variance <= 0:
             raise Exception('The value of variance should be positive (Exponentially modified Gaussian distribution)!')
 
         ContinuousDistributions.parallelization(self)
@@ -2696,7 +2696,11 @@ class ExModifiedGaussian(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1, 1)
+        arg_exp = 2 * self.mu + self.lambd * (self.sigma ** 2) - 2 * x
+        arg_erfc = (self.mu + self.lambd * (self.sigma ** 2) - x) / (self.sigma * jnp.sqrt(2))
+        z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
+        return 0.5 * (1 + scipy.special.erf(z)) - 0.5 * jnp.exp(0.5 * self.lambd * arg_exp) * scipy.special.erfc(
+            arg_erfc)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2726,7 +2730,7 @@ class ExModifiedGaussian(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2734,6 +2738,122 @@ class ExModifiedGaussian(ContinuousDistributions):
     def statistics(self):
         """
         Statistics calculated for the  ExModifiedGaussian distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        mean_ = self.mu + 1 / self.lambd
+        variance_ = self.sigma ** 2 + 1 / self.lambd ** 2
+        skewness_ = (2 / ((self.sigma ** 3) * (self.lambd ** 3))) * (
+                    1 + 1 / (self.sigma ** 2 * self.lambd ** 2)) ** -1.5
+        values = {'mean': mean_,
+                  'variance': variance_,
+                  'skewness': skewness_
+                  }
+        return values
+
+
+class Triangular(ContinuousDistributions):
+
+    def __init__(self, a: float = None, b: float = None, c: float = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        Triangular distribution
+        :param a: left hand side location
+        :param b: upper limit of the triangle
+        :param c: the mode of the triangle
+        :param activate_jit:
+        """
+        super(Triangular, self).__init__(a=a, b=b, c=c, activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.a >= self.b:
+            raise Exception('The value of a should be lower than b (Triangular distribution)!')
+
+        if self.a > self.c:
+            raise Exception('The value of a should be lower/equal than c (Triangular distribution)!')
+
+        if self.c > self.b:
+            raise Exception('The value of b should be higher/equal than c (Triangular distribution)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Triangular distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Triangular distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Triangular probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Triangular probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Triangular probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Triangular probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Triangular probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Triangular distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.where(y <= threshold, 1, 1)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  ---- distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
 
