@@ -2881,12 +2881,18 @@ class Triangular(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
         mean_ = (self.a + self.b + self.c) / 3
-        jnp.where(2 * self.c >= self.a + self.b,
-                  self.a + jnp.sqrt(0.5 * (self.b - self.a) * (self.c - self.a)),
-                  self.b - jnp.sqrt(0.5 * (self.b - self.a) * (self.b - bself.c)))
+        median_ = jnp.where(2 * self.c >= self.a + self.b,
+                            self.a + jnp.sqrt(0.5 * (self.b - self.a) * (self.c - self.a)),
+                            self.b - jnp.sqrt(0.5 * (self.b - self.a) * (self.b - bself.c)))
+        mode_ = self.c
+        kurtosis_ = -0.6
+        entropy_ = .5 + jnp.log(0.5 * (self.b - self.a))
+        variance_ = (1/18) * (self.a**2 + self.b**2 + self.c**2
+                              -self.a*self.b - self.a*self.c - self.b*self.c)
 
         values = {'median': median_,
                   'mean': mean_,
+                  'mode': mode_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
