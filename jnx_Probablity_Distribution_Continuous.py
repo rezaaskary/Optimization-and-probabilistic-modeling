@@ -2798,21 +2798,11 @@ class Triangular(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        # x = jnp.clip(a=x, a_min=self.a, a_max=self.b)
-        # pdf = np.zeros((len(x), 1))
-        # left_index = (self.a <= x) & (x <= self.c)
-        # right_index = (self.c < x) & (x <= self.b)
 
         return jnp.where((self.a <= x) & (x <= self.c), 2 * ((x - self.a) / ((self.b - self.a) * (self.c - self.a))),
                          jnp.where((self.c < x) & (x <= self.b),
                                    2 * ((self.b - x) / ((self.b - self.a) * (self.b - self.c))),
                                    0))
-
-        # pdf[left_index[:, 0], 0] = 2 * (
-        #         (x[[left_index[:, 0], 0], 0] - self.a) / ((self.b - self.a) * (self.c - self.a)))
-        # pdf[right_index[:, 0], 0] = 2 * (
-        #         (self.b - x[[right_index[:, 0], 0], 0]) / ((self.b - self.a) * (self.b - self.c)))
-        # return pdf
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2845,8 +2835,10 @@ class Triangular(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-
-        return jnp.where(x >= self.mu, 1, 1)
+        return jnp.where((self.a <= x) & (x <= self.c), ((x - self.a) ** 2) / ((self.b - self.a) * (self.c - self.a)),
+                         jnp.where((self.c < x) & (x <= self.b),
+                                   1 - ((self.b - x) ** 2) / ((self.b - self.a) * (self.b - self.c)),
+                                   jnp.where(the_most_right_index, 1.0, 0)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2876,7 +2868,10 @@ class Triangular(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return jnp.where(y <= (self.c-self.a)/(self.b-self.a),
+                      self.a + jnp.sqrt(y*(self.b-self.a)*(self.c-self.a)),
+                      self.b - jnp.sqrt((1-y)*(self.b-self.a)*(self.b-bself.c)))
+
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
