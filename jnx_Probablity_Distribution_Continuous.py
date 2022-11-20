@@ -2342,6 +2342,7 @@ class LogNormal(ContinuousDistributions):
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
             return jnp.exp(scipy.special.erfinv(2 * y - 1) * jnp.sqrt(2) * self.sigma + self.mu)
+
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -2353,10 +2354,10 @@ class LogNormal(ContinuousDistributions):
         first_quantile_ = jnp.exp(scipy.special.erfinv(-0.5) * jnp.sqrt(2) * self.sigma + self.mu)
         third_quantile_ = jnp.exp(scipy.special.erfinv(0.5) * jnp.sqrt(2) * self.sigma + self.mu)
         median_ = jnp.exp(self.mu)
-        mode_ = jnp.exp(self.mu - self.sigma**2)
-        variance_ = jnp.exp(2 * self.mu + self.sigma**2) * (jnp.exp(self.sigma**2) - 1)
-        mean_ = jnp.exp(self.mu + 0.5 * self.sigma**2)
-        skewness_ = (jnp.exp(self.sigma**2) + 2) * jnp.sqrt(jnp.exp(self.sigma**2) - 1)
+        mode_ = jnp.exp(self.mu - self.sigma ** 2)
+        variance_ = jnp.exp(2 * self.mu + self.sigma ** 2) * (jnp.exp(self.sigma ** 2) - 1)
+        mean_ = jnp.exp(self.mu + 0.5 * self.sigma ** 2)
+        skewness_ = (jnp.exp(self.sigma ** 2) + 2) * jnp.sqrt(jnp.exp(self.sigma ** 2) - 1)
 
         values = {'median': median_,
                   'mean': mean_,
@@ -2370,28 +2371,27 @@ class LogNormal(ContinuousDistributions):
         return values
 
 
-class PDF(ContinuousDistributions):
+class Wald(ContinuousDistributions):
 
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, lambd: jnp.ndarray = None, mu: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
+        Wald distribution
+        :param lambd:
+        :param mu:
         :param b:
-        :param mu
         :param activate_jit:
+        :param random_seed:
         """
-        super(PDF, self).__init__(mu=mu, b=b, kappa=kappa,
-                                  activate_jit=activate_jit, random_seed=random_seed)
+        super(Wald, self).__init__(mu=mu, lambd=lambd,
+                                   activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
+        if self.Lambda <= 0:
+            raise Exception('The value of lambda should be positive (Wald distribution)!')
 
-        if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+        if self.mu <= 0:
+            raise Exception('The value of mean should be positive (Log Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -2401,11 +2401,13 @@ class PDF(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        return jnp.sqrt(self.lambd / (2 * jnp.pi * x ** 3)) * jnp.exp(
+            (-self.lambd / (2 * x * self.mu ** 2)) * (x - self.mu) ** 2)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of -------------- distribution
+        The derivatives of Wald distribution
         :param x: The input variable (Cx1)
         :return: The derivatives of the probability of the occurrence of the given variable Cx1
         """
@@ -2413,7 +2415,7 @@ class PDF(ContinuousDistributions):
 
     def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log of --------- probability distribution
+        The log of Wald probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -2422,7 +2424,7 @@ class PDF(ContinuousDistributions):
 
     def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of ------------ probability distribution
+        The derivatives of Wald probability distribution
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
@@ -2430,13 +2432,17 @@ class PDF(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative --------- probability distribution
+        The cumulative Wald probability distribution
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1, 1)
+        def normal_fcn(z):
+            return (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * z ** 2)
 
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        return normal_fcn(jnp.sqrt(self.lambd / x) * (x / self.mu - 1)) + np.exp((2 * self.lambd) / self.mu) * \
+               normal_fcn(-np.sqrt(self.lambd / x) * (x / self.mu + 1))
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         The derivatives of the cumulative ----- probability distribution
@@ -2600,8 +2606,6 @@ class PDF(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
-
 
 #
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
