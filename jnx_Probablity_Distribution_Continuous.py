@@ -18,6 +18,7 @@ class ContinuousDistributions:
                  alpha: jnp.ndarray = None,
                  variance: jnp.ndarray = None,
                  sigma: jnp.ndarray = None,
+                 xm: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None,
                  variant_chains: bool = False,
@@ -36,6 +37,14 @@ class ContinuousDistributions:
             self.nu = None
         else:
             raise Exception('The value of nu is not specified correctly!')
+
+        if isinstance(xm, (jnp.ndarray, float, int)):
+            self.xm = kappa
+        elif xm is None:
+            self.xm = None
+        else:
+            raise Exception('The value of xm is not specified correctly!')
+
 
         if isinstance(gamma, (jnp.ndarray, float, int)):
             self.gamma = kappa
