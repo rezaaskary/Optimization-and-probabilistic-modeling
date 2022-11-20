@@ -2485,6 +2485,7 @@ class Wald(ContinuousDistributions):
         mode_ = self.mu * (jnp.sqrt(1 + (9 * self.mu ** 2) / (4 * self.lambd ** 2)) - 1.5 * (self.mu / self.lambd))
         skewness_ = 3 * jnp.sqrt(self.mu/self.lambd)
         kurtosis_ = 15 * (self.mu / self.lambd)
+
         values = {'median': median_,
                   'mean': mean_,
                   'variance': variance_,
