@@ -2887,12 +2887,129 @@ class Triangular(ContinuousDistributions):
         mode_ = self.c
         kurtosis_ = -0.6
         entropy_ = .5 + jnp.log(0.5 * (self.b - self.a))
-        variance_ = (1/18) * (self.a**2 + self.b**2 + self.c**2
-                              -self.a*self.b - self.a*self.c - self.b*self.c)
+        variance_ = (1 / 18) * (self.a ** 2 + self.b ** 2 + self.c ** 2
+                                - self.a * self.b - self.a * self.c - self.b * self.c)
 
         values = {'median': median_,
                   'mean': mean_,
                   'mode': mode_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
+                  'entropy': entropy_
+                  }
+        return values
+
+
+class Gumbel(ContinuousDistributions):
+
+    def __init__(self, mu: float = None, beta: float = None,
+                 activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        Gumbel distribution
+        :param mu:
+        :param beta:
+        :param activate_jit:
+        :param random_seed:
+        """
+        super(Gumbel, self).__init__(mu=mu, beta=beta,
+                                     activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.beta <= 0:
+            raise Exception('The value of beta should be positive (Gumbel function)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the Gumbel distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        z = (x - self.mu) / self.beta
+        return (1 / self.beta) * jnp.exp(-(z + jnp.exp(-z)))
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Gumbel distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Gumbel probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of Gumbel probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative Gumbel probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.exp(-jnp.exp(-(x-self.mu)/ self.beta))
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative Gumbel probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative Gumbel probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the Gumbel distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return self.mu - self.beta * jnp.log(-jnp.log(y))
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the Gumbel distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+        mean_ = self.mu + 0.5772 * self.beta
+        median_ = self.mu - self.beta * jnp.log(jnp.log(2))
+        mode_ = self.mu
+        variance_ = (1/6) * (self.pi**2 * jnp.pi**2)
+
+        values = {'median': median_,
+                  'mode': mode_,
+                  'mean': mean_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
