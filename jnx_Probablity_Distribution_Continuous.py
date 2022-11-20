@@ -2441,11 +2441,11 @@ class Wald(ContinuousDistributions):
             return (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * z ** 2)
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
-        return normal_fcn(jnp.sqrt(self.lambd / x) * (x / self.mu - 1)) + np.exp((2 * self.lambd) / self.mu) * \
-               normal_fcn(-np.sqrt(self.lambd / x) * (x / self.mu + 1))
+        return normal_fcn(jnp.sqrt(self.lambd / x) * (x / self.mu - 1)) + jnp.exp((2 * self.lambd) / self.mu) * \
+               normal_fcn(-jnp.sqrt(self.lambd / x) * (x / self.mu + 1))
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative Wald probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2453,7 +2453,7 @@ class Wald(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative Wald probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2464,15 +2464,14 @@ class Wald(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the Wald distribution
         :param size:
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
-
+            return
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -2481,7 +2480,11 @@ class Wald(ContinuousDistributions):
         Statistics calculated for the  ---- distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
+        mean_ = self.mu
+        variance_ = (self.mu ** 3) / self.lambd
+        mode_ = self.mu * (jnp.sqrt(1 + (9 * self.mu ** 2) / (4 * self.lambd ** 2)) - 1.5 * (self.mu / self.lambd))
+        skewness_ = 3 * jnp.sqrt(self.mu/self.lambd)
+        kurtosis_ = 15 * (self.mu / self.lambd)
         values = {'median': median_,
                   'mean': mean_,
                   'variance': variance_,
