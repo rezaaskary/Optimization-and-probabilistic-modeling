@@ -45,7 +45,6 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of xm is not specified correctly!')
 
-
         if isinstance(gamma, (jnp.ndarray, float, int)):
             self.gamma = kappa
         elif gamma is None:
@@ -2499,6 +2498,7 @@ class Wald(ContinuousDistributions):
 
         values = {'median': median_,
                   'mean': mean_,
+                  'mode': mode_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
@@ -2532,7 +2532,7 @@ class Pareto(ContinuousDistributions):
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the Pareto distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
@@ -2593,29 +2593,32 @@ class Pareto(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the --- distribution
+        Sampling form the Pareto distribution
         :param size:
         :return:
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return self.xm / (1-y)**(1/self.alpha)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the Pareto distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-
+        mean_ = jnp.where(self.alpha <= 1, jnp.inf, (self.xm * self.alpha) / (self.alpha - 1))
+        median_ = self.xm * 2 ** (1 / self.alpha)
+        mode_ = self.xm
+        variance_ = jnp.where(self.alpha > 2, (self.alpha * self.xm ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2), jnp.inf)
+        entropy_ = jnp.log((self.xm / self.alpha) * jnp.exp(1+1/self.alpha))
         values = {'median': median_,
+                  'mode': mode_,
                   'mean': mean_,
                   'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
                   'entropy': entropy_
                   }
         return values
