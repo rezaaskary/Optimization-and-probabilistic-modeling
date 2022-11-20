@@ -2868,10 +2868,9 @@ class Triangular(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= (self.c-self.a)/(self.b-self.a),
-                      self.a + jnp.sqrt(y*(self.b-self.a)*(self.c-self.a)),
-                      self.b - jnp.sqrt((1-y)*(self.b-self.a)*(self.b-bself.c)))
-
+            return jnp.where(y <= (self.c - self.a) / (self.b - self.a),
+                             self.a + jnp.sqrt(y * (self.b - self.a) * (self.c - self.a)),
+                             self.b - jnp.sqrt((1 - y) * (self.b - self.a) * (self.b - bself.c)))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2881,6 +2880,10 @@ class Triangular(ContinuousDistributions):
         Statistics calculated for the  ---- distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
+        mean_ = (self.a + self.b + self.c) / 3
+        jnp.where(2 * self.c >= self.a + self.b,
+                  self.a + jnp.sqrt(0.5 * (self.b - self.a) * (self.c - self.a)),
+                  self.b - jnp.sqrt(0.5 * (self.b - self.a) * (self.b - bself.c)))
 
         values = {'median': median_,
                   'mean': mean_,
