@@ -2600,7 +2600,7 @@ class Pareto(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.xm / (1-y)**(1/self.alpha)
+            return self.xm / (1 - y) ** (1 / self.alpha)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2613,12 +2613,132 @@ class Pareto(ContinuousDistributions):
         mean_ = jnp.where(self.alpha <= 1, jnp.inf, (self.xm * self.alpha) / (self.alpha - 1))
         median_ = self.xm * 2 ** (1 / self.alpha)
         mode_ = self.xm
-        variance_ = jnp.where(self.alpha > 2, (self.alpha * self.xm ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2), jnp.inf)
-        entropy_ = jnp.log((self.xm / self.alpha) * jnp.exp(1+1/self.alpha))
+        variance_ = jnp.where(self.alpha > 2, (self.alpha * self.xm ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2),
+                              jnp.inf)
+        entropy_ = jnp.log((self.xm / self.alpha) * jnp.exp(1 + 1 / self.alpha))
         values = {'median': median_,
                   'mode': mode_,
                   'mean': mean_,
                   'variance': variance_,
+                  'entropy': entropy_
+                  }
+        return values
+
+
+class ExModifiedGaussian(ContinuousDistributions):
+
+    def __init__(self, lambd: jnp.ndarray = None, mu: jnp.ndarray = None, sigma: jnp.ndarray = None,
+                 variance: jnp.ndarray = None, activate_jit: bool = False, random_seed: int = 1) -> None:
+        """
+        ExModifiedGaussian distribution
+        :param lambd:
+        :param mu:
+        :param sigma:
+        :param variance:
+        :param activate_jit:
+        :param random_seed:
+        """
+        super(ExModifiedGaussian, self).__init__(mu=mu, sigma=sigma, lambd=lambd, variance=variance,
+                                                 activate_jit=activate_jit, random_seed=random_seed)
+        # check for the consistency of the input of the probability distribution
+
+        if self.Lambda <= 0 :
+            raise Exception('The value of lambda should be positive (Exponentially modified Gaussian distribution)!')
+
+        if self.sigma <= 0 :
+            raise Exception('The value of sigma should be positive (Exponentially modified Gaussian distribution)!')
+
+        if self.variance <= 0 :
+            raise Exception('The value of variance should be positive (Exponentially modified Gaussian distribution)!')
+
+        ContinuousDistributions.parallelization(self)
+
+    def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        Parallelized calculating the probability of the ExModifiedGaussian distribution
+        :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
+        :return: The probability of the occurrence of the given variable Cx1
+        """
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of ExModifiedGaussian distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives of the probability of the occurrence of the given variable Cx1
+        """
+        return (self.pdf_(x))[0]
+
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of ExModifiedGaussian probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+
+        return -jnp.log(self.pdf_(x))
+
+    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of ExModifiedGaussian probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return self.log_pdf_(x)[0]
+
+    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The cumulative ExModifiedGaussian probability distribution
+        :param x: The input variable (Cx1)
+        :return: The cumulative probability of the occurrence of the given variable Cx1
+        """
+
+        return jnp.where(x >= self.mu, 1, 1)
+
+    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The derivatives of the cumulative ExModifiedGaussian probability distribution
+        :param x: The input variable (Cx1)
+        :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
+        """
+        return (self.cdf_(x))[0]
+
+    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log values of the cumulative ExModifiedGaussian probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log values of cumulative probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.cdf_(x))
+
+    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        return (self.log_cdf_(x))[0]
+
+    def sample_(self, size: int = 1) -> jnp.ndarray:
+        """
+        Sampling form the ExModifiedGaussian distribution
+        :param size:
+        :return:
+        """
+        y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
+
+        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+            return jnp.where(y <= threshold, 1, 1)
+
+        return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
+
+    @property
+    def statistics(self):
+        """
+        Statistics calculated for the  ExModifiedGaussian distribution function given distribution parameters
+        :return: A dictionary of calculated metrics
+        """
+
+        values = {'median': median_,
+                  'mean': mean_,
+                  'variance': variance_,
+                  'skewness': skewness_,
+                  'kurtosis': kurtosis_,
                   'entropy': entropy_
                   }
         return values
