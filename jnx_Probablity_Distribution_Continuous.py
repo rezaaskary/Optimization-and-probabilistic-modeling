@@ -2962,7 +2962,7 @@ class Gumbel(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.exp(-jnp.exp(-(x-self.mu)/ self.beta))
+        return jnp.exp(-jnp.exp(-(x - self.mu) / self.beta))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3005,7 +3005,7 @@ class Gumbel(ContinuousDistributions):
         mean_ = self.mu + 0.5772 * self.beta
         median_ = self.mu - self.beta * jnp.log(jnp.log(2))
         mode_ = self.mu
-        variance_ = (1/6) * (self.pi**2 * jnp.pi**2)
+        variance_ = (1 / 6) * (self.pi ** 2 * jnp.pi ** 2)
         skewness_ = 1.14
         kurtosis_ = 12 / 5
         entropy_ = jnp.log(self.beta) + 0.5772 + 1
@@ -3034,7 +3034,7 @@ class Logistic(ContinuousDistributions):
         :param random_seed:
         """
         super(Logistic, self).__init__(mu=mu, variance=variance, sigma=sigma,
-                                  activate_jit=activate_jit, random_seed=random_seed)
+                                       activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
         if self.sigma <= 0:
@@ -3086,7 +3086,7 @@ class Logistic(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return 1/(1+jnp.exp(-(x - self.mu) / self.sigma))
+        return 1 / (1 + jnp.exp(-(x - self.mu) / self.sigma))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3116,7 +3116,7 @@ class Logistic(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return self.mu - self.sigma * jnp.log(1/y-1)
+            return self.mu - self.sigma * jnp.log(1 / y - 1)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -3126,14 +3126,14 @@ class Logistic(ContinuousDistributions):
         Statistics calculated for the Logistic distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        first_quantile_ = self.mu - self.sigma * jnp.log(1/0.25-1)
+        first_quantile_ = self.mu - self.sigma * jnp.log(1 / 0.25 - 1)
         third_quantile_ = self.mu - self.sigma * jnp.log(1 / 0.75 - 1)
         mean_ = self.mu
         median_ = self.mu
         mode_ = self.mu
         skewness_ = 0
         kurtosis_ = 1.2
-        variance_ = (jnp.pi**2 * self.sigma**2)/3
+        variance_ = (jnp.pi ** 2 * self.sigma ** 2) / 3
         entropy_ = jnp.log(self.sigma) + 2
 
         values = {'median': median_,
@@ -3151,26 +3151,25 @@ class Logistic(ContinuousDistributions):
 
 class LogitNormal(ContinuousDistributions):
 
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, mu: float = None, sigma: float = None, variance: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        ------- distribution
-        :param b:
-        :param mu
+        LogitNormal distribution
+        :param mu:
+        :param sigma:
+        :param variance:
         :param activate_jit:
+        :param random_seed:
         """
-        super(LogitNormal, self).__init__(mu=mu, b=b, kappa=kappa,
-                                  activate_jit=activate_jit, random_seed=random_seed)
+        super(LogitNormal, self).__init__(mu=mu, variance=variance, sigma=sigma,
+                                          activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
+        if self.sigma <= 0:
+            raise Exception('The value of sigma should be positive (Logistic distribution)!')
 
-        if self.kappa <= 0:
-            raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
-        if self.b <= 0:
-            raise Exception(
-                'The rate of the change of the exponential term should be positive(Asymmetric Laplace distribution)!')
+        if self.variance <= 0:
+            raise Exception('The value of variance should be positive (Logistic distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -3263,7 +3262,6 @@ class LogitNormal(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
 
 
 class PDF(ContinuousDistributions):
@@ -3380,8 +3378,6 @@ class PDF(ContinuousDistributions):
                   'entropy': entropy_
                   }
         return values
-
-
 
 #
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
