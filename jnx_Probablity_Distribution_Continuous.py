@@ -3006,7 +3006,9 @@ class Gumbel(ContinuousDistributions):
         median_ = self.mu - self.beta * jnp.log(jnp.log(2))
         mode_ = self.mu
         variance_ = (1/6) * (self.pi**2 * jnp.pi**2)
-
+        skewness_ = 1.14
+        kurtosis_ = 12 / 5
+        entropy_ = jnp.log(self.beta) + 0.5772 + 1
         values = {'median': median_,
                   'mode': mode_,
                   'mean': mean_,
