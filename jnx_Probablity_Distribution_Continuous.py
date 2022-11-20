@@ -10,6 +10,8 @@ class ContinuousDistributions:
     def __init__(self,
                  kappa: jnp.ndarray = None,
                  b: jnp.ndarray = None,
+                 a: jnp.ndarray = None,
+                 c: jnp.ndarray = None,
                  lambd: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  gamma: jnp.ndarray = None,
@@ -72,6 +74,23 @@ class ContinuousDistributions:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
+
+        if isinstance(a, (jnp.ndarray, float, int)):
+            self.a = a
+        elif a is None:
+            self.a = None
+        else:
+            raise Exception('The value of a is not specified correctly!')
+
+        if isinstance(c, (jnp.ndarray, float, int)):
+            self.c = c
+        elif c is None:
+            self.c = None
+        else:
+            raise Exception('The value of c is not specified correctly!')
+
+
+
 
         if isinstance(beta, (jnp.ndarray, float, int)):
             self.beta = beta
