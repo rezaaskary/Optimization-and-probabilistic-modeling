@@ -3086,7 +3086,7 @@ class Logistic(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1, 1)
+        return 1/(1+jnp.exp(-(x - self.mu) / self.sigma))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3116,19 +3116,31 @@ class Logistic(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            return self.mu - self.sigma * jnp.log(1/y-1)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the  ---- distribution function given distribution parameters
+        Statistics calculated for the Logistic distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
+        first_quantile_ = self.mu - self.sigma * jnp.log(1/0.25-1)
+        third_quantile_ = self.mu - self.sigma * jnp.log(1 / 0.75 - 1)
+        mean_ = self.mu
+        median_ = self.mu
+        mode_ = self.mu
+        skewness_ = 0
+        kurtosis_ = 1.2
+        variance_ = (jnp.pi**2 * self.sigma**2)/3
+        entropy_ = jnp.log(self.sigma) + 2
 
         values = {'median': median_,
                   'mean': mean_,
+                  'mode': mode_,
+                  'first_quantile': first_quantile_,
+                  'third_quantile': third_quantile_,
                   'variance': variance_,
                   'skewness': skewness_,
                   'kurtosis': kurtosis_,
