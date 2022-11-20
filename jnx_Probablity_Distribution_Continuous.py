@@ -2659,7 +2659,10 @@ class ExModifiedGaussian(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+
+        arg_exp = 2 * self.mu + self.lambd * (self.sigma ** 2) - 2 * x
+        arg_erfc = (self.mu + self.lambd * (self.sigma ** 2) - x) / (self.sigma * jnp.sqrt(2))
+        return 0.5 * self.lambd * jnp.exp(0.5 * self.lambd * arg_exp) * scipy.special.erfc(arg_erfc)
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
