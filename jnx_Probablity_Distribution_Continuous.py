@@ -2565,7 +2565,7 @@ class Pareto(ContinuousDistributions):
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The derivatives of the cumulative ----- probability distribution
+        The derivatives of the cumulative Pareto probability distribution
         :param x: The input variable (Cx1)
         :return: The derivatives cumulative probability of the occurrence of the given variable Cx1
         """
@@ -2573,7 +2573,7 @@ class Pareto(ContinuousDistributions):
 
     def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The log values of the cumulative ----- probability distribution
+        The log values of the cumulative Pareto probability distribution
         :param x: The input variable (Cx1)
         :return: The log values of cumulative probability of the occurrence of the given variable Cx1
         """
