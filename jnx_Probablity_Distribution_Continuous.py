@@ -89,9 +89,6 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of c is not specified correctly!')
 
-
-
-
         if isinstance(beta, (jnp.ndarray, float, int)):
             self.beta = beta
         elif beta is None:
@@ -2762,7 +2759,7 @@ class ExModifiedGaussian(ContinuousDistributions):
         mean_ = self.mu + 1 / self.lambd
         variance_ = self.sigma ** 2 + 1 / self.lambd ** 2
         skewness_ = (2 / ((self.sigma ** 3) * (self.lambd ** 3))) * (
-                    1 + 1 / (self.sigma ** 2 * self.lambd ** 2)) ** -1.5
+                1 + 1 / (self.sigma ** 2 * self.lambd ** 2)) ** -1.5
         values = {'mean': mean_,
                   'variance': variance_,
                   'skewness': skewness_
@@ -2801,7 +2798,21 @@ class Triangular(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        return jnp.where(x >= self.mu, 1, 1)
+        # x = jnp.clip(a=x, a_min=self.a, a_max=self.b)
+        # pdf = np.zeros((len(x), 1))
+        # left_index = (self.a <= x) & (x <= self.c)
+        # right_index = (self.c < x) & (x <= self.b)
+
+        return jnp.where((self.a <= x) & (x <= self.c), 2 * ((x - self.a) / ((self.b - self.a) * (self.c - self.a))),
+                         jnp.where((self.c < x) & (x <= self.b),
+                                   2 * ((self.b - x) / ((self.b - self.a) * (self.b - self.c))),
+                                   0))
+
+        # pdf[left_index[:, 0], 0] = 2 * (
+        #         (x[[left_index[:, 0], 0], 0] - self.a) / ((self.b - self.a) * (self.c - self.a)))
+        # pdf[right_index[:, 0], 0] = 2 * (
+        #         (self.b - x[[right_index[:, 0], 0], 0]) / ((self.b - self.a) * (self.b - self.c)))
+        # return pdf
 
     def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
