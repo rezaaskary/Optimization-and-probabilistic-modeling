@@ -3260,12 +3260,12 @@ class LogitNormal(ContinuousDistributions):
         :return: A dictionary of calculated metrics
         """
 
-        values = {'median': median_,
-                  'mean': mean_,
-                  'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+        values = {'median': None,
+                  'mean': None,
+                  'variance': None,
+                  'skewness': None,
+                  'kurtosis': None,
+                  'entropy': None
                   }
         return values
 
