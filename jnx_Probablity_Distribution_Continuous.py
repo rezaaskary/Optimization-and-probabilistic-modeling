@@ -647,7 +647,7 @@ class SkewedNormal(ContinuousDistributions):
 
         if self.variance is None or self.sigma is None or self.mu is None:
             raise Exception(
-                'The value of either mean or standard deviation is not specified (Normal distribution)!')
+                'The value of either mean or standard deviation is not specified (Skewed Normal distribution)!')
 
         ContinuousDistributions.parallelization(self)
 
@@ -693,8 +693,9 @@ class SkewedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        erf_part = 0.5 * (1 + lax.erf(x / jnp.sqrt(2)))
-        return erf_part - 2 * owens_t((x - self.mu) / self.sigma, self.alpha)
+
+        return 0.5 * (1 + lax.erf((x - self.mu) / (self.sigma*jnp.sqrt(2)))) -\
+               2 * owens_t((x - self.mu) / self.sigma, self.alpha)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -723,7 +724,7 @@ class SkewedNormal(ContinuousDistributions):
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(y):
+        def inversion_of_cdf_(y: jnp.ndarray = None):
             return None
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
@@ -3393,12 +3394,12 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1),dtype=jnp.float64)
 # KK = Normal(sigma=4, mu=7)
 # KK = Uniform(lower=-2,upper=3)
 # KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
-KK = HalfNormal(sigma=4)
-
+# KK = HalfNormal(sigma=4)
+KK = SkewedNormal(mu=0,alpha=2,sigma=3)
 
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
@@ -3436,8 +3437,7 @@ if any(jnp.isnan(E8)):
 if any(jnp.isnan(E9)):
     print('there is NAN in diff log CDF')
 
-if any(jnp.isnan(samples)):
-    print('there is NAN in samples')
+
 
 print(KK.statistics)
 
@@ -3466,6 +3466,8 @@ ax8.set_title('derivatives of log CDF ')
 # plt.figure(dpi=100)
 # plt.hist(samples, bins=20)
 # plt.title('samples')
+if any(jnp.isnan(samples)):
+    print('there is NAN in samples')
 
 show()
 ####################################################################################
