@@ -194,6 +194,11 @@ class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
                  random_seed: int = 1) -> None:
         """
+        In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
+        family of symmetric probability distributions. The distribution describes an experiment where there is an
+        arbitrary outcome that lies between certain bounds. The bounds are defined by the parameters, lower and upper,
+        which are the minimum and maximum values.
+
         Continuous uniform distribution
         :param lower: The lower limit of uniform distribution
         :param upper: The upper limit of uniform distribution
@@ -3394,13 +3399,17 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1),dtype=jnp.float64)
+x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1))
 # KK = Normal(sigma=4, mu=7)
 # KK = Uniform(lower=-2,upper=3)
 # KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
 # KK = HalfNormal(sigma=4)
-KK = SkewedNormal(mu=0,alpha=2,sigma=3)
-
+# KK = SkewedNormal(mu=0,alpha=2,sigma=3)
+# KK = BetaPdf(alpha=2,beta=3)
+# KK = Kumaraswamy(alpha=3,beta=5)
+# KK = Exponential(lambd=3)
+# KK = Laplace(mu=3,b=2)
+KK = AsymmetricLaplace(kappa=2,mu=3,b=4)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
