@@ -3396,7 +3396,9 @@ class PDF(ContinuousDistributions):
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1))
 # KK = Normal(sigma=4, mu=7)
 # KK = Uniform(lower=-2,upper=3)
-KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
+# KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
+KK = HalfNormal(sigma=4)
+
 
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
