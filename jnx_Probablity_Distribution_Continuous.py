@@ -3401,57 +3401,63 @@ E9 = KK.diff_log_cdf(x)
 
 samples = KK.sample(size=20000)
 
-if any(np.isnan(E1)):
+if any(jnp.isnan(E1)):
     print('there is NAN in pdf')
 
-if any(np.isnan(E6)):
+if any(jnp.isnan(E6)):
     print('there is NAN in diffpdf')
 
-if any(np.isnan(E2)):
+if any(jnp.isnan(E2)):
     print('there is NAN in log pdf')
 
-if any(np.isnan(E3)):
+if any(jnp.isnan(E3)):
     print('there is NAN in diff log pdf')
 
-if any(np.isnan(E4)):
+if any(jnp.isnan(E4)):
     print('there is NAN in cdf')
 
-if any(np.isnan(E5)):
+if any(jnp.isnan(E5)):
     print('there is NAN in log CDF')
 
-if any(np.isnan(E8)):
+if any(jnp.isnan(E8)):
     print('there is NAN in diff CDF')
 
-if any(np.isnan(E9)):
+if any(jnp.isnan(E9)):
     print('there is NAN in diff log CDF')
 
-
-
-if any(np.isnan(samples)):
+if any(jnp.isnan(samples)):
     print('there is NAN in samples')
 
-fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(2, 3)
+fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 3)
 
 ax1.plot(x, E1, '*')
 ax1.set_title('PDF values')
+ax5.plot(x, E6, '*')
+ax5.set_title('derivatives of PDF ')
 
-ax4.plot(x, E6, '*')
-ax4.set_title('derivatives of PDF ')
 
 ax2.plot(x, E2, '*')
 ax2.set_title('LOG of PDF values')
+ax6.plot(x, E3, '*')
+ax6.set_title('derivatives of LOG of PDF ')
 
-ax5.plot(x, E3, '*')
-ax5.set_title('derivatives of LOG of PDF ')
+
 
 ax3.plot(x, E4, '*')
 ax3.set_title('CDF ')
+ax7.plot(x, E8, '*')
+ax7.set_title('derivatives of CDF ')
 
-ax6.hist(samples, bins=20)
-ax6.set_title('samples ')
+ax4.plot(x, E5, '*')
+ax4.set_title('log CDF ')
+ax8.plot(x, E9, '*')
+ax8.set_title('derivatives of log CDF ')
 
+plt.figure(dpi=100)
+plt.hist(samples, bins=20)
+plt.title('samples')
 show()
-
+show()
 ####################################################################################
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
 # activate_jit = False
