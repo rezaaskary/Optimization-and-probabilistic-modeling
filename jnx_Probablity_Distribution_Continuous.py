@@ -198,6 +198,8 @@ class Uniform(ContinuousDistributions):
         family of symmetric probability distributions. The distribution describes an experiment where there is an
         arbitrary outcome that lies between certain bounds. The bounds are defined by the parameters, lower and upper,
         which are the minimum and maximum values.
+        [1]Dekking, Michel (2005). A modern introduction to probability and statistics : understanding why and how.
+        London, UK: Springer. pp. 60–61. ISBN 978-1-85233-896-1
 
         Continuous uniform distribution
         :param lower: The lower limit of uniform distribution
