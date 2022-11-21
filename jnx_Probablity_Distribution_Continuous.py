@@ -3179,7 +3179,7 @@ class LogitNormal(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        x = np.clip(a=x, a_min=np.finfo(float).eps, a_max=1 - np.finfo(float).eps)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1 - jnp.finfo(float).eps)
         return (1 / (self.sigma * jnp.sqrt(2 * jnp.pi))) * (1 / (x * (1 - x))) * jnp.exp(
             (-0.5 / self.sigma ** 2) * (jnp.log(x / (1 - x)) - self.mu) ** 2)
 
@@ -3215,7 +3215,8 @@ class LogitNormal(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return jnp.where(x >= self.mu, 1, 1)
+        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1 - jnp.finfo(float).eps)
+        return 0.5 * (1 + scipy.special.erf((jnp.log(x / (1 - x)) - self.mu) / (self.sigma * jnp.sqrt(2))))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3234,6 +3235,8 @@ class LogitNormal(ContinuousDistributions):
         return jnp.log(self.cdf_(x))
 
     def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+
+
         return (self.log_cdf_(x))[0]
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
@@ -3245,7 +3248,8 @@ class LogitNormal(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return jnp.where(y <= threshold, 1, 1)
+            inversion_term = scipy.special.erfinv(2*y-1) * self.sigma * jnp.sqrt(2) + self.mu
+            return jnp.exp(inversion_term)/(1+jnp.exp(inversion_term))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
