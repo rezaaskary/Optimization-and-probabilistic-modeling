@@ -122,7 +122,7 @@ class ContinuousDistributions:
 
         if not isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
             if variance > 0:
-                self.sigma = jnp.sqrt(variance)
+                self.sigma = variance**0.5
                 self.variance = variance
             else:
                 raise Exception('The standard deviation should be a positive value!')
@@ -167,24 +167,24 @@ class ContinuousDistributions:
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
                 self.pdf = jit(vmap(self.pdf_, in_axes=[1], out_axes=1))
-                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=1))
+                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
                 self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[1], out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
                 self.cdf = jit(vmap(self.cdf_, in_axes=[1], out_axes=1))
                 self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[1], out_axes=1))
-                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=1))
-                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0))
                 self.sample = self.sample_
             else:
                 self.sample = self.sample_
                 self.pdf = vmap(self.pdf_, in_axes=[1], out_axes=1)
-                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=1)
+                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_pdf_, in_axes=[1], out_axes=1)
-                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=1)
+                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
                 self.cdf = vmap(self.cdf_, in_axes=[1], out_axes=1)
                 self.log_cdf = vmap(self.log_cdf_, in_axes=[1], out_axes=1)
-                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=1)
-                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=1)
+                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
+                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0)
 
         else:
             pass
@@ -431,7 +431,7 @@ class TruncatedNormal(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The log of the probability of the occurrence of the given variable Cx1
         """
-        return (self.log_pdf(x))[0]
+        return (self.log_pdf_(x))[0]
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3393,8 +3393,10 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1000, 1))
-KK = Normal(sigma=4, mu=7)
+x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1))
+# KK = Normal(sigma=4, mu=7)
+# KK = Uniform(lower=-2,upper=3)
+KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
 
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
@@ -3412,7 +3414,7 @@ if any(jnp.isnan(E1)):
     print('there is NAN in pdf')
 
 if any(jnp.isnan(E6)):
-    print('there is NAN in diffpdf')
+    print('there is NAN in diff pdf')
 
 if any(jnp.isnan(E2)):
     print('there is NAN in log pdf')
@@ -3434,6 +3436,8 @@ if any(jnp.isnan(E9)):
 
 if any(jnp.isnan(samples)):
     print('there is NAN in samples')
+
+print(KK.statistics)
 
 fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4)
 
@@ -3460,7 +3464,7 @@ ax8.set_title('derivatives of log CDF ')
 # plt.figure(dpi=100)
 # plt.hist(samples, bins=20)
 # plt.title('samples')
-show()
+
 show()
 ####################################################################################
 # x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
