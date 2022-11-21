@@ -25,7 +25,7 @@ class ContinuousDistributions:
                  upper: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
-                 nchains: int = 1,
+                 n_chains: int = 1,
                  random_seed: int = 1) -> None:
 
         if isinstance(random_seed, int):
@@ -142,6 +142,13 @@ class ContinuousDistributions:
             self.upper = upper
         elif upper is None:
             self.upper = None
+        else:
+            raise Exception('The value of upper is not specified correctly!')
+
+        if isinstance(n_chains, int):
+            self.n_chains = n_chains
+        elif n_chains is None:
+            self.n_chains = 1
         else:
             raise Exception('The value of upper is not specified correctly!')
 
@@ -309,7 +316,7 @@ class Normal(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
         z = (x - self.mu) / (self.sigma * jnp.sqrt(2))
-        return lax.erf(z)
+        return 0.5 * (1 + lax.erf(z))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -3386,7 +3393,7 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-2, maxval=2, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1000, 1))
 KK = Normal(sigma=4, mu=7)
 
 E1 = KK.pdf(x)
@@ -3399,7 +3406,7 @@ E5 = KK.log_cdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 
-samples = KK.sample(size=20000)
+samples = KK.sample(size=10000)
 
 if any(jnp.isnan(E1)):
     print('there is NAN in pdf')
@@ -3428,20 +3435,17 @@ if any(jnp.isnan(E9)):
 if any(jnp.isnan(samples)):
     print('there is NAN in samples')
 
-fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 3)
+fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4)
 
 ax1.plot(x, E1, '*')
 ax1.set_title('PDF values')
 ax5.plot(x, E6, '*')
 ax5.set_title('derivatives of PDF ')
 
-
 ax2.plot(x, E2, '*')
 ax2.set_title('LOG of PDF values')
 ax6.plot(x, E3, '*')
 ax6.set_title('derivatives of LOG of PDF ')
-
-
 
 ax3.plot(x, E4, '*')
 ax3.set_title('CDF ')
@@ -3453,9 +3457,9 @@ ax4.set_title('log CDF ')
 ax8.plot(x, E9, '*')
 ax8.set_title('derivatives of log CDF ')
 
-plt.figure(dpi=100)
-plt.hist(samples, bins=20)
-plt.title('samples')
+# plt.figure(dpi=100)
+# plt.hist(samples, bins=20)
+# plt.title('samples')
 show()
 show()
 ####################################################################################
