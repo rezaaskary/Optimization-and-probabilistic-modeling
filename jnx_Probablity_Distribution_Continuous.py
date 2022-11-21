@@ -167,24 +167,24 @@ class ContinuousDistributions:
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
                 self.pdf = jit(vmap(self.pdf_, in_axes=[1], out_axes=1))
-                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[1], out_axes=1))
+                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=1))
                 self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[1], out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[1], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=1))
                 self.cdf = jit(vmap(self.cdf_, in_axes=[1], out_axes=1))
                 self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[1], out_axes=1))
-                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[1], out_axes=1))
-                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[1], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=1))
+                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=1))
                 self.sample = self.sample_
             else:
                 self.sample = self.sample_
                 self.pdf = vmap(self.pdf_, in_axes=[1], out_axes=1)
-                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[1], out_axes=1)
+                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=1)
                 self.log_pdf = vmap(self.log_pdf_, in_axes=[1], out_axes=1)
-                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[1], out_axes=1)
+                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=1)
                 self.cdf = vmap(self.cdf_, in_axes=[1], out_axes=1)
                 self.log_cdf = vmap(self.log_cdf_, in_axes=[1], out_axes=1)
-                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[1], out_axes=1)
-                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[1], out_axes=1)
+                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=1)
+                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=1)
 
         else:
             pass
