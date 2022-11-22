@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax import vmap, jit, grad, random, lax, scipy
 from tensorflow_probability.substrates.jax.math.special import owens_t, betaincinv, igammainv
-from tensorflow_probability.substrates.jax.math.hypergeometric import _hyp2f1_fraction
+from tensorflow_probability.substrates.jax.math.hypergeometric import _hyp2f1_fraction, hyp2f1_small_argument
 from jax.lax import switch
 
 
@@ -34,21 +34,21 @@ class ContinuousDistributions:
             raise Exception('The random seed is not specified correctly!')
 
         if isinstance(nu, (jnp.ndarray, float, int)):
-            self.nu = kappa
+            self.nu = nu
         elif nu is None:
             self.nu = None
         else:
             raise Exception('The value of nu is not specified correctly!')
 
         if isinstance(xm, (jnp.ndarray, float, int)):
-            self.xm = kappa
+            self.xm = xm
         elif xm is None:
             self.xm = None
         else:
             raise Exception('The value of xm is not specified correctly!')
 
         if isinstance(gamma, (jnp.ndarray, float, int)):
-            self.gamma = kappa
+            self.gamma = gamma
         elif gamma is None:
             self.gamma = None
         else:
@@ -1257,20 +1257,19 @@ class Laplace(ContinuousDistributions):
 
 class AsymmetricLaplace(ContinuousDistributions):
 
-    def __init__(self, kappa: jnp.ndarray = None, mu: jnp.ndarray = None, b: jnp.ndarray = None,
+    def __init__(self, kappa: float = None, mu: float = None, b: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
-        Exponential distribution
+        Asymmetric Laplace Distribution
+        :param kappa:
+        :param mu:
         :param b:
-        :param mu
         :param activate_jit:
+        :param random_seed:
         """
         super(AsymmetricLaplace, self).__init__(mu=mu, b=b, kappa=kappa,
                                                 activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
-
-        if self.b <= 0:
-            raise Exception('Parameter b (for calculating the Laplace distribution) should be positive')
 
         if self.kappa <= 0:
             raise Exception('The values of Symmetric parameter should be positive(Asymmetric Laplace distribution)!')
@@ -1346,7 +1345,7 @@ class AsymmetricLaplace(ContinuousDistributions):
 
     def sample_(self, size: int = 1) -> jnp.ndarray:
         """
-        Sampling form the Laplace distribution
+        Sampling form the Asymmetric Laplace distribution
         :param size:
         :return:
         """
@@ -1354,28 +1353,28 @@ class AsymmetricLaplace(ContinuousDistributions):
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
             threshold = (self.kappa ** 2) / (1 + self.kappa ** 2)
-            return jnp.where(y <= threshold, jnp.log(y / threshold) * (self.kappa / self.lambd) + self.mu,
-                             jnp.log((1 - y) * (1 + self.kappa ** 2)) * (-1 / (self.kappa * self.lambd)) + self.mu)
+            return jnp.where(y <= threshold, jnp.log(y / threshold) * (self.kappa / self.b) + self.mu,
+                             jnp.log((1 - y) * (1 + self.kappa ** 2)) * (-1 / (self.kappa * self.b)) + self.mu)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
     def statistics(self):
         """
-        Statistics calculated for the Laplace distribution function given distribution parameters
+        Statistics calculated for the Asymmetric Laplace distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        mean_ = self.mu + (1 - self.kappa ** 2) / (self.lambd * self.kappa)
+        mean_ = self.mu + (1 - self.kappa ** 2) / (self.b * self.kappa)
         median_ = jnp.where(self.kappa > 1,
-                            self.mu + (self.kappa / self.lambd) * jnp.log(
+                            self.mu + (self.kappa / self.b) * jnp.log(
                                 (1 + self.kappa ** 2) / (2 * self.kappa ** 2)),
-                            self.mu - (1 / (self.lambd * self.kappa)) * jnp.log((1 + self.kappa ** 2) / 2)
+                            self.mu - (1 / (self.b * self.kappa)) * jnp.log((1 + self.kappa ** 2) / 2)
                             )
 
-        variance_ = (1 + self.kappa ** 4) / ((self.kappa ** 2) * (self.lambd ** 2))
+        variance_ = (1 + self.kappa ** 4) / ((self.kappa ** 2) * (self.b ** 2))
         skewness_ = 2 * (1 - self.kappa ** 6) / (self.kappa ** 4 + 1) ** 1.5
         kurtosis_ = 6 * (1 + self.kappa ** 8) / (self.kappa ** 4 + 1) ** 2.0
-        entropy_ = 1 + jnp.log((1 + self.kappa ** 2) / (self.kappa * self.lambd))
+        entropy_ = 1 + jnp.log((1 + self.kappa ** 2) / (self.kappa * self.b))
 
         values = {'median': median_,
                   'mean': mean_,
@@ -1442,7 +1441,8 @@ class StudentT(ContinuousDistributions):
 
     def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        The cumulative Student-t probability distribution
+        The cumulative Student-t probability distribution. It  is recommended to use  float 64 variables to acquire a
+        dedent accuracy.
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
@@ -3421,7 +3421,8 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1)
 # KK = Kumaraswamy(alpha=3,beta=5)
 # KK = Exponential(lambd=3)
 # KK = Laplace(mu=3,b=2)
-KK = AsymmetricLaplace(kappa=2,mu=3,b=4)
+# KK = AsymmetricLaplace(kappa=2.0,mu=3,b=4)
+KK = StudentT(nu=5)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
