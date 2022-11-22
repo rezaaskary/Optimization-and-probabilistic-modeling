@@ -1840,7 +1840,13 @@ class HalfCauchy(ContinuousDistributions):
 class GammaDistribution(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
-
+        """
+        Gamma Distribution
+        :param alpha:
+        :param beta:
+        :param activate_jit:
+        :param random_seed:
+        """
         super(GammaDistribution, self).__init__(alpha=alpha, beta=beta,
                                                 activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
@@ -3411,7 +3417,7 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1))
+x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1),dtype=jnp.float64)
 # KK = Normal(sigma=4, mu=7)
 # KK = Uniform(lower=-2,upper=3)
 # KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
@@ -3422,7 +3428,11 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1)
 # KK = Exponential(lambd=3)
 # KK = Laplace(mu=3,b=2)
 # KK = AsymmetricLaplace(kappa=2.0,mu=3,b=4)
-KK = StudentT(nu=5)
+# KK = StudentT(nu=5)
+# KK = HalfStudentT(nu = 2)
+# KK = Cauchy(gamma=2,mu=4)
+# KK = HalfCauchy(beta=2)
+KK = GammaDistribution(alpha=2,beta=4)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
