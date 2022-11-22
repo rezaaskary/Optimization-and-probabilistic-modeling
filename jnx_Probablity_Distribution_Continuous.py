@@ -3436,7 +3436,9 @@ x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1
 # KK = InverseGamma(alpha=2.5,beta=3)
 # KK = Weibull(kappa=2,lambd=1)
 # KK = ChiSquared(kappa=2)
-KK  = LogNormal(mu=2,sigma=1)
+# KK  = LogNormal(mu=2,sigma=1)
+
+
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
