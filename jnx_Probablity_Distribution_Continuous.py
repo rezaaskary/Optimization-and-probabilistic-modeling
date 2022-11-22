@@ -198,7 +198,7 @@ class Uniform(ContinuousDistributions):
         family of symmetric probability distributions. The distribution describes an experiment where there is an
         arbitrary outcome that lies between certain bounds. The bounds are defined by the parameters, lower and upper,
         which are the minimum and maximum values.
-        [1]Dekking, Michel (2005). A modern introduction to probability and statistics : understanding why and how.
+        [1] Dekking, Michel (2005). A modern introduction to probability and statistics : understanding why and how.
         London, UK: Springer. pp. 60–61. ISBN 978-1-85233-896-1
 
         Continuous uniform distribution
@@ -269,6 +269,13 @@ class Normal(ContinuousDistributions):
     def __init__(self, sigma: float = None, variance: float = None, mu: float = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
+        In statistics, a normal distribution or Gaussian distribution is a type of continuous probability distribution
+        for a real-valued random variable. The parameter mu  is the mean or expectation of the distribution (and also
+        its median and mode), while the parameter sigma  is its standard deviation. The variance of the distribution is
+        sigma^2. A random variable with a Gaussian distribution is said to be normally distributed, and is called a
+        normal deviate.
+
+
         Continuous Normal distribution
         :param sigma: The standard deviation of the distribution
         :param variance: The variance of the distribution
