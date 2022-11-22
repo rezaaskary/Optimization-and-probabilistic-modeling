@@ -385,6 +385,10 @@ class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, sigma: float = None,
                  variance: float = None, mu: float = None, activate_jit: bool = False, random_seed: int = 1) -> None:
         """
+        In probability and statistics, the truncated normal distribution is the probability distribution derived from
+        that of a normally distributed random variable by bounding the random variable from either below or above
+        (or both). The truncated normal distribution has wide applications in statistics and econometrics.
+
         Continuous Truncated Normal distribution
         :param lower: The lower bound of the distribution
         :param upper: The upper bound of the distribution
@@ -730,7 +734,7 @@ class SkewedNormal(ContinuousDistributions):
     def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         return (self.log_cdf_(x))[0]
 
-    def sample_(self, size: int = 1) -> jnp.ndarray:
+    def sample_(self, size: int = 1):
         """
         Sampling form the Normal distribution
         :param size:
@@ -738,9 +742,8 @@ class SkewedNormal(ContinuousDistributions):
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(y: jnp.ndarray = None):
-            return None
-
+        def inversion_of_cdf_(y: jnp.ndarray = None) -> None:
+            return N
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -1475,7 +1478,7 @@ class StudentT(ContinuousDistributions):
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+        def inversion_of_cdf_(y: jnp.ndarray = None):
             return
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
@@ -1592,7 +1595,7 @@ class HalfStudentT(ContinuousDistributions):
         """
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
-        def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
+        def inversion_of_cdf_(y: jnp.ndarray):
             return
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
