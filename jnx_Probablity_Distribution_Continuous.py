@@ -122,7 +122,7 @@ class ContinuousDistributions:
 
         if not isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
             if variance > 0:
-                self.sigma = variance**0.5
+                self.sigma = variance ** 0.5
                 self.variance = variance
             else:
                 raise Exception('The standard deviation should be a positive value!')
@@ -712,7 +712,7 @@ class SkewedNormal(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        return 0.5 * (1 + lax.erf((x - self.mu) / (self.sigma*jnp.sqrt(2)))) -\
+        return 0.5 * (1 + lax.erf((x - self.mu) / (self.sigma * jnp.sqrt(2)))) - \
                2 * owens_t((x - self.mu) / self.sigma, self.alpha)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
@@ -744,6 +744,7 @@ class SkewedNormal(ContinuousDistributions):
 
         def inversion_of_cdf_(y: jnp.ndarray = None) -> None:
             return N
+
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
     @property
@@ -2054,11 +2055,11 @@ class InverseGamma(ContinuousDistributions):
         Statistics calculated for the Inverse Gamma distribution function given distribution parameters
         :return: A dictionary of calculated metrics
         """
-        variance_ = jnp.where(self.alpha > 2, (self.beta ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2))
-        skewness_ = jnp.where(self.alpha > 3, (4 * jnp.sqrt(self.alpha - 2)) / (self.alpha - 3), None)
+        variance_ = jnp.where(self.alpha > 2, (self.beta ** 2) / ((self.alpha - 2) * (self.alpha - 1) ** 2), jnp.nan)
+        skewness_ = jnp.where(self.alpha > 3, (4 * jnp.sqrt(self.alpha - 2)) / (self.alpha - 3), jnp.nan)
         kurtosis_ = (6 * (5 * self.alpha - 11)) / ((self.alpha - 3) * (self.alpha - 4))
-        kurtosis_ = jnp.where(self.alpha > 4, kurtosis_, None)
-        values = {'mean': jnp.where(self.alpha > 1, self.beta / (self.alpha - 1), None),
+        kurtosis_ = jnp.where(self.alpha > 4, kurtosis_, jnp.nan)
+        values = {'mean': jnp.where(self.alpha > 1, self.beta / (self.alpha - 1), jnp.nan),
                   'mode': self.beta / (self.alpha + 1),
                   'variance': variance_,
                   'skewness': skewness_,
@@ -2133,7 +2134,7 @@ class Weibull(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
-        return jnp.where(x >= 0, 1 - jnp.exp(-(x / self.lambd) ** self.kappa))
+        return jnp.where(x >= 0, 1 - jnp.exp(-(x / self.lambd) ** self.kappa), 0)
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2279,7 +2280,7 @@ class ChiSquared(ContinuousDistributions):
         y = random.uniform(key=self.key, minval=0.0, maxval=1.0, shape=(size, 1))
 
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
-            return
+            return 2 * igammainv(a=0.5 * self.kappa, p=y)
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2420,8 +2421,7 @@ class LogNormal(ContinuousDistributions):
                   'third_quantile': third_quantile_,
                   'mode': mode_,
                   'variance': variance_,
-                  'skewness': skewness_,
-                  'kurtosis': kurtosis_,
+                  'skewness': skewness_
                   }
         return values
 
@@ -3417,7 +3417,7 @@ class PDF(ContinuousDistributions):
 
 
 #
-x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1),dtype=jnp.float64)
+x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # KK = Normal(sigma=4, mu=7)
 # KK = Uniform(lower=-2,upper=3)
 # KK = TruncatedNormal(lower=-3,upper=4,variance=3,mu=1)
@@ -3432,7 +3432,11 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1000, 1)
 # KK = HalfStudentT(nu = 2)
 # KK = Cauchy(gamma=2,mu=4)
 # KK = HalfCauchy(beta=2)
-KK = GammaDistribution(alpha=2,beta=4)
+# KK = GammaDistribution(alpha=2,beta=4)
+# KK = InverseGamma(alpha=2.5,beta=3)
+# KK = Weibull(kappa=2,lambd=1)
+# KK = ChiSquared(kappa=2)
+KK  = LogNormal(mu=2,sigma=1)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
@@ -3468,8 +3472,6 @@ if any(jnp.isnan(E8)):
 
 if any(jnp.isnan(E9)):
     print('there is NAN in diff log CDF')
-
-
 
 print(KK.statistics)
 
