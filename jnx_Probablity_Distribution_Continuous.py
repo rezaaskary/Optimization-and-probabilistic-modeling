@@ -274,7 +274,7 @@ class Normal(ContinuousDistributions):
         its median and mode), while the parameter sigma  is its standard deviation. The variance of the distribution is
         sigma^2. A random variable with a Gaussian distribution is said to be normally distributed, and is called a
         normal deviate.
-
+        [1] Lyon, A. (2014). Why are Normal Distributions Normal?, The British Journal for the Philosophy of Science.
 
         Continuous Normal distribution
         :param sigma: The standard deviation of the distribution
