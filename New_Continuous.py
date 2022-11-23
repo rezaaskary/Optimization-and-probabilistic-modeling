@@ -50,32 +50,44 @@ class ContinuousDistributions:
 
 class ContinuousMethods:
 
-    def probablity_distribution(self, x: jnp.ndarray = None) -> jnp.ndarray:
+    def probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
+        return self.distance_function.pdf(value=x, name='prob')
+
+    def cumulative_distribution_(self) -> jnp.ndarray:
+        return self.distance_function.cdf(value=x, name='cdf')
+
+    def log_probablity_distribution_(self) -> jnp.ndarray:
+        return self.distance_function.log_prob(value=x, name='log_prob')
+
+    def log_cumulative_distribution_(self) -> jnp.ndarray:
+        return self.distance_function.log_cdf(value=x, name='log_cdf')
+
+    def diff_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
+        return (self.distance_function.pdf(value=x, name='diff prob'))[0]
+
+    def diff_cumulative_distribution_(self) -> jnp.ndarray:
+        return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+
+    def diff_log_probablity_distribution_(self) -> jnp.ndarray:
+        return (self.distance_function.log_prob(value=x, name='diff log_prob'))[0]
+
+    def diff_log_cumulative_distribution_(self) -> jnp.ndarray:
+        return (self.distance_function.log_cdf(value=x, name='diff log_cdf'))[0]
+
+    def log_probablity_distribution_(self):
         return
 
-    def log_probablity_distribution(self):
+    def experimental_fit_(self):
         return
 
-    def cumulative_distribution(self):
+    def sample_from_(self):
         return
 
-    def cumulative_distribution(self):
-        return
-
-    def log_probablity_distribution(self):
-        return
-
-    def experimental_fit(self):
-        return
-
-    def sample_from(self):
-        return
-
-    def sample_from_distribution(self):
+    def sample_from_distribution_(self):
         return
 
 
-class Uniform(ContinuousDistributions):
+class Uniform(ContinuousDistributions, ContinuousMethods):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
                  random_seed: int = 1) -> None:
         """
@@ -98,3 +110,7 @@ class Uniform(ContinuousDistributions):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
         self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
+        ContinuousMethods.probablity_distribution_(self)
+        ContinuousMethods.log_probablity_distribution_(self)
+
+        ContinuousDistributions.parallelization(self)
