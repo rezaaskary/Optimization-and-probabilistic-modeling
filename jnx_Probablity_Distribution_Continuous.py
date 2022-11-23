@@ -2492,7 +2492,6 @@ class Wald(ContinuousDistributions):
         """
 
         def normal_fcn_cdf(z: jnp.ndarray) -> jnp.ndarray:
-            # return (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * z ** 2)
             return 0.5 * (1 + lax.erf(z/jnp.sqrt(2)))
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
@@ -2553,7 +2552,6 @@ class Wald(ContinuousDistributions):
 
 
 class Pareto(ContinuousDistributions):
-
     def __init__(self, xm: jnp.ndarray = None, alpha: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
         """
@@ -3435,7 +3433,9 @@ x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1
 # KK = Weibull(kappa=2,lambd=1)
 # KK = ChiSquared(kappa=2)
 # KK  = LogNormal(mu=2,sigma=1)
-KK = Wald(lambd=2,mu=1)
+# KK = Wald(lambd=2,mu=1)
+KK = Pareto(xm=4,alpha=2.1)
+
 
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
