@@ -42,18 +42,29 @@ class ContinuousDistributions:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if lower is None:
             self.lower = None
-        elif isinstance(lower, (jnp.ndarray, int, float)) and self.fixed_parameters:
-            self.lower = jnp.array(lower)
-        elif isinstance(lower, (jnp.ndarray, int, float)) and not self.fixed_parameters:
-            if len(jnp.array(lower)) == 1 and self.n_chains > 1:
-                self.lower = jnp.tile(lower, self.n_chains, 1)
-            elif len(jnp.array(lower)) == self.n_chains:
-                self.lower = jnp.array(lower)
-            elif len(jnp.array(lower)) != self.n_chains:
-                raise Exception('The length of the parameters of the probability distribution and the number of chains '
-                                '(simulations) should be consistent')
+        elif not isinstance(lower, (jnp.ndarray, int, float)):
+            raise Exception(f'The value of variable {lower} is not specified correctly!')
 
 
+
+
+
+
+
+
+        # elif isinstance(lower, (jnp.ndarray, int, float)) and len(jnp.array(lower)) == 1 and self.fixed_parameters:
+        #     self.lower = jnp.array(lower)
+        # elif isinstance(lower, (jnp.ndarray, int, float)) and not self.fixed_parameters:
+        #     if len(jnp.array(lower)) == 1 and self.n_chains > 1:
+        #         self.lower = jnp.tile(lower, self.n_chains, 1)
+        #     # elif len(jnp.array(lower)) > 1 and self.n_chains == 1:
+        #     elif len(jnp.array(lower)) == self.n_chains:
+        #         self.lower = jnp.array(lower)
+        #     elif len(jnp.array(lower)) != self.n_chains:
+        #         raise Exception('The length of the parameters of the probability distribution and the number of chains '
+        #                         '(simulations) should be consistent')
+
+        elif
 
 
 
