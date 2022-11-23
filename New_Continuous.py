@@ -124,6 +124,7 @@ class ContinuousDistributions:
 
 
 
+
         def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
             return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
@@ -199,7 +200,18 @@ class Uniform(ContinuousDistributions):
         if jnp.any(self.lower >= self.upper):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
-        self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
+        if self.fixed_parameters:
+            self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
+            self.vectorized_index = [1]  # input x, parameter 1, parameter 2
+        else:
+            def variant_function(parameter1: jnp.ndarray = None, parameter2: jnp.ndarray = None):
+                return distributions.Uniform(low=parameter1, high=parameter1, name='Uniform')
+            self.distance_function = variant_function
+            self.vectorized_index = [1, 1, 1]  # input x, parameter 1, parameter 2
+
+
+
+
         # ContinuousDistributions.parallelization(self)
         x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
         # x = x.at[5,0].set(jnp.nan)
