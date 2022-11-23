@@ -42,7 +42,6 @@ class DiscreteDistributions:
         else:
             raise Exception('Please specify whether the number of chains are fixed or variant during simulation !')
 
-
     def parallelization(self):
         if not self.variant_chains:
             # when the number of parallel evaluation is fixed. Useful for MCMC
@@ -57,8 +56,8 @@ class DiscreteDistributions:
                 # self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0))
                 # self.sample = self.sample_
             else:
-                self.sample = self.sample_
-                # self.pdf = vmap(self.pdf_, in_axes=[1], out_axes=1)
+                # self.sample = self.sample_
+                self.pdf = vmap(self.pdf_, in_axes=[1], out_axes=1)
                 # self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
                 # self.log_pdf = vmap(self.log_pdf_, in_axes=[1], out_axes=1)
                 # self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
@@ -109,6 +108,16 @@ class Binomial(DiscreteDistributions):
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
         return self.distance_function.prob(x)
+    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+        """
+        The log of Binomial probability distribution
+        :param x: The input variable (Cx1)
+        :return: The log of the probability of the occurrence of the given variable Cx1
+        """
+        return jnp.log(self.distance_function.prob(x))
+
+
+
 
     # def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
     #     return (self.pdf_(x))[0]
@@ -153,8 +162,9 @@ class Binomial(DiscreteDistributions):
 
 
 # x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
-x = random.randint(key=random.PRNGKey(7), shape=(1000, 1), minval=0, maxval=10, dtype=int)
+x = random.randint(key=random.PRNGKey(7), shape=(1000, 1), minval=0, maxval=60, dtype=int)
 
 KK = Binomial(total_count=20, probs=0.5)
-KK.pdf(x)
-KK
+FF = KK.pdf(x)
+plt.plot(x,FF,'*')
+plt
