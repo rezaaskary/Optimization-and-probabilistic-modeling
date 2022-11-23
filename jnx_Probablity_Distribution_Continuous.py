@@ -2097,7 +2097,7 @@ class Weibull(ContinuousDistributions):
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
-        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        x = jnp.clip(a=x, a_min=0, a_max=jnp.inf)
         return jnp.where(x >= 0, (self.kappa / self.lambd) * \
                          ((x / self.lambd) ** (self.kappa - 1)) * \
                          jnp.exp(-(x / self.lambd) ** self.kappa), 0)
@@ -2133,9 +2133,8 @@ class Weibull(ContinuousDistributions):
         :param x: The input variable (Cx1)
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
-        x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+        x = jnp.clip(a=x, a_min=0, a_max=jnp.inf)
         return jnp.where(x >= 0, 1 - jnp.exp(-(x / self.lambd) ** self.kappa), 0)
-
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         The derivatives of the cumulative Weibull probability distribution
@@ -2442,7 +2441,7 @@ class Wald(ContinuousDistributions):
                                    activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.Lambda <= 0:
+        if self.lambd <= 0:
             raise Exception('The value of lambda should be positive (Wald distribution)!')
 
         if self.mu <= 0:
@@ -2452,7 +2451,7 @@ class Wald(ContinuousDistributions):
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the -------- distribution
+        Parallelized calculating the probability of the Wald distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability of the occurrence of the given variable Cx1
         """
@@ -2492,12 +2491,13 @@ class Wald(ContinuousDistributions):
         :return: The cumulative probability of the occurrence of the given variable Cx1
         """
 
-        def normal_fcn(z):
-            return (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * z ** 2)
+        def normal_fcn_cdf(z: jnp.ndarray) -> jnp.ndarray:
+            # return (1 / jnp.sqrt(2 * jnp.pi)) * jnp.exp(-0.5 * z ** 2)
+            return 0.5 * (1 + lax.erf(z/jnp.sqrt(2)))
 
         x = jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
-        return normal_fcn(jnp.sqrt(self.lambd / x) * (x / self.mu - 1)) + jnp.exp((2 * self.lambd) / self.mu) * \
-               normal_fcn(-jnp.sqrt(self.lambd / x) * (x / self.mu + 1))
+        return normal_fcn_cdf(jnp.sqrt(self.lambd / x) * (x / self.mu - 1)) + jnp.exp((2 * self.lambd) / self.mu) * \
+               normal_fcn_cdf(-jnp.sqrt(self.lambd / x) * (x / self.mu + 1))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2543,13 +2543,11 @@ class Wald(ContinuousDistributions):
         skewness_ = 3 * jnp.sqrt(self.mu / self.lambd)
         kurtosis_ = 15 * (self.mu / self.lambd)
 
-        values = {'median': median_,
-                  'mean': mean_,
+        values = {'mean': mean_,
                   'mode': mode_,
                   'variance': variance_,
                   'skewness': skewness_,
-                  'kurtosis': kurtosis_,
-                  'entropy': entropy_
+                  'kurtosis': kurtosis_
                   }
         return values
 
@@ -3437,7 +3435,7 @@ x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1
 # KK = Weibull(kappa=2,lambd=1)
 # KK = ChiSquared(kappa=2)
 # KK  = LogNormal(mu=2,sigma=1)
-
+KK = Wald(lambd=2,mu=1)
 
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
