@@ -1,5 +1,19 @@
 import numpy as np
-from Probablity_distributions import *
+from jax import random
+# from Probablity_distributions import *
+from tensorflow_probability.substrates.jax import distributions
+
+x  = random.randint(key=random.PRNGKey(7),shape=(1000, 1),minval=0,maxval=10,dtype=int)
+
+M = distributions.Binomial(total_count=20,probs=0.5)
+
+RR = M.prob([0,0.2,1,2,3,4,5,55])
+
+RR
+
+
+
+
 
 def vc(x):
     if isinstance(x, list):

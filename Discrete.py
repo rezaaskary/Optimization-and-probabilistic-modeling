@@ -1,28 +1,34 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
+from tensorflow_probability.substrates.jax import distributions
 from jax import vmap, jit, grad, random, lax, scipy
-from jax.scipy.special import factorial
 from matplotlib.pyplot import plot, grid, figure, show
 
 
 class DiscreteDistributions:
     def __init__(self,
-                 n: int = None,
-                 p: int = None) -> None:
+                 total_count: int = None,
+                 probs: int = None,
+                 random_seed: int = 1) -> None:
 
-        if isinstance(n, int):
-            self.n = n
-        elif n is None:
-            self.n = None
+        if isinstance(random_seed, int):
+            self.key = random.PRNGKey(random_seed)
         else:
-            raise Exception('The lower bound is not specified correctly!')
+            raise Exception('The random seed is not specified correctly!')
 
-        if isinstance(p, int):
-            self.p = p
-        elif p is None:
-            self.p = None
+        if isinstance(total_count, int):
+            self.total_count = total_count
+        elif total_count is None:
+            self.total_count = None
         else:
-            raise Exception('The lower bound is not specified correctly!')
+            raise Exception('The value of total_count is not specified correctly!')
+
+        if isinstance(probs, int):
+            self.probs = probs
+        elif probs is None:
+            self.probs = None
+        else:
+            raise Exception('The value of probs is not specified correctly!')
 
     def parallelization(self):
         if not self.variant_chains:
@@ -51,9 +57,6 @@ class DiscreteDistributions:
         else:
             pass
 
-
-
-
     def visualize(self, lower_lim: float = -10, upper_lim: float = -10):
         """
         Visualizing the probability distribution
@@ -71,64 +74,73 @@ class DiscreteDistributions:
 
 
 class Binomial(DiscreteDistributions):
-    def __init__(self, n: int = None, p: int = None) -> None:
-        super(Binomial, self).__init__(n=n, p=p)
+    def __init__(self, total_count: int = None, probs: int = None) -> None:
+        super(Binomial, self).__init__(total_count=total_count, probs=probs)
 
         # check for the consistency of the input of the probability distribution
+        if self.total_count < 0:
+            raise Exception('The negative value for input parameters total_count is not accepted!')
 
-        if self.n < 0:
-            raise Exception('The negative value for input parameters n is not accepted!')
-
-        if not self.p in [0, 1]:
-            raise Exception('The of input parameters p can be either 0 or 1 !')
+        if self.probs > 1 or self.probs < 0:
+            raise Exception('The of input parameters probs cannot be outside range [0,1] !')
 
         ContinuousDistributions.parallelization(self)
+        self.distance_function = distributions.Binomial(total_count=self.total_count, probs=self.probs)
 
     def pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
-        Parallelized calculating the probability of the Uniform distribution
+        Parallelized calculating the probability of the Binomial distribution
         :param x: An numpy array values determining the variable we are calculating its probability distribution (Cx1)
         :return: The probability (and the derivative) of the occurrence of the given variable (Cx1, Cx1)
         """
-        return factorial(self.n) / (factorial(x) * factorial(self.n - x)) * (self.p ** x) * (1 - self.p) ** (self.n - x)
+        return self.distance_function.prob(x)
 
-    def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return (self.pdf_(x))[0]
+    # def diff_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return (self.pdf_(x))[0]
+    #
+    # def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
+    #
+    # def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return self.log_pdf_(x)[0]
+    #
+    # def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+    #
+    # def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return (self.cdf_(x))[0]
+    #
+    # def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return jnp.log(
+    #         jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
+    #
+    # def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
+    #     return (self.log_cdf_(x))[0]
+    #
+    # def sample_(self, size: int = 1) -> jnp.ndarray:
+    #     return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
+    #
+    # @property
+    # def statistics(self):
+    #     """
+    #     Statistics calculated for the Uniform distribution function given distribution parameters
+    #     :return: A dictionary of calculated metrics
+    #     """
+    #     values = {'mean': 0.5 * (self.lower + self.upper),
+    #               'median': 0.5 * (self.lower + self.upper),
+    #               'variance': (1 / 12) * (self.lower - self.upper) ** 2,
+    #               'MAD': (1 / 4) * (self.lower + self.upper),
+    #               'skewness': 0,
+    #               'kurtosis': -6 / 5,
+    #               'Entropy': jnp.log(self.upper - self.lower)
+    #               }
+    #     return values
 
-    def log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.where((x > self.lower) & (x < self.upper), -jnp.log((self.upper - self.lower)), -jnp.inf)
 
-    def diff_log_pdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return self.log_pdf_(x)[0]
 
-    def cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1))
+# x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
+x  = random.randint(key=random.PRNGKey(7),shape=(1000, 1),minval=0,maxval=10,dtype=int)
 
-    def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return (self.cdf_(x))[0]
+KK = Binomial(total_count=20, probs=0.5)
+KK.pdf(x)
 
-    def log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.log(
-            jnp.where(x < self.lower, 0, jnp.where(x < self.upper, (x - self.lower) / (self.upper - self.lower), 1)))
-
-    def diff_log_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
-        return (self.log_cdf_(x))[0]
-
-    def sample_(self, size: int = 1) -> jnp.ndarray:
-        return random.uniform(key=self.key, minval=self.lower, maxval=self.upper, shape=(size, 1))
-
-    @property
-    def statistics(self):
-        """
-        Statistics calculated for the Uniform distribution function given distribution parameters
-        :return: A dictionary of calculated metrics
-        """
-        values = {'mean': 0.5 * (self.lower + self.upper),
-                  'median': 0.5 * (self.lower + self.upper),
-                  'variance': (1 / 12) * (self.lower - self.upper) ** 2,
-                  'MAD': (1 / 4) * (self.lower + self.upper),
-                  'skewness': 0,
-                  'kurtosis': -6 / 5,
-                  'Entropy': jnp.log(self.upper - self.lower)
-                  }
-        return values
