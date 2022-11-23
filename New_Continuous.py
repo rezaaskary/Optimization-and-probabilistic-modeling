@@ -50,7 +50,7 @@ class ContinuousDistributions:
 
 class ContinuousMethods:
 
-    def probablity_distribution(self):
+    def probablity_distribution(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return
 
     def log_probablity_distribution(self):
@@ -69,6 +69,9 @@ class ContinuousMethods:
         return
 
     def sample_from(self):
+        return
+
+    def sample_from_distribution(self):
         return
 
 
