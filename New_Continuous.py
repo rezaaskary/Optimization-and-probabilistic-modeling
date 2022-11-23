@@ -52,11 +52,11 @@ class ContinuousDistributions:
                 else:  # time-variant parameters
                     if self.n_chains >= 1:
                         self.lower = jnp.tile(lower, self.n_chains, 1)
-            else: # entering an array as input
+            else:  # entering an array as input
                 if self.fixed_parameters:  # fixed parameters
                     raise Exception(f'An array of parameter lower was entered while simulation with fixed parameters'
                                     f' is selected!')
-                else: # variant parameters
+                else:  # variant parameters
                     if len(jnp.array(lower)) == self.n_chains:
                         self.lower = jnp.array(lower)
                     else:
@@ -74,20 +74,18 @@ class ContinuousDistributions:
                 else:  # time-variant parameters
                     if self.n_chains >= 1:
                         self.upper = jnp.tile(upper, self.n_chains, 1)
-            else: # entering an array as input
+            else:  # entering an array as input
                 if self.fixed_parameters:  # fixed parameters
                     raise Exception(f'An array of parameter upper was entered while simulation with fixed parameters'
                                     f' is selected!')
-                else: # variant parameters
+                else:  # variant parameters
                     if len(jnp.array(upper)) == self.n_chains:
                         self.upper = jnp.array(upper)
                     else:
                         raise Exception(f'The number of chains and the array of the input (upper) are not consistent!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
     def parallelization(self):
         def probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
@@ -114,33 +112,52 @@ class ContinuousDistributions:
         def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
 
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        def variant_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.prob(value=x, name='prob')
+
+        def variant_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.cdf(value=x, name='cdf')
+
+        def variant_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.log_prob(value=x, name='log prob')
+
+        def variant_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.log_cdf(value=x, name='log cdf')
+
+        def variant_diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.prob(value=x, name='diff prob'))[0]
+
+        def variant_diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+
+        def variant_diff_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
+
+        def variant_diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
         def mle(x: jnp.ndarray = None, checking_inputs: bool = False):
             return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
-
-
-
-
-
-
-
-
 
         def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
             return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if self.fixed_parameters:
-
-            self.sample = self.sampling_from_distribution
+            self.sample = sampling_from_distribution
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
-                self.pdf = jit(vmap(self.probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_pdf = jit(vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.log_pdf = jit(vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.cdf = jit(vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.log_cdf = jit(vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.diff_cdf = jit(vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0))
-                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
+                self.pdf = jit(vmap(probablity_distribution_, in_axes=[1], out_axes=1))
+                self.diff_pdf = jit(vmap(grad(diff_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.log_pdf = jit(vmap(log_probablity_distribution_, in_axes=[1], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.cdf = jit(vmap(cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.log_cdf = jit(vmap(log_cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(diff_cumulative_distribution_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
 
             else:
                 #
@@ -153,7 +170,6 @@ class ContinuousDistributions:
                 self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
                 self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
         else:
-
             self.sample = self.sampling_from_distribution
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
@@ -202,15 +218,13 @@ class Uniform(ContinuousDistributions):
 
         if self.fixed_parameters:
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-            self.vectorized_index = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index = jnp.array(1, dtype=int)  # input x, parameter 1, parameter 2
         else:
-            def variant_function(parameter1: jnp.ndarray = None, parameter2: jnp.ndarray = None):
-                return distributions.Uniform(low=parameter1, high=parameter1, name='Uniform')
+            def variant_function(lower: jnp.ndarray = None, upper: jnp.ndarray = None):
+                return distributions.Uniform(low=lower, high=upper, name='Uniform')
+
             self.distance_function = variant_function
-            self.vectorized_index = [1, 1, 1]  # input x, parameter 1, parameter 2
-
-
-
+            self.vectorized_index = jnp.array([1, 1, 1], dtype=int)  # input x, parameter 1, parameter 2
 
         # ContinuousDistributions.parallelization(self)
         x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
