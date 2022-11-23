@@ -47,6 +47,37 @@ class ContinuousDistributions:
         else:
             raise Exception('Please specify the activation of the just-in-time evaluation!')
 
+    def parallelization(self):
+        if not self.variant_chains:
+            # when the number of parallel evaluation is fixed. Useful for MCMC
+            if self.activate_jit:
+                self.pdf = jit(vmap(self.pdf_, in_axes=[1], out_axes=1))
+                self.diff_pdf = jit(vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0))
+                self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[1], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
+                self.cdf = jit(vmap(self.cdf_, in_axes=[1], out_axes=1))
+                self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[1], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0))
+                self.sample = self.sample_
+            else:
+                self.sample = self.sample_
+                self.pdf = vmap(self.pdf_, in_axes=[1], out_axes=1)
+                self.diff_pdf = vmap(grad(self.diff_pdf_), in_axes=[0], out_axes=0)
+                self.log_pdf = vmap(self.log_pdf_, in_axes=[1], out_axes=1)
+                self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
+                self.cdf = vmap(self.cdf_, in_axes=[1], out_axes=1)
+                self.log_cdf = vmap(self.log_cdf_, in_axes=[1], out_axes=1)
+                self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
+                self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0)
+
+        else:
+            pass
+
+
+
+
+
 
 class ContinuousMethods:
 
@@ -57,10 +88,10 @@ class ContinuousMethods:
         return self.distance_function.cdf(value=x, name='cdf')
 
     def log_probablity_distribution_(self) -> jnp.ndarray:
-        return self.distance_function.log_prob(value=x, name='log_prob')
+        return self.distance_function.log_prob(value=x, name='log prob')
 
     def log_cumulative_distribution_(self) -> jnp.ndarray:
-        return self.distance_function.log_cdf(value=x, name='log_cdf')
+        return self.distance_function.log_cdf(value=x, name='log cdf')
 
     def diff_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return (self.distance_function.pdf(value=x, name='diff prob'))[0]
@@ -69,22 +100,20 @@ class ContinuousMethods:
         return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
 
     def diff_log_probablity_distribution_(self) -> jnp.ndarray:
-        return (self.distance_function.log_prob(value=x, name='diff log_prob'))[0]
+        return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
 
     def diff_log_cumulative_distribution_(self) -> jnp.ndarray:
-        return (self.distance_function.log_cdf(value=x, name='diff log_cdf'))[0]
+        return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
 
-    def log_probablity_distribution_(self):
-        return
 
-    def experimental_fit_(self):
-        return
-
-    def sample_from_(self):
-        return
-
-    def sample_from_distribution_(self):
-        return
+    # def experimental_fit_(self):
+    #     return
+    #
+    # def sample_from_(self, n_samples: int = None):
+    #     return
+    #
+    # def sample_from_distribution_(self):
+    #     return
 
 
 class Uniform(ContinuousDistributions, ContinuousMethods):
