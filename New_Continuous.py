@@ -142,25 +142,22 @@ class ContinuousDistributions:
         def mle(x: jnp.ndarray = None, checking_inputs: bool = False):
             return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
 
-        def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
+        def sampling_from_distribution(sample_shape: tuple = None) -> jnp.ndarray:
             return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if self.fixed_parameters:
+        if self.fixed_parameters: # when the number of parallel evaluation is fixed. Useful for MCMC
             self.sample = sampling_from_distribution
-            # when the number of parallel evaluation is fixed. Useful for MCMC
-            if self.activate_jit:
-                self.pdf = jit(vmap(probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_pdf = jit(vmap(grad(diff_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.log_pdf = jit(vmap(log_probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.cdf = jit(vmap(cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.log_cdf = jit(vmap(log_cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.diff_cdf = jit(vmap(grad(diff_cumulative_distribution_), in_axes=[0], out_axes=0))
-                self.diff_log_cdf = jit(vmap(grad(diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
-
-            else:
-                #
+            if self.activate_jit: # activating jit
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=[1], out_axes=1),)
+                self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=[1], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
+            else:  # Only using vectorized function
                 self.pdf = vmap(self.probablity_distribution_, in_axes=[1], out_axes=1)
                 self.diff_pdf = vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1)
