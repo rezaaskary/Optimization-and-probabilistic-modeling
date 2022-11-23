@@ -69,21 +69,21 @@ class ContinuousDistributions:
             raise Exception('The value of lambda is not specified correctly!')
 
         if isinstance(b, (jnp.ndarray, float, int)):
-            self.b = b
+            self.b = float(b)
         elif b is None:
             self.b = None
         else:
             raise Exception('The value of b is not specified correctly!')
 
         if isinstance(a, (jnp.ndarray, float, int)):
-            self.a = a
+            self.a = float(a)
         elif a is None:
             self.a = None
         else:
             raise Exception('The value of a is not specified correctly!')
 
         if isinstance(c, (jnp.ndarray, float, int)):
-            self.c = c
+            self.c = float(c)
         elif c is None:
             self.c = None
         else:
@@ -134,7 +134,7 @@ class ContinuousDistributions:
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
         elif lower is None:
-            self.a = None
+            self.lower = None
         else:
             raise Exception('The value of lower is not specified correctly!')
 
@@ -2685,7 +2685,7 @@ class ExModifiedGaussian(ContinuousDistributions):
                                                  activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
 
-        if self.Lambda <= 0:
+        if self.lambd <= 0:
             raise Exception('The value of lambda should be positive (Exponentially modified Gaussian distribution)!')
 
         if self.sigma <= 0:
@@ -2807,7 +2807,9 @@ class Triangular(ContinuousDistributions):
         """
         super(Triangular, self).__init__(a=a, b=b, c=c, activate_jit=activate_jit, random_seed=random_seed)
         # check for the consistency of the input of the probability distribution
-
+        print(self.a)
+        print(self.b)
+        print(self.c)
         if self.a >= self.b:
             raise Exception('The value of a should be lower than b (Triangular distribution)!')
 
@@ -2865,7 +2867,7 @@ class Triangular(ContinuousDistributions):
         return jnp.where((self.a <= x) & (x <= self.c), ((x - self.a) ** 2) / ((self.b - self.a) * (self.c - self.a)),
                          jnp.where((self.c < x) & (x <= self.b),
                                    1 - ((self.b - x) ** 2) / ((self.b - self.a) * (self.b - self.c)),
-                                   jnp.where(the_most_right_index, 1.0, 0)))
+                                   jnp.where(x > self.b, 1.0, 0)))
 
     def diff_cdf_(self, x: jnp.ndarray) -> jnp.ndarray:
         """
@@ -2897,7 +2899,7 @@ class Triangular(ContinuousDistributions):
         def inversion_of_cdf_(y: jnp.ndarray) -> jnp.ndarray:
             return jnp.where(y <= (self.c - self.a) / (self.b - self.a),
                              self.a + jnp.sqrt(y * (self.b - self.a) * (self.c - self.a)),
-                             self.b - jnp.sqrt((1 - y) * (self.b - self.a) * (self.b - bself.c)))
+                             self.b - jnp.sqrt((1 - y) * (self.b - self.a) * (self.b - self.c)))
 
         return vmap(inversion_of_cdf_, in_axes=0, out_axes=0)(y)
 
@@ -2910,7 +2912,7 @@ class Triangular(ContinuousDistributions):
         mean_ = (self.a + self.b + self.c) / 3
         median_ = jnp.where(2 * self.c >= self.a + self.b,
                             self.a + jnp.sqrt(0.5 * (self.b - self.a) * (self.c - self.a)),
-                            self.b - jnp.sqrt(0.5 * (self.b - self.a) * (self.b - bself.c)))
+                            self.b - jnp.sqrt(0.5 * (self.b - self.a) * (self.b - self.c)))
         mode_ = self.c
         kurtosis_ = -0.6
         entropy_ = .5 + jnp.log(0.5 * (self.b - self.a))
@@ -2921,7 +2923,6 @@ class Triangular(ContinuousDistributions):
                   'mean': mean_,
                   'mode': mode_,
                   'variance': variance_,
-                  'skewness': skewness_,
                   'kurtosis': kurtosis_,
                   'entropy': entropy_
                   }
@@ -3434,9 +3435,9 @@ x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1
 # KK = ChiSquared(kappa=2)
 # KK  = LogNormal(mu=2,sigma=1)
 # KK = Wald(lambd=2,mu=1)
-KK = Pareto(xm=4,alpha=2.1)
-
-
+# KK = Pareto(xm=4,alpha=2.1)
+# KK = ExModifiedGaussian(lambd=1.1, mu=3,sigma=2.6)
+KK=Triangular(a=1,b=3,c=2)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)
