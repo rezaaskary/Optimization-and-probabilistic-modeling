@@ -84,6 +84,34 @@ class DiscreteDistributions:
         grid(which='both')
 
 
+class DiscreteMethods:
+
+    def probablity_distribution(self):
+        return
+    def log_probablity_distribution(self):
+        return
+    def cumulative_distribution(self):
+        return
+    def cumulative_distribution(self):
+        return
+    def log_probablity_distribution(self):
+        return
+    def experimental_fit(self):
+        return
+    def sample_from(self):
+        return
+
+    @property
+    def statistics(self):
+        return
+
+
+
+
+
+
+
+
 class Binomial(DiscreteDistributions):
     def __init__(self, total_count: int = None, probs: int = None,
                  activate_jit: bool = False, random_seed: int = 1) -> None:
