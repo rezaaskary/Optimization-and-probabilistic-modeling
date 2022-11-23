@@ -43,78 +43,89 @@ class ContinuousDistributions:
         if lower is None:
             self.lower = None
         elif not isinstance(lower, (jnp.ndarray, int, float)):
-            raise Exception(f'The value of variable {lower} is not specified correctly!')
-
-
-
-
-
-
-
-
-        # elif isinstance(lower, (jnp.ndarray, int, float)) and len(jnp.array(lower)) == 1 and self.fixed_parameters:
-        #     self.lower = jnp.array(lower)
-        # elif isinstance(lower, (jnp.ndarray, int, float)) and not self.fixed_parameters:
-        #     if len(jnp.array(lower)) == 1 and self.n_chains > 1:
-        #         self.lower = jnp.tile(lower, self.n_chains, 1)
-        #     # elif len(jnp.array(lower)) > 1 and self.n_chains == 1:
-        #     elif len(jnp.array(lower)) == self.n_chains:
-        #         self.lower = jnp.array(lower)
-        #     elif len(jnp.array(lower)) != self.n_chains:
-        #         raise Exception('The length of the parameters of the probability distribution and the number of chains '
-        #                         '(simulations) should be consistent')
-
-        elif
-
-
-
-        if isinstance(lower, (jnp.ndarray, float, int)):
-            self.lower = lower
-        elif lower is None:
-            self.lower = None
-        else:
-            raise Exception('The value of lower is not specified correctly!')
-
-        if isinstance(upper, (jnp.ndarray, float, int)):
-            self.upper = upper
-        elif upper is None:
+            raise Exception(f'The value of variable lower is incorrect!')
+        elif isinstance(lower, (jnp.ndarray, int, float)):
+            if len(jnp.array(lower)) == 1:
+                if self.fixed_parameters:  # fixed parameters
+                    if self.n_chains >= 1:
+                        self.lower = jnp.array(lower)
+                else:  # time-variant parameters
+                    if self.n_chains >= 1:
+                        self.lower = jnp.tile(lower, self.n_chains, 1)
+            else: # entering an array as input
+                if self.fixed_parameters:  # fixed parameters
+                    raise Exception(f'An array of parameter lower was entered while simulation with fixed parameters'
+                                    f' is selected!')
+                else: # variant parameters
+                    if len(jnp.array(lower)) == self.n_chains:
+                        self.lower = jnp.array(lower)
+                    else:
+                        raise Exception(f'The number of chains and the array of the input (lower) are not consistent!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if upper is None:
             self.upper = None
-        else:
-            raise Exception('The value of upper is not specified correctly!')
+        elif not isinstance(upper, (jnp.ndarray, int, float)):
+            raise Exception(f'The value of variable upper is incorrect!')
+        elif isinstance(upper, (jnp.ndarray, int, float)):
+            if len(jnp.array(upper)) == 1:
+                if self.fixed_parameters:  # fixed parameters
+                    if self.n_chains >= 1:
+                        self.upper = jnp.array(upper)
+                else:  # time-variant parameters
+                    if self.n_chains >= 1:
+                        self.upper = jnp.tile(upper, self.n_chains, 1)
+            else: # entering an array as input
+                if self.fixed_parameters:  # fixed parameters
+                    raise Exception(f'An array of parameter upper was entered while simulation with fixed parameters'
+                                    f' is selected!')
+                else: # variant parameters
+                    if len(jnp.array(upper)) == self.n_chains:
+                        self.upper = jnp.array(upper)
+                    else:
+                        raise Exception(f'The number of chains and the array of the input (upper) are not consistent!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    def probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return self.distance_function.prob(value=x, name='prob')
 
-    def cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return self.distance_function.cdf(value=x, name='cdf')
-
-    def log_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return self.distance_function.log_prob(value=x, name='log prob')
-
-    def log_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return self.distance_function.log_cdf(value=x, name='log cdf')
-
-    def diff_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return (self.distance_function.prob(value=x, name='diff prob'))[0]
-
-    def diff_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
-
-    def diff_log_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
-
-    def diff_log_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
-        return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
-
-    def mle(self, x: jnp.ndarray = None, checking_inputs: bool = False):
-        return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
-
-    def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
-        return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
     def parallelization(self):
+        def probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.prob(value=x, name='prob')
+
+        def cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.cdf(value=x, name='cdf')
+
+        def log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.log_prob(value=x, name='log prob')
+
+        def log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return self.distance_function.log_cdf(value=x, name='log cdf')
+
+        def diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.prob(value=x, name='diff prob'))[0]
+
+        def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+
+        def diff_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
+
+        def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+
+        def mle(x: jnp.ndarray = None, checking_inputs: bool = False):
+            return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
+
+
+
+
+
+
+
+
+        def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
+            return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
         if self.fixed_parameters:
 
