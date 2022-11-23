@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 from jax import jit, vmap, grad, lax, random
-from jnx_Probablity_Distribution_Continuous import Uniform, HalfNormal
+from Continuous import Uniform, HalfNormal
 from sampler_algorithms import MetropolisHastings, ModelParallelizer, MCMCHammer
 import matplotlib.pyplot as plt
 
@@ -47,7 +47,7 @@ D = ModelParallelizer(model=model, activate_jit=True, has_input=True)
 # values_der2 = D2.diff_model_evaluate(theta2)
 
 
-from jnx_Probablity_Distribution_Continuous import Uniform
+from Continuous import Uniform
 
 theta1 = Uniform(lower=-10, upper=10, activate_jit=True)
 theta2 = Uniform(lower=-10, upper=10, activate_jit=True)
