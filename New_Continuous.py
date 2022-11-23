@@ -31,3 +31,22 @@ class ContinuousDistributions:
             raise Exception('Please specify the activation of the just-in-time evaluation!')
 
 
+
+
+class ContinuousMethods:
+
+    def probablity_distribution(self):
+        return
+    def log_probablity_distribution(self):
+        return
+    def cumulative_distribution(self):
+        return
+    def cumulative_distribution(self):
+        return
+    def log_probablity_distribution(self):
+        return
+    def experimental_fit(self):
+        return
+    def sample_from(self):
+        return
+
