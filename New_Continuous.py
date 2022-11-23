@@ -13,6 +13,33 @@ class ContinuousDistributions:
                  random_seed: int = 1,
                  fixed_parameters: bool = True) -> None:
 
+        if isinstance(n_chains, int):
+            self.n_chains = n_chains
+        elif n_chains is None:
+            self.n_chains = 1
+        else:
+            raise Exception('The value of upper is not specified correctly!')
+
+        if isinstance(fixed_parameters, bool):
+            self.fixed_parameters = fixed_parameters
+        else:
+            raise Exception('Please correctly specify the type of simulation (fixed  or variant parameters ) !')
+
+        if isinstance(random_seed, int):
+            self.key = random.PRNGKey(random_seed)
+        else:
+            raise Exception('The random seed is not specified correctly!')
+
+        if isinstance(variant_chains, bool):
+            self.variant_chains = variant_chains
+        else:
+            raise Exception('Please specify whether the number of chains are fixed or variant during simulation !')
+
+        if isinstance(activate_jit, bool):
+            self.activate_jit = activate_jit
+        else:
+            raise Exception('Please specify the activation of the just-in-time evaluation!')
+
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
         elif lower is None:
@@ -26,32 +53,6 @@ class ContinuousDistributions:
             self.upper = None
         else:
             raise Exception('The value of upper is not specified correctly!')
-
-        if isinstance(random_seed, int):
-            self.key = random.PRNGKey(random_seed)
-        else:
-            raise Exception('The random seed is not specified correctly!')
-        if isinstance(n_chains, int):
-            self.n_chains = n_chains
-        elif n_chains is None:
-            self.n_chains = 1
-        else:
-            raise Exception('The value of upper is not specified correctly!')
-
-        if isinstance(variant_chains, bool):
-            self.variant_chains = variant_chains
-        else:
-            raise Exception('Please specify whether the number of chains are fixed or variant during simulation !')
-
-        if isinstance(activate_jit, bool):
-            self.activate_jit = activate_jit
-        else:
-            raise Exception('Please specify the activation of the just-in-time evaluation!')
-
-        if isinstance(fixed_parameters, bool):
-            self.fixed_parameters = fixed_parameters
-        else:
-            raise Exception('Please correctly specify the type of simulation (fixed  or variant parameters ) !')
 
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
