@@ -50,51 +50,58 @@ class ContinuousDistributions:
     def probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return self.distance_function.prob(value=x, name='prob')
 
-    def cumulative_distribution_(self) -> jnp.ndarray:
+    def cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return self.distance_function.cdf(value=x, name='cdf')
 
-    def log_probablity_distribution_(self) -> jnp.ndarray:
+    def log_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return self.distance_function.log_prob(value=x, name='log prob')
 
-    def log_cumulative_distribution_(self) -> jnp.ndarray:
+    def log_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return self.distance_function.log_cdf(value=x, name='log cdf')
 
     def diff_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return (self.distance_function.prob(value=x, name='diff prob'))[0]
 
-    def diff_cumulative_distribution_(self) -> jnp.ndarray:
+    def diff_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
 
-    def diff_log_probablity_distribution_(self) -> jnp.ndarray:
+    def diff_log_probablity_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
 
-    def diff_log_cumulative_distribution_(self) -> jnp.ndarray:
+    def diff_log_cumulative_distribution_(self, x: jnp.ndarray = None) -> jnp.ndarray:
         return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+
+    def mle(self, x: jnp.ndarray = None, checking_inputs: bool = False):
+        return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
+
+    def sampling_from_distribution(self, sample_shape: tuple = None) -> jnp.ndarray:
+        return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
     def parallelization(self):
         if not self.variant_chains:
+
+            self.sample = self.sampling_from_distribution
             # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:
                 self.pdf = jit(vmap(self.probablity_distribution_, in_axes=[1], out_axes=1))
                 self.diff_pdf = jit(vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0))
-                # self.log_pdf = jit(vmap(self.log_pdf_, in_axes=[1], out_axes=1))
-                # self.diff_log_pdf = jit(vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0))
-                # self.cdf = jit(vmap(self.cdf_, in_axes=[1], out_axes=1))
-                # self.log_cdf = jit(vmap(self.log_cdf_, in_axes=[1], out_axes=1))
-                # self.diff_cdf = jit(vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0))
-                # self.diff_log_cdf = jit(vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0))
-                # self.sample = self.sample_
+                self.log_pdf = jit(vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1))
+                self.diff_log_pdf = jit(vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.cdf = jit(vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.log_cdf = jit(vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.diff_cdf = jit(vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
+
             else:
-                # self.sample = self.sample_
+                #
                 self.pdf = vmap(self.probablity_distribution_, in_axes=[1], out_axes=1)
                 self.diff_pdf = vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0)
-                # self.log_pdf = vmap(self.log_pdf_, in_axes=[1], out_axes=1)
-                # self.diff_log_pdf = vmap(grad(self.diff_log_pdf_), in_axes=[0], out_axes=0)
-                # self.cdf = vmap(self.cdf_, in_axes=[1], out_axes=1)
-                # self.log_cdf = vmap(self.log_cdf_, in_axes=[1], out_axes=1)
-                # self.diff_cdf = vmap(grad(self.diff_cdf_), in_axes=[0], out_axes=0)
-                # self.diff_log_cdf = vmap(grad(self.diff_log_cdf_), in_axes=[0], out_axes=0)
-
+                self.log_pdf = vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1)
+                self.diff_log_pdf = vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
+                self.cdf = vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1)
+                self.log_cdf = vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1)
+                self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
+                self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
         else:
             pass
 
@@ -157,14 +164,24 @@ class Uniform(ContinuousDistributions):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
         self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-        # ContinuousMethods.probablity_distribution_(self)
-        # ContinuousMethods.log_probablity_distribution_(self)
+        # ContinuousDistributions.parallelization(self)
+        x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
+        # x = x.at[5,0].set(jnp.nan)
+        PP = self.distance_function.experimental_fit(value=x, validate_args=True)
+        PP
 
-        ContinuousDistributions.parallelization(self)
 
+KK = Uniform(lower=2, upper=4)
+# TT = E.pdf(x)
+# TT2 = E.log(x)
 
-x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
-E = Uniform(lower=2, upper=4)
-TT = E.pdf(x)
-TT2 = E.log(x)
+E1 = KK.pdf(x)
+E6 = KK.diff_pdf(x)
+E2 = KK.log_pdf(x)
 
+E3 = KK.diff_log_pdf(x)
+E4 = KK.cdf(x)
+E5 = KK.log_cdf(x)
+E8 = KK.diff_cdf(x)
+E9 = KK.diff_log_cdf(x)
+E9
