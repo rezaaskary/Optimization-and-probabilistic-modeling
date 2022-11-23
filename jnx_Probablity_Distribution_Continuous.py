@@ -3033,7 +3033,7 @@ class Gumbel(ContinuousDistributions):
         mean_ = self.mu + 0.5772 * self.beta
         median_ = self.mu - self.beta * jnp.log(jnp.log(2))
         mode_ = self.mu
-        variance_ = (1 / 6) * (self.pi ** 2 * jnp.pi ** 2)
+        variance_ = (1 / 6) * (self.beta ** 2 * jnp.pi ** 2)
         skewness_ = 1.14
         kurtosis_ = 12 / 5
         entropy_ = jnp.log(self.beta) + 0.5772 + 1
@@ -3437,7 +3437,10 @@ x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1
 # KK = Wald(lambd=2,mu=1)
 # KK = Pareto(xm=4,alpha=2.1)
 # KK = ExModifiedGaussian(lambd=1.1, mu=3,sigma=2.6)
-KK=Triangular(a=1,b=3,c=2)
+# KK=Triangular(a=1,b=3,c=2)
+# KK  = Gumbel(mu=3,beta = 2)
+# KK = Logistic(mu=2,sigma=4)
+KK = LogitNormal(mu=0,sigma=2)
 E1 = KK.pdf(x)
 E6 = KK.diff_pdf(x)
 E2 = KK.log_pdf(x)

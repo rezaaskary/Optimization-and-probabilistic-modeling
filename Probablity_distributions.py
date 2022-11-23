@@ -2066,7 +2066,7 @@ class Triangular(ContinuousDistributions):
         return cdf
 
 
-class Gumbel (ContinuousDistributions):
+class Gumbel(ContinuousDistributions):
     def __init__(self, mu: float = None, beta: float = None) -> None:
         super(Gumbel , self).__init__(mu=mu, beta=beta)
 
