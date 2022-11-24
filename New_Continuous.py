@@ -148,9 +148,9 @@ class ContinuousDistributions:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         self.sample = sampling_from_distribution
 
-        if self.fixed_parameters: # when the number of parallel evaluation is fixed. Useful for MCMC
-            if self.activate_jit: # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1),)
+        if self.fixed_parameters:  # when the number of parallel evaluation is fixed. Useful for MCMC
+            if self.activate_jit:  # activating jit
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1), )
                 self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0))
                 self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
@@ -167,7 +167,7 @@ class ContinuousDistributions:
                 self.log_cdf = vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1)
                 self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
                 self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
-        else: # variant parameter simulation
+        else:  # variant parameter simulation
             if self.activate_jit:
                 self.pdf = jit(vmap(self.probablity_distribution_, in_axes=[1], out_axes=1))
                 self.diff_pdf = jit(vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0))
@@ -203,8 +203,10 @@ class Uniform(ContinuousDistributions):
         :param lower: The lower limit of uniform distribution
         :param upper: The upper limit of uniform distribution
         """
+        # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed)
 
+        # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
         if jnp.any(self.lower >= self.upper):
@@ -213,7 +215,7 @@ class Uniform(ContinuousDistributions):
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
             self.vectorized_index = jnp.array(1, dtype=int)  # input x, parameter 1, parameter 2
-        else:       # specifying the main function for the variant simulation
+        else:  # specifying the main function for the variant simulation
             def variant_function(lower: jnp.ndarray = None, upper: jnp.ndarray = None):
                 return distributions.Uniform(low=lower, high=upper, name='Uniform')
 
