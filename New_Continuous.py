@@ -54,6 +54,7 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of lower is not specified correctly!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -162,16 +163,16 @@ class ContinuousDistributions:
                 self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
                 self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
-                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
             else:  # Only using vectorized function
-                self.pdf = vmap(fun=probablity_distribution_, in_axes=[1], out_axes=1)
+                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
                 self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=[1], out_axes=1)
+                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
                 self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.cdf = vmap(fun=cumulative_distribution_, in_axes=[1], out_axes=1)
-                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=[1], out_axes=1)
+                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
+                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
                 self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0)
                 self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
 
@@ -203,18 +204,20 @@ class Uniform(ContinuousDistributions):
 
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-            self.vectorized_index = jnp.array(1, dtype=int)  # input x, parameter 1, parameter 2
-        else:  # specifying the main function for the variant simulation
-            self.variant_parameters = jnp.concatenate(arrays=(self.lower, self.upper), axis=1)
+            self.vectorized_index = [1]  # input x, parameter 1, parameter 2
 
-            def variant_function(distribution_parameters: jnp.ndarray = self.variant_parameters):
-                return distributions.Uniform(low=distribution_parameters[:, 0], high=distribution_parameters[:, 1],
-                                             name='Uniform')
+        ContinuousDistributions.parallelization(self)
+        # else:  # specifying the main function for the variant simulation
+        #     self.variant_parameters = jnp.concatenate(arrays=(self.lower, self.upper), axis=1)
+        #
+        #     def variant_function(distribution_parameters: jnp.ndarray = self.variant_parameters):
+        #         return distributions.Uniform(low=distribution_parameters[:, 0], high=distribution_parameters[:, 1],
+        #                                      name='Uniform')
+        #
+        #     self.distance_function = variant_function
+        #     self.vectorized_index = jnp.array([1, 1, 1], dtype=int)  # input x, parameter 1, parameter 2
 
-            self.distance_function = variant_function
-            self.vectorized_index = jnp.array([1, 1, 1], dtype=int)  # input x, parameter 1, parameter 2
 
-        # ContinuousDistributions.parallelization(self)
         # x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
         # x = x.at[5,0].set(jnp.nan)
         # PP = self.distance_function.experimental_fit(value=x, validate_args=True)
@@ -226,9 +229,16 @@ class Uniform(ContinuousDistributions):
         # PP2 = vmap(ddz, in_axes=[0, 0, 0], out_axes=0)(x, x + 4, x - 3)
 
 
-KK = Uniform(lower=2, upper=4, activate_jit=False, random_seed=6, fixed_parameters=True)
 
 
+
+
+
+
+
+
+KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
+x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
 
@@ -241,4 +251,5 @@ E4 = KK.cdf(x)
 E5 = KK.log_cdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
-E9
+E10 = KK.maximum_liklihood_estimation(x=x)
+E10
