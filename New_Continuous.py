@@ -234,6 +234,7 @@ class ContinuousDistributions:
                 self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
                                          in_axes=self.vectorized_index_diff_fcn, out_axes=0)
 
+
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
                  random_seed: int = 1, fixed_parameters: bool = True) -> None:
@@ -264,6 +265,7 @@ class Uniform(ContinuousDistributions):
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
+
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -278,6 +280,8 @@ class Uniform(ContinuousDistributions):
                        }
         return information
 
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Normal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None, loc: float = None,
                  random_seed: int = 1, activate_jit: bool = False, fixed_parameters: bool = True) -> None:
@@ -297,6 +301,7 @@ class Normal(ContinuousDistributions):
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
+
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -310,8 +315,51 @@ class Normal(ContinuousDistributions):
                        }
         return information
 
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class TruncatedNormal(ContinuousDistributions):
+    def __init__(self, lower: float = None, upper: float = None, loc: float = None, var: float = None,
+                 scale: float = None, activate_jit: bool = False, random_seed: int = 1,
+                 fixed_parameters: bool = True) -> None:
+
+        # recalling parameter values from the main parent class
+        super(TruncatedNormal, self).__init__(loc=loc, var=var, scale=scale, lower=lower, upper=upper
+                                              , activate_jit=activate_jit, random_seed=random_seed,
+                                              fixed_parameters=fixed_parameters)
+        self.name = 'Truncated Normal'
+
+        # checking the correctness of the parameters
+        if self.loc is None or self.scale is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Truncated '
+                            'Normal distribution)!')
+
+        if self.lower >= self.upper:
+            raise Exception('The lower bound of the distribution cannot be greater than the upper bound!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.TruncatedNormal(loc=self.loc, scale=self.scale,
+                                                                   low=self.lower, high=self.upper, name=self.name)
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+
+
 # KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
-KK = Normal(scale=2, loc=3)
+# KK = Normal(scale=2, loc=3, activate_jit=True)
+KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -325,10 +373,12 @@ E4 = KK.cdf(x)
 E5 = KK.log_cdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
-E10 = KK.maximum_liklihood_estimation(x=x)
 E11 = KK.statistics
+E10 = KK.maximum_liklihood_estimation(x=x)
+
 E10
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class PDF(ContinuousDistributions):
 #     def __init__(self, : float = None, : float = None,
 #                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True) -> None:
@@ -345,7 +395,7 @@ E10
 #             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 #
 #         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
-#             self.distance_function = distributions.(, name='')
+#             self.distance_function = distributions.(, name=self.name)
 #             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
 #             self.vectorized_index_diff_fcn = [0]
 #         ContinuousDistributions.parallelization(self)
