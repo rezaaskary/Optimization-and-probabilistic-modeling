@@ -221,41 +221,40 @@ class ContinuousDistributions:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         self.sample = sampling_from_distribution
         self.maximum_liklihood_estimation = mle
-        if self.activate_jit:  # when the number of parallel evaluation is fixed. Useful for MCMC
-            if self.activate_jit:  # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+        if self.activate_jit:  # activating jit
+            self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                out_axes=self.out_index))
+            self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
                                     out_axes=self.out_index))
-                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
-                                        out_axes=self.out_index))
-                self.cdf = jit(
-                    vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=self.out_index))
-                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
-                                        out_axes=self.out_index))
-                self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                         , out_axes=0))
-                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
-                                             in_axes=self.vectorized_index_diff_fcn, out_axes=0))
-                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                         , out_axes=0))
-                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
-                                             in_axes=self.vectorized_index_diff_fcn, out_axes=0))
-            else:  # Only using vectorized function
-                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+            self.cdf = jit(
+                vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=self.out_index))
+            self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                                    out_axes=self.out_index))
+            self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                     , out_axes=0))
+            self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0))
+            self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                     , out_axes=0))
+            self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0))
+        else:  # Only using vectorized function
+            self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                            out_axes=self.out_index)
+            self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
                                 out_axes=self.out_index)
-                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
-                                    out_axes=self.out_index)
-                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+            self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                            out_axes=self.out_index)
+            self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
                                 out_axes=self.out_index)
-                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
-                                    out_axes=self.out_index)
-                self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                     , out_axes=0)
-                self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
-                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0)
-                self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                     , out_axes=0)
-                self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
-                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0)
+            self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                 , out_axes=0)
+            self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
+                                     in_axes=self.vectorized_index_diff_fcn, out_axes=0)
+            self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                 , out_axes=0)
+            self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
+                                     in_axes=self.vectorized_index_diff_fcn, out_axes=0)
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -292,10 +291,10 @@ class Uniform(ContinuousDistributions):
             self.vectorized_index_fcn = [0]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
             self.out_index = 1
-        else:
+        else:  # activating multiple distribution
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-            self.out_index = -1
+            self.vectorized_index_diff_fcn = [1]
+            self.out_index = 1
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -567,7 +566,7 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=jnp.array([2,3]), upper=jnp.array([5,24]), activate_jit=True, random_seed=6, multi_distribution=True)
+KK = Uniform(lower=jnp.array([2,3]), upper=jnp.array([5,24]), activate_jit=False, random_seed=6, multi_distribution=True)
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
