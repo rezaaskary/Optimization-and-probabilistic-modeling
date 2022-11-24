@@ -146,14 +146,15 @@ class ContinuousDistributions:
             return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        self.sample = sampling_from_distribution
+
         if self.fixed_parameters: # when the number of parallel evaluation is fixed. Useful for MCMC
-            self.sample = sampling_from_distribution
             if self.activate_jit: # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=[1], out_axes=1),)
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1),)
                 self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=[1], out_axes=1))
+                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=[1], out_axes=1))
+                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=[1], out_axes=1))
                 self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
@@ -166,9 +167,7 @@ class ContinuousDistributions:
                 self.log_cdf = vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1)
                 self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
                 self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
-        else:
-            self.sample = self.sampling_from_distribution
-            # when the number of parallel evaluation is fixed. Useful for MCMC
+        else: # variant parameter simulation
             if self.activate_jit:
                 self.pdf = jit(vmap(self.probablity_distribution_, in_axes=[1], out_axes=1))
                 self.diff_pdf = jit(vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0))
@@ -178,9 +177,7 @@ class ContinuousDistributions:
                 self.log_cdf = jit(vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1))
                 self.diff_cdf = jit(vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
-
             else:
-                #
                 self.pdf = vmap(self.probablity_distribution_, in_axes=[1], out_axes=1)
                 self.diff_pdf = vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0)
                 self.log_pdf = vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1)
@@ -213,10 +210,10 @@ class Uniform(ContinuousDistributions):
         if jnp.any(self.lower >= self.upper):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
-        if self.fixed_parameters:
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
             self.vectorized_index = jnp.array(1, dtype=int)  # input x, parameter 1, parameter 2
-        else:
+        else:       # specifying the main function for the variant simulation
             def variant_function(lower: jnp.ndarray = None, upper: jnp.ndarray = None):
                 return distributions.Uniform(low=lower, high=upper, name='Uniform')
 
