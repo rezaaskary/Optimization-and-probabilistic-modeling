@@ -104,15 +104,38 @@ class ContinuousDistributions:
             return self.distance_function.log_cdf(value=x, name='log cdf')
 
         def diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of {self.name} distribution with respect to variable x calculated in size of (1xC)
+            """
             return (self.distance_function.prob(value=x, name='diff prob'))[0]
 
         def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of cumulative function of {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of CDF of  {self.name} distribution with respect to variable x calculated in size
+            of (1xC)
+            """
             return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
 
         def diff_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+             Derivative of the  log of {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of the log of {self.name} distribution with respect to variable x calculated in
+            size of (1xC)
+            """
             return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
 
         def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of the  log of cumulative function of {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of the log CDF of {self.name} distribution with respect to variable x calculated in
+            size of (1xC)
+            """
             return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
