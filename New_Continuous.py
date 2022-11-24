@@ -5,6 +5,8 @@ import jax.numpy as jnp
 
 class ContinuousDistributions:
     def __init__(self,
+                 alpha: jnp.ndarray = None,
+                 beta: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None,
                  loc: jnp.ndarray = None,
@@ -96,7 +98,19 @@ class ContinuousDistributions:
             raise Exception(f'The value of loc is not specified correctly ({self.__class__} distribution)!')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(alpha, (jnp.ndarray, float, int)):
+            self.alpha = alpha
+        elif alpha is None:
+            self.alpha = None
+        else:
+            raise Exception(f'The value of alpha is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(beta, (jnp.ndarray, float, int)):
+            self.beta = beta
+        elif beta is None:
+            self.beta = None
+        else:
+            raise Exception(f'The value of beta is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -405,23 +419,21 @@ class HalfNormal(ContinuousDistributions):
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class SkewedNormal(ContinuousDistributions):
+class TwoPieceNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
                  n_chains: int = 1) -> None:
 
-        self.name = 'Skewed Normal'
+        self.name = 'TwoPieceNormal'
 
         # recalling parameter values from the main parent class
-        super(SkewedNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha, n_chains=n_chains
-                                           , activate_jit=activate_jit, random_seed=random_seed,
-                                           fixed_parameters=fixed_parameters)
+        super(TwoPieceNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha, n_chains=n_chains
+                                             , activate_jit=activate_jit, random_seed=random_seed,
+                                             fixed_parameters=fixed_parameters)
 
         # checking the correctness of the parameters
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
-        if jnp.any(self.lower >= self.upper):
-            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+        if self.alpha < 0:
+            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
 
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.TwoPieceNormal(scale=self.scale, loc=self.loc, skewness=self.alpha,
@@ -430,6 +442,41 @@ class SkewedNormal(ContinuousDistributions):
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
 
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Beta(ContinuousDistributions):
+    def __init__(self, alpha: float = None, beta: float = None,
+                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 n_chains: int = 1) -> None:
+
+        self.name = 'Beta'
+
+        # recalling parameter values from the main parent class
+        super(Beta, self).__init__(alpha=alpha, beta=beta
+            , activate_jit=activate_jit, random_seed=random_seed,
+            fixed_parameters=fixed_parameters, n_chains=n_chains)
+
+
+        # checking the correctness of the parameters
+          if self.alpha < 0:
+              raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
+                                                        name=self.name)
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -449,7 +496,8 @@ class SkewedNormal(ContinuousDistributions):
 # KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
-KK = HalfNormal(scale=2, activate_jit=True)
+# KK = HalfNormal(scale=2, activate_jit=True)
+KK = TwoPieceNormal(scale=3,loc=1,activate_jit=False,alpha=2)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -484,10 +532,8 @@ E10
 #
 #
 #         # checking the correctness of the parameters
-#         if not isinstance(self.lower, type(self.upper)):
-#             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
-#         if jnp.any(self.lower >= self.upper):
-#             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+#           if self.alpha < 0:
+#               raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
 #
 #         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
 #             self.distance_function = distributions.(, name=self.name)
