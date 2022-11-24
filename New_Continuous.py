@@ -287,13 +287,14 @@ class Uniform(ContinuousDistributions):
                             f' ({self.name} distribution)!')
 
         self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-        if not self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.vectorized_index_fcn = [0]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
+
+        if self.multi_distribution:
+            self.vectorized_index_fcn = [1]
+            self.vectorized_index_diff_fcn = [1]
             self.out_index = 1
         else:  # activating multiple distribution
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [1]
+            self.vectorized_index_fcn = [0]
+            self.vectorized_index_diff_fcn = [0]
             self.out_index = 1
         ContinuousDistributions.parallelization(self)
 
