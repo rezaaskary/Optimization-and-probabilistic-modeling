@@ -57,24 +57,24 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of lower is not specified correctly!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
+        if isinstance(loc, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
             raise Exception('Please Enter either variance or standard deviation!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(sigma, (jnp.ndarray, float, int)) and not isinstance(variance, (jnp.ndarray, float, int)):
-            if sigma > 0:
-                self.sigma = sigma
-                self.variance = sigma ** 2
+        if isinstance(scale, (jnp.ndarray, float, int)) and not isinstance(var, (jnp.ndarray, float, int)):
+            if scale > 0:
+                self.scale = scale
+                self.var = scale ** 2
             else:
                 raise Exception('The standard deviation should be a positive value!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if not isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
-            if variance > 0:
-                self.sigma = variance ** 0.5
-                self.variance = variance
+        if not isinstance(scale, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
+            if var > 0:
+                self.scale = var ** 0.5
+                self.variance = var
             else:
                 raise Exception('The standard deviation should be a positive value!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if sigma is None and variance is None:
+        if scale is None and var is None:
             self.sigma = None
             self.variance = None
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -85,6 +85,13 @@ class ContinuousDistributions:
         else:
             raise Exception('The value of nu is not specified correctly!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(loc, (jnp.ndarray, float, int)):
+            self.loc = loc
+        elif loc is None:
+            self.loc = None
+        else:
+            raise Exception('The value of loc is not specified correctly!')
+
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -257,14 +264,16 @@ class Uniform(ContinuousDistributions):
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
 
+
 class Normal(ContinuousDistributions):
-    def __init__(self, sigma: float = None, variance: float = None, mu: float = None,
-                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
+    def __init__(self, scale: float = None, var: float = None, loc: float = None,
+                 random_seed: int = 1, activate_jit: bool = False, fixed_parameters: bool = True) -> None:
 
         # recalling parameter values from the main parent class
-        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu,
-            activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
-        self.name = 'U'
+        super(Normal, self).__init__(scale=scale, var=var, loc=loc,
+                                     activate_jit=activate_jit, random_seed=random_seed,
+                                     fixed_parameters=fixed_parameters)
+        self.name = 'Normal'
 
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
@@ -273,26 +282,15 @@ class Normal(ContinuousDistributions):
             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
 
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Normal(loc=self.mu, scale=self.sigma ,name='Normal')
+            self.distance_function = distributions.Normal(loc=self.mu, scale=self.sigma, name='Normal')
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
-x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
+KK = Normal(scale=2, loc=3)
+x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
 
@@ -308,24 +306,23 @@ E9 = KK.diff_log_cdf(x)
 E10 = KK.maximum_liklihood_estimation(x=x)
 E10
 
-
-class PDF(ContinuousDistributions):
-    def __init__(self, : float = None, : float = None, activate_jit: bool = False,
-                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
-
-        # recalling parameter values from the main parent class
-        super(PDF, self).__init__(
-            , activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
-        self.name = 'U'
-
-        # checking the correctness of the parameters
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
-        if jnp.any(self.lower >= self.upper):
-            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
-
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.(, name='')
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
+# class PDF(ContinuousDistributions):
+#     def __init__(self, : float = None, : float = None,
+#                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True) -> None:
+#
+#         # recalling parameter values from the main parent class
+#         super(PDF, self).__init__(
+#             , activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
+#         self.name = 'U'
+#
+#         # checking the correctness of the parameters
+#         if not isinstance(self.lower, type(self.upper)):
+#             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+#         if jnp.any(self.lower >= self.upper):
+#             raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+#
+#         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+#             self.distance_function = distributions.(, name='')
+#             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+#             self.vectorized_index_diff_fcn = [0]
+#         ContinuousDistributions.parallelization(self)
