@@ -40,51 +40,20 @@ class ContinuousDistributions:
         else:
             raise Exception('Please specify the activation of the just-in-time evaluation!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if lower is None:
+        if isinstance(lower, (jnp.ndarray, float, int)):
+            self.lower = lower
+        elif lower is None:
             self.lower = None
-        elif not isinstance(lower, (jnp.ndarray, int, float)):
-            raise Exception(f'The value of variable lower is incorrect!')
-        elif isinstance(lower, (jnp.ndarray, int, float)):
-            if len(jnp.array(lower)) == 1:
-                if self.fixed_parameters:  # fixed parameters
-                    if self.n_chains >= 1:
-                        self.lower = jnp.array(lower)
-                else:  # time-variant parameters
-                    if self.n_chains >= 1:
-                        self.lower = jnp.tile(lower, self.n_chains, 1)
-            else:  # entering an array as input
-                if self.fixed_parameters:  # fixed parameters
-                    raise Exception(f'An array of parameter lower was entered while simulation with fixed parameters'
-                                    f' is selected!')
-                else:  # variant parameters
-                    if len(jnp.array(lower)) == self.n_chains:
-                        self.lower = jnp.array(lower)
-                    else:
-                        raise Exception(f'The number of chains and the array of the input (lower) are not consistent!')
+        else:
+            raise Exception('The value of lower is not specified correctly!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if upper is None:
+        if isinstance(upper, (jnp.ndarray, float, int)):
+            self.upper = upper
+        elif upper is None:
             self.upper = None
-        elif not isinstance(upper, (jnp.ndarray, int, float)):
-            raise Exception(f'The value of variable upper is incorrect!')
-        elif isinstance(upper, (jnp.ndarray, int, float)):
-            if len(jnp.array(upper)) == 1:
-                if self.fixed_parameters:  # fixed parameters
-                    if self.n_chains >= 1:
-                        self.upper = jnp.array(upper)
-                else:  # time-variant parameters
-                    if self.n_chains >= 1:
-                        self.upper = jnp.tile(upper, self.n_chains, 1)
-            else:  # entering an array as input
-                if self.fixed_parameters:  # fixed parameters
-                    raise Exception(f'An array of parameter upper was entered while simulation with fixed parameters'
-                                    f' is selected!')
-                else:  # variant parameters
-                    if len(jnp.array(upper)) == self.n_chains:
-                        self.upper = jnp.array(upper)
-                    else:
-                        raise Exception(f'The number of chains and the array of the input (upper) are not consistent!')
-
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        else:
+            raise Exception('The value of lower is not specified correctly!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -127,33 +96,14 @@ class ContinuousDistributions:
             return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        def variant_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return self.distance_function.prob(value=x, name='prob')
-
-        def variant_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return self.distance_function.cdf(value=x, name='cdf')
-
-        def variant_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return self.distance_function.log_prob(value=x, name='log prob')
-
-        def variant_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return self.distance_function.log_cdf(value=x, name='log cdf')
-
-        def variant_diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return (self.distance_function.prob(value=x, name='diff prob'))[0]
-
-        def variant_diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
-
-        def variant_diff_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
-
-        def variant_diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
-
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
         def mle(x: jnp.ndarray = None, checking_inputs: bool = False):
+            """
+            Enter an array of the data to fit the distribution of parameters using MLE
+            :param x: Nx1 array of Data
+            :param checking_inputs: A boolean variable used to activate checking the correctness of input variables
+            :return: A dictionary of the distribution parameters
+            """
             return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
 
         def sampling_from_distribution(sample_shape: tuple = None) -> jnp.ndarray:
@@ -164,7 +114,7 @@ class ContinuousDistributions:
         self.maximum_liklihood_estimation = mle
         if self.fixed_parameters:  # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:  # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1), )
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0))
                 self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
@@ -173,38 +123,19 @@ class ContinuousDistributions:
                 self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
             else:  # Only using vectorized function
-                self.pdf = vmap(self.probablity_distribution_, in_axes=[1], out_axes=1)
-                self.diff_pdf = vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.log_pdf = vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1)
-                self.diff_log_pdf = vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.cdf = vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1)
-                self.log_cdf = vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1)
-                self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
-                self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
-        else:  # variant parameter simulation
-            if self.activate_jit:
-                self.pdf = jit(vmap(self.probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_pdf = jit(vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.log_pdf = jit(vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
-                self.cdf = jit(vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.log_cdf = jit(vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1))
-                self.diff_cdf = jit(vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0))
-                self.diff_log_cdf = jit(vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
-            else:
-                self.pdf = vmap(self.probablity_distribution_, in_axes=[1], out_axes=1)
-                self.diff_pdf = vmap(grad(self.diff_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.log_pdf = vmap(self.log_probablity_distribution_, in_axes=[1], out_axes=1)
-                self.diff_log_pdf = vmap(grad(self.diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
-                self.cdf = vmap(self.cumulative_distribution_, in_axes=[1], out_axes=1)
-                self.log_cdf = vmap(self.log_cumulative_distribution_, in_axes=[1], out_axes=1)
-                self.diff_cdf = vmap(grad(self.diff_cumulative_distribution_), in_axes=[0], out_axes=0)
-                self.diff_log_cdf = vmap(grad(self.diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
+                self.pdf = vmap(fun=probablity_distribution_, in_axes=[1], out_axes=1)
+                self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0)
+                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=[1], out_axes=1)
+                self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
+                self.cdf = vmap(fun=cumulative_distribution_, in_axes=[1], out_axes=1)
+                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=[1], out_axes=1)
+                self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0)
+                self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
 
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
-                 random_seed: int = 1) -> None:
+                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
@@ -218,7 +149,8 @@ class Uniform(ContinuousDistributions):
         :param upper: The upper limit of uniform distribution
         """
         # recalling parameter values from the main parent class
-        super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed)
+        super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
+                                      fixed_parameters=fixed_parameters)
 
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
@@ -230,25 +162,30 @@ class Uniform(ContinuousDistributions):
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
             self.vectorized_index = jnp.array(1, dtype=int)  # input x, parameter 1, parameter 2
         else:  # specifying the main function for the variant simulation
-            def variant_function(lower: jnp.ndarray = None, upper: jnp.ndarray = None):
-                return distributions.Uniform(low=lower, high=upper, name='Uniform')
+            self.variant_parameters = jnp.concatenate(arrays=(self.lower, self.upper), axis=1)
+
+            def variant_function(distribution_parameters: jnp.ndarray = self.variant_parameters):
+                return distributions.Uniform(low=distribution_parameters[:, 0], high=distribution_parameters[:, 1],
+                                             name='Uniform')
 
             self.distance_function = variant_function
             self.vectorized_index = jnp.array([1, 1, 1], dtype=int)  # input x, parameter 1, parameter 2
 
         # ContinuousDistributions.parallelization(self)
-        x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
+        # x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
         # x = x.at[5,0].set(jnp.nan)
         # PP = self.distance_function.experimental_fit(value=x, validate_args=True)
-        PP = (self.distance_function.sample(sample_shape=(100,), seed=self.key))
+        # PP = (self.distance_function.sample(sample_shape=(100,), seed=self.key))
 
-        def ddz(x, ub, lb):
-            return distributions.Uniform(low=lb, high=ub, name='Uniform').prob(x)
+        # def ddz(x, ub, lb):
+        #     return distributions.Uniform(low=lb, high=ub, name='Uniform').prob(x)
+        #
+        # PP2 = vmap(ddz, in_axes=[0, 0, 0], out_axes=0)(x, x + 4, x - 3)
 
-        PP2 = vmap(ddz, in_axes=[0, 0, 0], out_axes=0)(x, x + 4, x - 3)
+
+KK = Uniform(lower=2, upper=4, activate_jit=False, random_seed=6, fixed_parameters=True)
 
 
-KK = Uniform(lower=2, upper=4)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
 
