@@ -16,7 +16,7 @@ class ContinuousDistributions:
                  activate_jit: bool = False,
                  n_chains: int = 1,
                  random_seed: int = 1,
-                 fixed_parameters: bool = True) -> None:
+                 multi_distribution: bool = True) -> None:
 
         if isinstance(n_chains, int):
             self.n_chains = n_chains
@@ -25,8 +25,8 @@ class ContinuousDistributions:
         else:
             raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
 
-        if isinstance(fixed_parameters, bool):
-            self.fixed_parameters = fixed_parameters
+        if isinstance(multi_distribution, bool):
+            self.multi_distribution = multi_distribution
         else:
             raise Exception(f'Please correctly specify the type of simulation (fixed or variant parameters in'
                             f' ({self.__class__} distribution)) !')
@@ -98,14 +98,14 @@ class ContinuousDistributions:
             raise Exception(f'The value of loc is not specified correctly ({self.__class__} distribution)!')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(alpha, (jnp.ndarray, float, int)):
+        if isinstance(alpha, (jnp.ndarray, float, list, int)):
             self.alpha = alpha
         elif alpha is None:
             self.alpha = None
         else:
             raise Exception(f'The value of alpha is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(beta, (jnp.ndarray, float, int)):
+        if isinstance(beta, (jnp.ndarray, float, list, int)):
             self.beta = beta
         elif beta is None:
             self.beta = None
@@ -254,7 +254,7 @@ class ContinuousDistributions:
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
-                 random_seed: int = 1, fixed_parameters: bool = True, n_chains: int = 1) -> None:
+                 random_seed: int = 1, multi_distribution: bool = True, n_chains: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
@@ -269,7 +269,7 @@ class Uniform(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                      fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                      multi_distribution=multi_distribution, n_chains=n_chains)
         self.name = 'Uniform'
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
@@ -278,7 +278,7 @@ class Uniform(ContinuousDistributions):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
@@ -302,7 +302,7 @@ class Uniform(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Normal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None, loc: float = None,
-                 random_seed: int = 1, activate_jit: bool = False, fixed_parameters: bool = True,
+                 random_seed: int = 1, activate_jit: bool = False, multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
 
         self.name = 'Normal'
@@ -310,14 +310,14 @@ class Normal(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(Normal, self).__init__(scale=scale, var=var, loc=loc,
                                      activate_jit=activate_jit, random_seed=random_seed,
-                                     fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                     multi_distribution=multi_distribution, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.loc is None or self.scale is None:
             raise Exception(f'The value of either mean or standard deviation is not specified'
                             f'({self.name} distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Normal(loc=self.loc, scale=self.scale, name='Normal')
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
@@ -341,14 +341,14 @@ class Normal(ContinuousDistributions):
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, loc: float = None, var: float = None,
                  scale: float = None, activate_jit: bool = False, random_seed: int = 1,
-                 fixed_parameters: bool = True, n_chains: int = 1) -> None:
+                 multi_distribution: bool = True, n_chains: int = 1) -> None:
 
         self.name = 'Truncated Normal'
 
         # recalling parameter values from the main parent class
         super(TruncatedNormal, self).__init__(loc=loc, var=var, scale=scale, lower=lower, upper=upper
                                               , activate_jit=activate_jit, random_seed=random_seed,
-                                              fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                              multi_distribution=multi_distribution, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.loc is None or self.scale is None:
@@ -359,7 +359,7 @@ class TruncatedNormal(ContinuousDistributions):
             raise Exception(f'The lower bound of the distribution cannot be greater than the upper bound'
                             f' ({self.name} distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.TruncatedNormal(loc=self.loc, scale=self.scale,
                                                                    low=self.lower, high=self.upper, name=self.name)
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
@@ -383,7 +383,7 @@ class TruncatedNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
 
         self.name = 'Half Normal'
@@ -391,14 +391,14 @@ class HalfNormal(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(HalfNormal, self).__init__(scale=scale, var=var
                                          , activate_jit=activate_jit, random_seed=random_seed,
-                                         fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                         multi_distribution=multi_distribution, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.var is None or self.scale is None:
             raise Exception(
                 f'The value of either variance or standard deviation is not specified ({self.name} distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.HalfNormal(scale=self.scale, name=self.name)
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
@@ -421,7 +421,7 @@ class HalfNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TwoPieceNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1,  multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
 
         self.name = 'TwoPieceNormal'
@@ -429,13 +429,13 @@ class TwoPieceNormal(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(TwoPieceNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha, n_chains=n_chains
                                              , activate_jit=activate_jit, random_seed=random_seed,
-                                             fixed_parameters=fixed_parameters)
+                                             multi_distribution=multi_distribution)
 
         # checking the correctness of the parameters
         if self.alpha < 0:
             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.TwoPieceNormal(scale=self.scale, loc=self.loc, skewness=self.alpha,
                                                                   name=self.name)
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
@@ -458,22 +458,31 @@ class TwoPieceNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
+        """
+        Beta Distribution
+        :param alpha:
+        :param beta:
+        :param activate_jit:
+        :param random_seed:
+        :param fixed_parameters:
+        :param n_chains:
+        """
 
         self.name = 'Beta'
 
         # recalling parameter values from the main parent class
         super(Beta, self).__init__(alpha=alpha, beta=beta
                                    , activate_jit=activate_jit, random_seed=random_seed,
-                                   fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                   multi_distribution=multi_distribution, n_chains=n_chains)
 
         # checking the correctness of the parameters
-        if self.alpha < 0:
+        if any(self.alpha < 0):
             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-        if self.beta < 0:
+        if any(self.beta < 0):
             raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
                                                         concentration0=self.beta, concentration1=self.alpha,
                                                         name=self.name)
@@ -495,27 +504,36 @@ class Beta(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Kumaraswamy(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
+        """
+        Kumaraswamy Distribution (The input variable should  be in the range of (0,1))
+        :param alpha:
+        :param beta:
+        :param activate_jit:
+        :param random_seed:
+        :param fixed_parameters:
+        :param n_chains:
+        """
 
         self.name = 'Kumaraswamy'
 
         # recalling parameter values from the main parent class
         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta
                                           , activate_jit=activate_jit, random_seed=random_seed,
-                                          fixed_parameters=fixed_parameters, n_chains=n_chains)
+                                          multi_distribution=multi_distribution, n_chains=n_chains)
 
         # checking the correctness of the parameters
-        if self.alpha <= 1:
+        if any(self.alpha <= 1):
             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-        if self.beta <= 1:
+        if any(self.beta <= 1):
             raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
 
-        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+        if self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
                                                                concentration0=self.beta,
                                                                name=self.name)
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_fcn = [0]
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
 
@@ -527,7 +545,6 @@ class Kumaraswamy(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
                        }
@@ -535,13 +552,26 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1), dtype=jnp.float64)
 # KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
-KK = Beta(alpha=2, beta=3, activate_jit=False)
-x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
+# KK = Beta(alpha=2, beta=3, activate_jit=False)
+
+# def cc(x):
+#     kk=distributions.Kumaraswamy(concentration1=jnp.array([2,3]),  concentration0=jnp.array([4,8]),
+# #                                                                name='r')
+# #     return kk.prob(x)
+# TT = vmap(cc,in_axes=0,out_axes=-1)(x)
+#     self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
+
+
+KK =Kumaraswamy(alpha=jnp.array([2]),beta=jnp.array([4]), activate_jit=False)
+
+
+
 # TT = E.pdf(x)
 # TT2 = E.log(x)
 
