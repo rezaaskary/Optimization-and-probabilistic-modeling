@@ -7,6 +7,9 @@ class ContinuousDistributions:
     def __init__(self,
                  lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None,
+                 mu: jnp.ndarray = None,
+                 variance: jnp.ndarray = None,
+                 sigma: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
                  n_chains: int = 1,
@@ -53,6 +56,44 @@ class ContinuousDistributions:
             self.upper = None
         else:
             raise Exception('The value of lower is not specified correctly!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
+            raise Exception('Please Enter either variance or standard deviation!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(sigma, (jnp.ndarray, float, int)) and not isinstance(variance, (jnp.ndarray, float, int)):
+            if sigma > 0:
+                self.sigma = sigma
+                self.variance = sigma ** 2
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if not isinstance(sigma, (jnp.ndarray, float, int)) and isinstance(variance, (jnp.ndarray, float, int)):
+            if variance > 0:
+                self.sigma = variance ** 0.5
+                self.variance = variance
+            else:
+                raise Exception('The standard deviation should be a positive value!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if sigma is None and variance is None:
+            self.sigma = None
+            self.variance = None
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(nu, (jnp.ndarray, float, int)):
+            self.nu = nu
+        elif nu is None:
+            self.nu = None
+        else:
+            raise Exception('The value of nu is not specified correctly!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     @property
@@ -215,26 +256,31 @@ class Uniform(ContinuousDistributions):
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
-        # else:  # specifying the main function for the variant simulation
-        #     self.variant_parameters = jnp.concatenate(arrays=(self.lower, self.upper), axis=1)
-        #
-        #     def variant_function(distribution_parameters: jnp.ndarray = self.variant_parameters):
-        #         return distributions.Uniform(low=distribution_parameters[:, 0], high=distribution_parameters[:, 1],
-        #                                      name='Uniform')
-        #
-        #     self.distance_function = variant_function
-        #     self.vectorized_index = jnp.array([1, 1, 1], dtype=int)  # input x, parameter 1, parameter 2
+
+class Normal(ContinuousDistributions):
+    def __init__(self, sigma: float = None, variance: float = None, mu: float = None,
+                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
+
+        # recalling parameter values from the main parent class
+        super(Normal, self).__init__(sigma=sigma, variance=variance, mu=mu,
+            activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
+        self.name = 'U'
+
+        # checking the correctness of the parameters
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+        if jnp.any(self.lower >= self.upper):
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.Normal(loc=self.mu, scale=self.sigma ,name='Normal')
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
 
 
-        # x = random.uniform(key=random.PRNGKey(7), minval=0.01, maxval=20, shape=(1000, 1), dtype=jnp.float64)
-        # x = x.at[5,0].set(jnp.nan)
-        # PP = self.distance_function.experimental_fit(value=x, validate_args=True)
-        # PP = (self.distance_function.sample(sample_shape=(100,), seed=self.key))
 
-        # def ddz(x, ub, lb):
-        #     return distributions.Uniform(low=lb, high=ub, name='Uniform').prob(x)
-        #
-        # PP2 = vmap(ddz, in_axes=[0, 0, 0], out_axes=0)(x, x + 4, x - 3)
+
 
 
 
@@ -261,3 +307,25 @@ E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 E10 = KK.maximum_liklihood_estimation(x=x)
 E10
+
+
+class PDF(ContinuousDistributions):
+    def __init__(self, : float = None, : float = None, activate_jit: bool = False,
+                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
+
+        # recalling parameter values from the main parent class
+        super(PDF, self).__init__(
+            , activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
+        self.name = 'U'
+
+        # checking the correctness of the parameters
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+        if jnp.any(self.lower >= self.upper):
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.(, name='')
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
