@@ -453,6 +453,8 @@ class TwoPieceNormal(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
@@ -463,20 +465,60 @@ class Beta(ContinuousDistributions):
 
         # recalling parameter values from the main parent class
         super(Beta, self).__init__(alpha=alpha, beta=beta
-            , activate_jit=activate_jit, random_seed=random_seed,
-            fixed_parameters=fixed_parameters, n_chains=n_chains)
-
+                                   , activate_jit=activate_jit, random_seed=random_seed,
+                                   fixed_parameters=fixed_parameters, n_chains=n_chains)
 
         # checking the correctness of the parameters
-          if self.alpha < 0:
-              raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-
+        if self.alpha < 0:
+            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
+        if self.beta < 0:
+            raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
+                                                        concentration0=self.beta, concentration1=self.alpha,
                                                         name=self.name)
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Kumaraswamy(ContinuousDistributions):
+    def __init__(self, alpha: float = None, beta: float = None,
+                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 n_chains: int = 1) -> None:
+
+        self.name = 'Kumaraswamy'
+
+        # recalling parameter values from the main parent class
+        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta
+                                          , activate_jit=activate_jit, random_seed=random_seed,
+                                          fixed_parameters=fixed_parameters, n_chains=n_chains)
+
+        # checking the correctness of the parameters
+        if self.alpha <= 1:
+            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
+        if self.beta <= 1:
+            raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
+                                                               concentration0=self.beta,
+                                                               name=self.name)
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
+
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -497,7 +539,8 @@ class Beta(ContinuousDistributions):
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
-KK = TwoPieceNormal(scale=3,loc=1,activate_jit=False,alpha=2)
+# KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
+KK = Beta(alpha=2, beta=3, activate_jit=False)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -524,7 +567,7 @@ E10
 #                  n_chains: int = 1) -> None:
 #
 #         self.name = 'U'
-
+#
 #         # recalling parameter values from the main parent class
 #         super(PDF, self).__init__(
 #             , activate_jit=activate_jit, random_seed=random_seed,
@@ -532,8 +575,8 @@ E10
 #
 #
 #         # checking the correctness of the parameters
-#           if self.alpha < 0:
-#               raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
+#         if self.alpha < 0:
+#             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
 #
 #         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
 #             self.distance_function = distributions.(, name=self.name)
