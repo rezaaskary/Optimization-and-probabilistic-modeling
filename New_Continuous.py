@@ -72,6 +72,11 @@ class ContinuousDistributions:
 
     def parallelization(self):
         def probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Calculating the probability of variable x from {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: The probability of the {self.name} distribution with the size of (1xC)
+            """
             return self.distance_function.prob(value=x, name='prob')
 
         def cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
@@ -151,7 +156,7 @@ class Uniform(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
                                       fixed_parameters=fixed_parameters)
-
+        self.name = 'Uniform'
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
             raise Exception('The input parameters are not consistent (Uniform Distribution)!')
