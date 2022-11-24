@@ -398,6 +398,46 @@ class HalfNormal(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class SkewedNormal(ContinuousDistributions):
+    def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
+                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 n_chains: int = 1) -> None:
+
+        self.name = 'Skewed Normal'
+
+        # recalling parameter values from the main parent class
+        super(SkewedNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha, n_chains=n_chains
+                                           , activate_jit=activate_jit, random_seed=random_seed,
+                                           fixed_parameters=fixed_parameters)
+
+        # checking the correctness of the parameters
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
+        if jnp.any(self.lower >= self.upper):
+            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+
+        if self.fixed_parameters:  # specifying the main probability function for invariant simulation
+            self.distance_function = distributions.TwoPieceNormal(scale=self.scale, loc=self.loc, skewness=self.alpha,
+                                                                  name=self.name)
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
                        'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
@@ -405,10 +445,11 @@ class HalfNormal(ContinuousDistributions):
         return information
 
 
-KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True, n_chains='1')
+##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
-# KK = HalfNormal(scale=2)
+KK = HalfNormal(scale=2, activate_jit=True)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -434,10 +475,13 @@ E10
 #                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
 #                  n_chains: int = 1) -> None:
 #
+#         self.name = 'U'
+
 #         # recalling parameter values from the main parent class
 #         super(PDF, self).__init__(
-#             , activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
-#         self.name = 'U'
+#             , activate_jit=activate_jit, random_seed=random_seed,
+#             fixed_parameters=fixed_parameters, n_chains=n_chains)
+#
 #
 #         # checking the correctness of the parameters
 #         if not isinstance(self.lower, type(self.upper)):
