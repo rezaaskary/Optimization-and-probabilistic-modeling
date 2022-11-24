@@ -159,22 +159,30 @@ class ContinuousDistributions:
         if self.fixed_parameters:  # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:  # activating jit
                 self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
-                self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                         , out_axes=0))
                 self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
-                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0))
+                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
+                                             in_axes=self.vectorized_index_diff_fcn, out_axes=0))
                 self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
                 self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
-                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0))
-                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0))
+                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                         , out_axes=0))
+                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
+                                             in_axes=self.vectorized_index_diff_fcn, out_axes=0))
             else:  # Only using vectorized function
                 self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
-                self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=[0], out_axes=0)
+                self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                     , out_axes=0)
                 self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
-                self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_), in_axes=[0], out_axes=0)
+                self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0)
                 self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
                 self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
-                self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=[0], out_axes=0)
-                self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_), in_axes=[0], out_axes=0)
+                self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
+                                     , out_axes=0)
+                self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0)
 
 
 class Uniform(ContinuousDistributions):
@@ -204,8 +212,8 @@ class Uniform(ContinuousDistributions):
 
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-            self.vectorized_index = [1]  # input x, parameter 1, parameter 2
-
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
         # else:  # specifying the main function for the variant simulation
         #     self.variant_parameters = jnp.concatenate(arrays=(self.lower, self.upper), axis=1)
