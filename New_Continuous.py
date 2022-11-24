@@ -21,58 +21,61 @@ class ContinuousDistributions:
         elif n_chains is None:
             self.n_chains = 1
         else:
-            raise Exception(f'The value of upper is not specified correctly ({self.name} distribution)!')
+            raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
 
         if isinstance(fixed_parameters, bool):
             self.fixed_parameters = fixed_parameters
         else:
-            raise Exception('Please correctly specify the type of simulation (fixed or variant parameters ) !')
+            raise Exception(f'Please correctly specify the type of simulation (fixed or variant parameters in'
+                            f' ({self.__class__} distribution)) !')
 
         if isinstance(random_seed, int):
             self.key = random.PRNGKey(random_seed)
         else:
-            raise Exception('The random seed is not specified correctly!')
+            raise Exception(f'The random seed is not specified correctly ({self.__class__} distribution)!')
 
         if isinstance(variant_chains, bool):
             self.variant_chains = variant_chains
         else:
-            raise Exception('Please specify whether the number of chains are fixed or variant during simulation !')
+            raise Exception(f'Please specify whether the number of chains are fixed or variant during simulation '
+                            f'({self.__class__} distribution)!')
 
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
         else:
-            raise Exception('Please specify the activation of the just-in-time evaluation!')
+            raise Exception(f'Please specify the activation of the just-in-time evaluation'
+                            f' ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(lower, (jnp.ndarray, float, int)):
             self.lower = lower
         elif lower is None:
             self.lower = None
         else:
-            raise Exception('The value of lower is not specified correctly!')
+            raise Exception(f'The value of lower is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(upper, (jnp.ndarray, float, int)):
             self.upper = upper
         elif upper is None:
             self.upper = None
         else:
-            raise Exception('The value of lower is not specified correctly!')
+            raise Exception(f'The value of lower is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(loc, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
-            raise Exception('Please Enter either variance or standard deviation!')
+            raise Exception(f'Please Enter either variance or standard deviation ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(scale, (jnp.ndarray, float, int)) and not isinstance(var, (jnp.ndarray, float, int)):
             if scale > 0:
                 self.scale = scale
                 self.var = scale ** 2
             else:
-                raise Exception('The standard deviation should be a positive value!')
+                raise Exception(f'The standard deviation should be a positive value ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if not isinstance(scale, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
             if var > 0:
                 self.scale = var ** 0.5
                 self.variance = var
             else:
-                raise Exception('The standard deviation should be a positive value!')
+                raise Exception(f'The standard deviation should be a positive value ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if scale is None and var is None:
             self.sigma = None
@@ -83,14 +86,14 @@ class ContinuousDistributions:
         # elif nu is None:
         #     self.nu = None
         # else:
-        #     raise Exception('The value of nu is not specified correctly!')
+        #     raise Exception(f'The value of nu is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(loc, (jnp.ndarray, float, int)):
             self.loc = loc
         elif loc is None:
             self.loc = None
         else:
-            raise Exception('The value of loc is not specified correctly!')
+            raise Exception(f'The value of loc is not specified correctly ({self.__class__} distribution)!')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -237,7 +240,7 @@ class ContinuousDistributions:
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
-                 random_seed: int = 1, fixed_parameters: bool = True) -> None:
+                 random_seed: int = 1, fixed_parameters: bool = True, n_chains: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
@@ -252,7 +255,7 @@ class Uniform(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                      fixed_parameters=fixed_parameters)
+                                      fixed_parameters=fixed_parameters, n_chains=n_chains)
         self.name = 'Uniform'
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
@@ -285,13 +288,15 @@ class Uniform(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Normal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None, loc: float = None,
-                 random_seed: int = 1, activate_jit: bool = False, fixed_parameters: bool = True) -> None:
+                 random_seed: int = 1, activate_jit: bool = False, fixed_parameters: bool = True,
+                 n_chains: int = 1) -> None:
+
+        self.name = 'Normal'
 
         # recalling parameter values from the main parent class
         super(Normal, self).__init__(scale=scale, var=var, loc=loc,
                                      activate_jit=activate_jit, random_seed=random_seed,
-                                     fixed_parameters=fixed_parameters)
-        self.name = 'Normal'
+                                     fixed_parameters=fixed_parameters, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.loc is None or self.scale is None:
@@ -322,13 +327,14 @@ class Normal(ContinuousDistributions):
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, loc: float = None, var: float = None,
                  scale: float = None, activate_jit: bool = False, random_seed: int = 1,
-                 fixed_parameters: bool = True) -> None:
+                 fixed_parameters: bool = True, n_chains: int = 1) -> None:
+
+        self.name = 'Truncated Normal'
 
         # recalling parameter values from the main parent class
         super(TruncatedNormal, self).__init__(loc=loc, var=var, scale=scale, lower=lower, upper=upper
                                               , activate_jit=activate_jit, random_seed=random_seed,
-                                              fixed_parameters=fixed_parameters)
-        self.name = 'Truncated Normal'
+                                              fixed_parameters=fixed_parameters, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.loc is None or self.scale is None:
@@ -359,15 +365,19 @@ class TruncatedNormal(ContinuousDistributions):
                        }
         return information
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True) -> None:
+                 activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+                 n_chains: int = 1) -> None:
+
+        self.name = 'Half Normal'
 
         # recalling parameter values from the main parent class
         super(HalfNormal, self).__init__(scale=scale, var=var
-            , activate_jit=activate_jit, random_seed=random_seed, fixed_parameters=fixed_parameters)
-        self.name = 'Half Normal'
+                                         , activate_jit=activate_jit, random_seed=random_seed,
+                                         fixed_parameters=fixed_parameters, n_chains=n_chains)
 
         # checking the correctness of the parameters
         if self.var is None or self.scale is None:
@@ -395,10 +405,10 @@ class HalfNormal(ContinuousDistributions):
         return information
 
 
-# KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
+KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True, n_chains='1')
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
-KK = HalfNormal(scale=2)
+# KK = HalfNormal(scale=2)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -413,7 +423,7 @@ E5 = KK.log_cdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 E11 = KK.statistics
-E12 = KK.sample(sample_shape=(2000,1))
+E12 = KK.sample(sample_shape=(2000, 1))
 E10 = KK.maximum_liklihood_estimation(x=x)
 
 E10
@@ -421,7 +431,8 @@ E10
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class PDF(ContinuousDistributions):
 #     def __init__(self, : float = None, : float = None,
-#                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True) -> None:
+#                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
+#                  n_chains: int = 1) -> None:
 #
 #         # recalling parameter values from the main parent class
 #         super(PDF, self).__init__(
