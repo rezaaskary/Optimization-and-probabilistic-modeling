@@ -7,9 +7,9 @@ class ContinuousDistributions:
     def __init__(self,
                  lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None,
-                 mu: jnp.ndarray = None,
-                 variance: jnp.ndarray = None,
-                 sigma: jnp.ndarray = None,
+                 loc: jnp.ndarray = None,
+                 var: jnp.ndarray = None,
+                 scale: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
                  n_chains: int = 1,
@@ -78,12 +78,12 @@ class ContinuousDistributions:
             self.sigma = None
             self.variance = None
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(nu, (jnp.ndarray, float, int)):
-            self.nu = nu
-        elif nu is None:
-            self.nu = None
-        else:
-            raise Exception('The value of nu is not specified correctly!')
+        # if isinstance(nu, (jnp.ndarray, float, int)):
+        #     self.nu = nu
+        # elif nu is None:
+        #     self.nu = None
+        # else:
+        #     raise Exception('The value of nu is not specified correctly!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(loc, (jnp.ndarray, float, int)):
             self.loc = loc
@@ -206,32 +206,33 @@ class ContinuousDistributions:
         self.maximum_liklihood_estimation = mle
         if self.fixed_parameters:  # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:  # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1))
                 self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
                                          , out_axes=0))
-                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1))
+                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                        out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
                                              in_axes=self.vectorized_index_diff_fcn, out_axes=0))
-                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
-                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1))
+                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1))
+                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                                        out_axes=1))
                 self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
                                          , out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
                                              in_axes=self.vectorized_index_diff_fcn, out_axes=0))
             else:  # Only using vectorized function
-                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
+                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
                 self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
                                      , out_axes=0)
-                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index, out_axes=1)
+                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
                 self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
                                          in_axes=self.vectorized_index_diff_fcn, out_axes=0)
-                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
-                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index, out_axes=1)
+                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
+                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
                 self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
                                      , out_axes=0)
                 self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
                                          in_axes=self.vectorized_index_diff_fcn, out_axes=0)
-
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
@@ -263,7 +264,19 @@ class Uniform(ContinuousDistributions):
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
-
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'range': self.distance_function.range(name='range'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
 
 class Normal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None, loc: float = None,
@@ -276,19 +289,28 @@ class Normal(ContinuousDistributions):
         self.name = 'Normal'
 
         # checking the correctness of the parameters
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception('The input parameters are not consistent (Uniform Distribution)!')
-        if jnp.any(self.lower >= self.upper):
-            raise Exception('The lower limit of the uniform distribution is greater than the upper limit!')
+        if self.loc is None or self.scale is None:
+            raise Exception('The value of either mean or standard deviation is not specified (Normal distribution)!')
 
         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Normal(loc=self.mu, scale=self.sigma, name='Normal')
+            self.distance_function = distributions.Normal(loc=self.loc, scale=self.scale, name='Normal')
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
         ContinuousDistributions.parallelization(self)
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
 
-
-KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
+# KK = Uniform(lower=2, upper=4, activate_jit=True, random_seed=6, fixed_parameters=True)
 KK = Normal(scale=2, loc=3)
 x = random.uniform(key=random.PRNGKey(7), minval=-20, maxval=20, shape=(1000, 1), dtype=jnp.float64)
 # TT = E.pdf(x)
@@ -304,6 +326,7 @@ E5 = KK.log_cdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 E10 = KK.maximum_liklihood_estimation(x=x)
+E11 = KK.statistics
 E10
 
 # class PDF(ContinuousDistributions):
@@ -326,3 +349,16 @@ E10
 #             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
 #             self.vectorized_index_diff_fcn = [0]
 #         ContinuousDistributions.parallelization(self)
+#     @property
+#     def statistics(self):
+#         information = {'mean': self.distance_function.mean(name='mean'),
+#                        'mode': self.distance_function.mode(name='mode'),
+#                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+#                        'median': self.distance_function.quantile(value=0.5, name='median'),
+#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'range': self.distance_function.range(name='range'),
+#                        'std': self.distance_function.stddev(name='stddev'),
+#                        'var': self.distance_function.variance(name='variance'),
+#                        }
+#         return information
