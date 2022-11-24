@@ -223,34 +223,43 @@ class ContinuousDistributions:
         self.maximum_liklihood_estimation = mle
         if self.fixed_parameters:  # when the number of parallel evaluation is fixed. Useful for MCMC
             if self.activate_jit:  # activating jit
-                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1))
+                self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                    out_axes=self.out_index))
+                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                        out_axes=self.out_index))
+                self.cdf = jit(
+                    vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=self.out_index))
+                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                                        out_axes=self.out_index))
                 self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
                                          , out_axes=0))
-                self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
-                                        out_axes=1))
                 self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
                                              in_axes=self.vectorized_index_diff_fcn, out_axes=0))
-                self.cdf = jit(vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1))
-                self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
-                                        out_axes=1))
                 self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
                                          , out_axes=0))
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
                                              in_axes=self.vectorized_index_diff_fcn, out_axes=0))
             else:  # Only using vectorized function
-                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
+                self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                out_axes=self.out_index)
+                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
+                                    out_axes=self.out_index)
+                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                                out_axes=self.out_index)
+                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
+                                    out_axes=self.out_index)
                 self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
                                      , out_axes=0)
-                self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
                 self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
                                          in_axes=self.vectorized_index_diff_fcn, out_axes=0)
-                self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
-                self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
                 self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
                                      , out_axes=0)
                 self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
                                          in_axes=self.vectorized_index_diff_fcn, out_axes=0)
 
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
@@ -278,10 +287,15 @@ class Uniform(ContinuousDistributions):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
+        self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
+        if not self.multi_distribution:  # specifying the main probability function for invariant simulation
             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
             self.vectorized_index_diff_fcn = [0]
+            self.out_index = 1
+        else:
+            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+            self.vectorized_index_diff_fcn = [0]
+            self.out_index = -1
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -421,7 +435,7 @@ class HalfNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TwoPieceNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
-                 activate_jit: bool = False, random_seed: int = 1,  multi_distribution: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1) -> None:
 
         self.name = 'TwoPieceNormal'
@@ -568,9 +582,7 @@ x = random.uniform(key=random.PRNGKey(7), minval=0, maxval=1, shape=(1000, 1), d
 #     self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
 
 
-KK =Kumaraswamy(alpha=jnp.array([2]),beta=jnp.array([4]), activate_jit=False)
-
-
+KK = Kumaraswamy(alpha=jnp.array([2]), beta=jnp.array([4]), activate_jit=False)
 
 # TT = E.pdf(x)
 # TT2 = E.log(x)
