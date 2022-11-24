@@ -96,6 +96,11 @@ class ContinuousDistributions:
             return self.distance_function.log_prob(value=x, name='log prob')
 
         def log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            The log of {self.name} distribution
+            :param x: An array with the size of (1xC)
+            :return: The log function of cumulative {self.name} distribution with the size of (1xC)
+            """
             return self.distance_function.log_cdf(value=x, name='log cdf')
 
         def diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
