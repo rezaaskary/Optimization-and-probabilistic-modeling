@@ -1,3 +1,4 @@
+import jax.random
 from tensorflow_probability.substrates.jax import distributions
 from jax import vmap, jit, grad, random, lax, scipy
 import jax.numpy as jnp
@@ -216,7 +217,7 @@ class ContinuousDistributions:
             return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
 
         def sampling_from_distribution(sample_shape: tuple = None) -> jnp.ndarray:
-            return self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')
+            return (self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')).reshape((-1, sample_shape))
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         self.sample = sampling_from_distribution
@@ -231,13 +232,13 @@ class ContinuousDistributions:
             self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
                                     out_axes=self.out_index))
             self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                     , out_axes=0))
+                                     , out_axes=self.out_index_diff))
             self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
-                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0))
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff))
             self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                     , out_axes=0))
+                                     , out_axes=self.out_index_diff))
             self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
-                                         in_axes=self.vectorized_index_diff_fcn, out_axes=0))
+                                         in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff))
         else:  # Only using vectorized function
             self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
                             out_axes=self.out_index)
@@ -248,14 +249,13 @@ class ContinuousDistributions:
             self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
                                 out_axes=self.out_index)
             self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                 , out_axes=0)
+                                 , out_axes=self.out_index_diff)
             self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
-                                     in_axes=self.vectorized_index_diff_fcn, out_axes=0)
+                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff)
             self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                 , out_axes=0)
+                                 , out_axes=self.out_index_diff)
             self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
-                                     in_axes=self.vectorized_index_diff_fcn, out_axes=0)
-
+                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -286,22 +286,24 @@ class Uniform(ContinuousDistributions):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
-        self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-
         if self.multi_distribution:
+            self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(), name='Uniform')
             self.vectorized_index_fcn = [1]
             self.vectorized_index_diff_fcn = [1]
             self.out_index = 1
+            self.out_index_diff = 1
         else:  # activating multiple distribution
+            self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
             self.vectorized_index_fcn = [0]
             self.vectorized_index_diff_fcn = [0]
             self.out_index = 1
+            self.out_index_diff = 1
+
         ContinuousDistributions.parallelization(self)
 
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
                        'entropy': self.distance_function.entropy(name='entropy'),
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
@@ -583,6 +585,19 @@ KK = Uniform(lower=jnp.array([2,3]), upper=jnp.array([5,24]), activate_jit=False
 
 
 # KK = Kumaraswamy(alpha=jnp.array([2]), beta=jnp.array([4]), activate_jit=False)
+mm = distributions.Uniform(low=jnp.array([0, 1]), high=jnp.array([3, 7]))
+dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
+
+def cc(x):
+    mm = distributions.Uniform(low=[0, 1], high=[3, 7])
+    # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
+    return mm.prob(x)[0]
+
+DD = vmap(fun=grad(cc),in_axes=1,out_axes=1)(x)
+
+DD
+
+
 
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -598,8 +613,8 @@ E3 = KK.diff_log_pdf(x)
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 E11 = KK.statistics
-E12 = KK.sample(sample_shape=(2000, 1))
-E10 = KK.maximum_liklihood_estimation(x=x)
+E12 = KK.sample(100)
+# E10 = KK.maximum_liklihood_estimation(x=x)
 
 E10
 
