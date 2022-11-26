@@ -508,8 +508,12 @@ class TruncatedNormal(ContinuousDistributions):
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)) or not isinstance(self.lower,
                                                                           type(self.scale)) or not isinstance(
-                self.lower, type(self.loc)):
+            self.lower, type(self.loc)):
             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
+
+        if jnp.any(self.lower >= self.upper):
+            raise Exception(f'The input lower bound cannot be greater than input upper bound '
+                            f' ({self.name} distribution)!')
 
         if self.multi_distribution:  # activating multiple distribution
             if not isinstance(self.loc, jnp.ndarray):
@@ -537,53 +541,66 @@ class TruncatedNormal(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# class pdf(ContinuousDistributions):
+#     def __init__(self, : (float, int, jnp.ndarray) = None, : (float, int, jnp.ndarray) = None,
+#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+#                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+#         """
+#         Continuous  distribution
+#         :param  : A ndarray or float indicating ----- of the distribution
+#         :param  : A ndarray or float indicating ---- of the distribution
+#         :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+#         :param random_seed: An integer used to specify the random seed
+#         :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+#          distribution with different parameters
+#         :param n_chains: An integer used to indicate the number of chains/samples
+#         :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+#         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+#         """
+#         # recalling parameter values from the main parent class
+#         super(pdf, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
+#                                   multi_distribution=multi_distribution, n_chains=n_chains,
+#                                   in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+#         self.name = ''
+#         # checking the correctness of the parameters
+#         if not isinstance(self., type(self.)):
+#             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
+#
+#
+#         if self.multi_distribution:  # activating multiple distribution
+#             if not isinstance(self., jnp.ndarray):
+#                 raise Exception(f'Please enter the input parameter in the format of ndarray ({self.__class__}'
+#                                 f' distribution)')
+#
+#             self.distance_function = distributions.(=self..tolist(), =self..tolist(),
+#                                                            name=self.name)
+#         else:  # activating single distribution
+#             if isinstance(self., jnp.ndarray):
+#                 raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
+#                                 f' distribution)')
+#             self.distance_function = distributions.(=self., =self., name=self.name)
+#
+#         ContinuousDistributions.parallelization(self)
+#
+#     @property
+#     def statistics(self):
+#         information = {'mean': self.distance_function.mean(name='mean'),
+#                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'mode': self.distance_function.mode(name='mode'),
+#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+#                        'median': self.distance_function.quantile(value=0.5, name='median'),
+#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'range': self.distance_function.range(name='range'),
+#                        'std': self.distance_function.stddev(name='stddev'),
+#                        'var': self.distance_function.variance(name='variance'),
+#                        }
+#         return information
 
-
-class TruncatedNormal(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, loc: float = None, var: float = None,
-                 scale: float = None, activate_jit: bool = False, random_seed: int = 1,
-                 multi_distribution: bool = True, n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-
-        self.name = 'Truncated Normal'
-
-        # recalling parameter values from the main parent class
-        super(TruncatedNormal, self).__init__(loc=loc, var=var, scale=scale, lower=lower, upper=upper
-                                              , activate_jit=activate_jit, random_seed=random_seed,
-                                              multi_distribution=multi_distribution, n_chains=n_chains)
-
-        # checking the correctness of the parameters
-        if self.loc is None or self.scale is None:
-            raise Exception(f'The value of either mean or standard deviation is not specified'
-                            f' ({self.name} distribution)!')
-
-        if self.lower >= self.upper:
-            raise Exception(f'The lower bound of the distribution cannot be greater than the upper bound'
-                            f' ({self.name} distribution)!')
-
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.TruncatedNormal(loc=self.loc, scale=self.scale,
-                                                                   low=self.lower, high=self.upper, name=self.name)
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -758,12 +775,13 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
+x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
 # KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
 #              multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
 
-KK = Normal(scale=jnp.array([2, 4]), loc=jnp.array([3, 6]), activate_jit=False, multi_distribution=True, in_vec_dim=1,
-            out_vec_dim=1)
+KK = TruncatedNormal(scale=jnp.array([2, 4]), loc=jnp.array([3, 6]), lower=jnp.array([-3, -6]),
+                     upper=jnp.array([8, 12]), activate_jit=False, multi_distribution=True, in_vec_dim=1,
+                     out_vec_dim=1)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
