@@ -181,79 +181,114 @@ class ContinuousDistributions:
             """
             return self.distance_function.log_cdf(value=x, name='log cdf')
 
-        if self.multi_distribution:  # when only one probability distribution is called
-            def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
-                """
-                return self.distance_function.prob(value=x, name='diff prob')
+        def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of the distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
+            """
+            return self.distance_function.prob(value=x, name='diff prob')
 
-            def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of cumulative function of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of CDF of the distribution with respect to variable x calculated in size
-                of (1xC)
-                """
-                return self.distance_function.cdf(value=x, name='diff cdf')
+        def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of cumulative function of the distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of CDF of the distribution with respect to variable x calculated in size
+            of (1xC)
+            """
+            return self.distance_function.cdf(value=x, name='diff cdf')
 
-            def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                 Derivative of the  log of distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the log of the distribution with respect to variable x calculated in
-                size of (1xC)
-                """
-                return self.distance_function.log_prob(value=x, name='diff log  prob')
+        def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+             Derivative of the  log of distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of the log of the distribution with respect to variable x calculated in
+            size of (1xC)
+            """
+            return self.distance_function.log_prob(value=x, name='diff log  prob')
 
-            def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of the log of cumulative function of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
-                size of (1xC)
-                """
-                return self.distance_function.log_cdf(value=x, name='diff log  cdf')
+        def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+            f"""
+            Derivative of the log of cumulative function of the distribution
+            :param x: An array with the size of (1xC)
+            :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
+            size of (1xC)
+            """
+            return self.distance_function.log_cdf(value=x, name='diff log  cdf')
 
-
-        else:  # when multiple probability distribution (with different or similar parameters) are evaluated
-
-            def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
-                """
-                return (self.distance_function.prob(value=x, name='diff prob'))[0]
-
-            def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of cumulative function of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of CDF of the distribution with respect to variable x calculated in size
-                of (1xC)
-                """
-                return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
-
-            def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                 Derivative of the  log of distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the log of the distribution with respect to variable x calculated in
-                size of (1xC)
-                """
-                return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
-
-            def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-                f"""
-                Derivative of the  log of cumulative function of the distribution
-                :param x: An array with the size of (1xC)
-                :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
-                size of (1xC)
-                """
-                return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+        # if self.multi_distribution:  # when only one probability distribution is called
+        #     def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
+        #         """
+        #         return self.distance_function.prob(value=x, name='diff prob')
+        #
+        #     def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of cumulative function of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of CDF of the distribution with respect to variable x calculated in size
+        #         of (1xC)
+        #         """
+        #         return self.distance_function.cdf(value=x, name='diff cdf')
+        #
+        #     def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #          Derivative of the  log of distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the log of the distribution with respect to variable x calculated in
+        #         size of (1xC)
+        #         """
+        #         return self.distance_function.log_prob(value=x, name='diff log  prob')
+        #
+        #     def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of the log of cumulative function of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
+        #         size of (1xC)
+        #         """
+        #         return self.distance_function.log_cdf(value=x, name='diff log  cdf')
+        #
+        #
+        # else:  # when multiple probability distribution (with different or similar parameters) are evaluated
+        #
+        #     def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
+        #         """
+        #         return (self.distance_function.prob(value=x, name='diff prob'))[0]
+        #
+        #     def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of cumulative function of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of CDF of the distribution with respect to variable x calculated in size
+        #         of (1xC)
+        #         """
+        #         return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+        #
+        #     def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #          Derivative of the  log of distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the log of the distribution with respect to variable x calculated in
+        #         size of (1xC)
+        #         """
+        #         return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
+        #
+        #     def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        #         f"""
+        #         Derivative of the  log of cumulative function of the distribution
+        #         :param x: An array with the size of (1xC)
+        #         :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
+        #         size of (1xC)
+        #         """
+        #         return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -286,32 +321,44 @@ class ContinuousDistributions:
             self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.in_vec_dim,
                                     out_axes=self.out_vec_dim))
 
-            if not self.multi_distribution:
-                self.diff_pdf = jit(vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
-                                         , out_axes=self.out_vec_dim))
+            self.diff_pdf = jit(vmap(jacfwd(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                     , out_axes=self.out_vec_dim))
 
-                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probability_distribution_),
-                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            self.diff_log_pdf = jit(vmap(jacfwd(fun=diff_log_probability_distribution_),
+                                         in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
-                                         , out_axes=self.out_vec_dim))
+            self.diff_cdf = jit(vmap(jacfwd(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                     , out_axes=self.out_vec_dim))
 
-                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
-                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
+                                         in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-            else:  # which means activating evaluation of multiple probability distribution with different parameters
-
-                self.diff_pdf = jit(vmap(jacfwd(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
-                                         , out_axes=self.out_vec_dim))
-
-                self.diff_log_pdf = jit(vmap(jacfwd(fun=diff_log_probability_distribution_),
-                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
-
-                self.diff_cdf = jit(vmap(jacfwd(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
-                                         , out_axes=self.out_vec_dim))
-
-                self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
-                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            # if not self.multi_distribution:
+            #     self.diff_pdf = jit(vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+            #                              , out_axes=self.out_vec_dim))
+            #
+            #     self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probability_distribution_),
+            #                                  in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            #
+            #     self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+            #                              , out_axes=self.out_vec_dim))
+            #
+            #     self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
+            #                                  in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            #
+            # else:  # which means activating evaluation of multiple probability distribution with different parameters
+            #
+            #     self.diff_pdf = jit(vmap(jacfwd(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+            #                              , out_axes=self.out_vec_dim))
+            #
+            #     self.diff_log_pdf = jit(vmap(jacfwd(fun=diff_log_probability_distribution_),
+            #                                  in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+            #
+            #     self.diff_cdf = jit(vmap(jacfwd(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+            #                              , out_axes=self.out_vec_dim))
+            #
+            #     self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
+            #                                  in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
         else:  # Only using vectorized function
             self.pdf = vmap(fun=probability_distribution_, in_axes=self.in_vec_dim,
@@ -358,8 +405,8 @@ class ContinuousDistributions:
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: (float, int, jnp.ndarray) = None, upper: (float, int, jnp.ndarray) = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+    def __init__(self, lower: jnp.ndarray = None, upper: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
@@ -382,30 +429,18 @@ class Uniform(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                      multi_distribution=multi_distribution, n_chains=n_chains,
-                                      in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                      n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Uniform'
         # checking the correctness of the parameters
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
-
         if jnp.any(self.lower >= self.upper):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
-        if self.multi_distribution:  # activating multiple distribution
-            if not isinstance(self.lower, jnp.ndarray):
-                raise Exception(f'Please enter the input parameter in the format of ndarray ({self.__class__}'
-                                f' distribution)')
-
-            self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
-                                                           name='Uniform')
-        else:  # activating single distribution
-            if isinstance(self.lower, jnp.ndarray):
-                raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
-                                f' distribution)')
-            self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-
+        if not isinstance(self.lower, jnp.ndarray) or not isinstance(self.upper, jnp.ndarray):
+            raise Exception(f'Please enter the input parameter in the format of ndarray ({self.__class__}'
+                            f' distribution)')
+        self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
+                                                       name='Uniform')
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -566,8 +601,8 @@ class HalfNormal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(HalfNormal, self).__init__(scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
-                                  multi_distribution=multi_distribution, n_chains=n_chains,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                         multi_distribution=multi_distribution, n_chains=n_chains,
+                                         in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'HalfNormal'
         # checking the correctness of the parameters
 
@@ -577,7 +612,7 @@ class HalfNormal(ContinuousDistributions):
                                 f' distribution)')
 
             self.distance_function = distributions.HalfNormal(scale=self.scale.tolist(),
-                                                           name=self.name)
+                                                              name=self.name)
         else:  # activating single distribution
             if isinstance(self.scale, jnp.ndarray):
                 raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
@@ -594,7 +629,6 @@ class HalfNormal(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
                        }
@@ -774,14 +808,14 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
-# KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
-#              multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
+KK = Uniform(lower=jnp.array([4,6]), upper=jnp.array([7,9]), activate_jit=True, random_seed=6,
+              in_vec_dim=1, out_vec_dim=1)
 
 # KK = TruncatedNormal(scale=2, loc=7, lower=-4,
 #                      upper=7, activate_jit=False, multi_distribution=False, in_vec_dim=1,
 #                      out_vec_dim=1)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True,multi_distribution=False)
-KK = HalfNormal(scale=2, activate_jit=True)
+KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
 # KK = Beta(alpha=2, beta=3, activate_jit=False)
 
