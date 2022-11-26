@@ -257,7 +257,6 @@ class ContinuousDistributions:
             self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-
         else:  # Only using vectorized function
             self.pdf = vmap(fun=probability_distribution_, in_axes=self.in_vec_dim,
                             out_axes=self.out_vec_dim)
