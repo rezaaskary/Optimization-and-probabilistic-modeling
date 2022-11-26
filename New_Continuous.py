@@ -550,7 +550,7 @@ class TruncatedNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfNormal(ContinuousDistributions):
     def __init__(self, scale: (float, int, jnp.ndarray) = None, var: (float, int, jnp.ndarray) = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = False,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Continuous HalfNormal distribution
@@ -602,41 +602,41 @@ class HalfNormal(ContinuousDistributions):
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class HalfNormal(ContinuousDistributions):
-    def __init__(self, scale: float = None, var: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-
-        self.name = 'Half Normal'
-
-        # recalling parameter values from the main parent class
-        super(HalfNormal, self).__init__(scale=scale, var=var
-                                         , activate_jit=activate_jit, random_seed=random_seed,
-                                         multi_distribution=multi_distribution, n_chains=n_chains)
-
-        # checking the correctness of the parameters
-        if self.var is None or self.scale is None:
-            raise Exception(
-                f'The value of either variance or standard deviation is not specified ({self.name} distribution)!')
-
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.HalfNormal(scale=self.scale, name=self.name)
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
+# class HalfNormal(ContinuousDistributions):
+#     def __init__(self, scale: float = None, var: float = None,
+#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+#                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+#
+#         self.name = 'Half Normal'
+#
+#         # recalling parameter values from the main parent class
+#         super(HalfNormal, self).__init__(scale=scale, var=var
+#                                          , activate_jit=activate_jit, random_seed=random_seed,
+#                                          multi_distribution=multi_distribution, n_chains=n_chains)
+#
+#         # checking the correctness of the parameters
+#         if self.var is None or self.scale is None:
+#             raise Exception(
+#                 f'The value of either variance or standard deviation is not specified ({self.name} distribution)!')
+#
+#         if self.multi_distribution:  # specifying the main probability function for invariant simulation
+#             self.distance_function = distributions.HalfNormal(scale=self.scale, name=self.name)
+#             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
+#             self.vectorized_index_diff_fcn = [0]
+#         ContinuousDistributions.parallelization(self)
+#
+#     @property
+#     def statistics(self):
+#         information = {'mean': self.distance_function.mean(name='mean'),
+#                        'mode': self.distance_function.mode(name='mode'),
+#                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+#                        'median': self.distance_function.quantile(value=0.5, name='median'),
+#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'std': self.distance_function.stddev(name='stddev'),
+#                        'var': self.distance_function.variance(name='variance'),
+#                        }
+#         return information
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -777,11 +777,11 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 # KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
 #              multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
 
-KK = TruncatedNormal(scale=jnp.array([2, 4]), loc=jnp.array([3, 6]), lower=jnp.array([-3, -6]),
-                     upper=jnp.array([8, 12]), activate_jit=False, multi_distribution=True, in_vec_dim=1,
-                     out_vec_dim=1)
-# KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
-# KK = HalfNormal(scale=2, activate_jit=True)
+# KK = TruncatedNormal(scale=2, loc=7, lower=-4,
+#                      upper=7, activate_jit=False, multi_distribution=False, in_vec_dim=1,
+#                      out_vec_dim=1)
+# KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True,multi_distribution=False)
+KK = HalfNormal(scale=2, activate_jit=True)
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
 # KK = Beta(alpha=2, beta=3, activate_jit=False)
 
@@ -802,7 +802,7 @@ E11
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class pdf(ContinuousDistributions):
 #     def __init__(self, : (float, int, jnp.ndarray) = None, : (float, int, jnp.ndarray) = None,
-#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = False,
 #                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 #         """
 #         Continuous  distribution
