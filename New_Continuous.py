@@ -1104,6 +1104,8 @@ class InverseGamma(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=jnp.inf)
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Weibull(ContinuousDistributions):
     def __init__(self, kappa: jnp.ndarray = None, lambd: jnp.ndarray = None,
@@ -1123,12 +1125,12 @@ class Weibull(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Weibull, self).__init__(kappa=kappa, lambd=lambd, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                      n_chains=n_chains, validate_input_range=validate_input_range,
+                                      in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Weibull'
         self.distance_function = distributions.Weibull(concentration=self.kappa.tolist(), scale=self.lambd.tolist(),
-                                                          validate_args=True,
-                                                           name=self.name)
+                                                       validate_args=True,
+                                                       name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -1144,8 +1146,9 @@ class Weibull(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+        return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
