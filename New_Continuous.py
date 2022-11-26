@@ -394,10 +394,16 @@ class Uniform(ContinuousDistributions):
                             f' ({self.name} distribution)!')
 
         if self.multi_distribution:  # activating multiple distribution
+            if not isinstance(self.lower, jnp.ndarray):
+                raise Exception(f'Please enter the input parameter in the format of ndarray ({self.__class__}'
+                                f' distribution)')
 
             self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
                                                            name='Uniform')
         else:  # activating single distribution
+            if isinstance(self.lower, jnp.ndarray):
+                raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
+                                f' distribution)')
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
 
         ContinuousDistributions.parallelization(self)
@@ -420,7 +426,7 @@ class Uniform(ContinuousDistributions):
 class Normal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None, loc: float = None,
                  random_seed: int = 1, activate_jit: bool = False, multi_distribution: bool = True,
-                 n_chains: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 
         self.name = 'Normal'
 
@@ -458,7 +464,7 @@ class Normal(ContinuousDistributions):
 class TruncatedNormal(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, loc: float = None, var: float = None,
                  scale: float = None, activate_jit: bool = False, random_seed: int = 1,
-                 multi_distribution: bool = True, n_chains: int = 1) -> None:
+                 multi_distribution: bool = True, n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 
         self.name = 'Truncated Normal'
 
@@ -501,7 +507,7 @@ class TruncatedNormal(ContinuousDistributions):
 class HalfNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, var: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 
         self.name = 'Half Normal'
 
@@ -539,7 +545,7 @@ class HalfNormal(ContinuousDistributions):
 class TwoPieceNormal(ContinuousDistributions):
     def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 
         self.name = 'TwoPieceNormal'
 
@@ -576,7 +582,7 @@ class TwoPieceNormal(ContinuousDistributions):
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Beta Distribution
         :param alpha:
@@ -622,7 +628,7 @@ class Beta(ContinuousDistributions):
 class Kumaraswamy(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Kumaraswamy Distribution (The input variable should  be in the range of (0,1))
         :param alpha:
@@ -695,53 +701,53 @@ E10 = KK.maximum_liklihood_estimation(x=x)
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class PDF(ContinuousDistributions):
-    def __init__(self, : float = None, : float = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-        """
-
-        :param :
-        :param :
-        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
-        :param random_seed: An integer used to specify the random seed
-        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
-         distribution with different parameters
-        :param n_chains: An integer used to indicate the number of chains/samples
-        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
-        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
-        """
-        # recalling parameter values from the main parent class
-        super(PDF, self).__init__( activate_jit=activate_jit, random_seed=random_seed,
-                                      multi_distribution=multi_distribution, n_chains=n_chains,
-                                      in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
-        self.name = ''
-        # checking the correctness of the parameters
-        if not isinstance(self.lower, type(self.upper)):
-            raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
-
-        if jnp.any(self.lower >= self.upper):
-            raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
-                            f' ({self.name} distribution)!')
-
-        if self.multi_distribution:  # activating multiple distribution
-
-            self.distance_function = distributions.(low=self.lower.tolist(), high=self.upper.tolist(),
-                                                           name=self.name)
-        else:  # activating single distribution
-            self.distance_function = distributions.(low=self.lower, high=self.upper, name=self.name)
-
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
+# class PDF(ContinuousDistributions):
+#     def __init__(self, : float = None, : float = None,
+#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+#                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+#         """
+#
+#         :param :
+#         :param :
+#         :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+#         :param random_seed: An integer used to specify the random seed
+#         :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+#          distribution with different parameters
+#         :param n_chains: An integer used to indicate the number of chains/samples
+#         :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+#         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+#         """
+#         # recalling parameter values from the main parent class
+#         super(PDF, self).__init__( activate_jit=activate_jit, random_seed=random_seed,
+#                                       multi_distribution=multi_distribution, n_chains=n_chains,
+#                                       in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+#         self.name = ''
+#         # checking the correctness of the parameters
+#         if not isinstance(self.lower, type(self.upper)):
+#             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
+#
+#         if jnp.any(self.lower >= self.upper):
+#             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
+#                             f' ({self.name} distribution)!')
+#
+#         if self.multi_distribution:  # activating multiple distribution
+#
+#             self.distance_function = distributions.(low=self.lower.tolist(), high=self.upper.tolist(),
+#                                                            name=self.name)
+#         else:  # activating single distribution
+#             self.distance_function = distributions.(low=self.lower, high=self.upper, name=self.name)
+#
+#         ContinuousDistributions.parallelization(self)
+#
+#     @property
+#     def statistics(self):
+#         information = {'mean': self.distance_function.mean(name='mean'),
+#                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+#                        'median': self.distance_function.quantile(value=0.5, name='median'),
+#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'range': self.distance_function.range(name='range'),
+#                        'std': self.distance_function.stddev(name='stddev'),
+#                        'var': self.distance_function.variance(name='variance'),
+#                        }
+#         return information
