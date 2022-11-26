@@ -678,30 +678,6 @@ KK = Uniform(lower=2.0, upper=7.0, activate_jit=True, random_seed=6,
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
 # KK = Beta(alpha=2, beta=3, activate_jit=False)
 
-# def cc(x):
-#     kk=distributions.Kumaraswamy(concentration1=jnp.array([2,3]),  concentration0=jnp.array([4,8]),
-# #                                                                name='r')
-# #     return kk.prob(x)
-# TT = vmap(cc,in_axes=0,out_axes=-1)(x)
-#     self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn, out_axes=1)
-
-
-# KK = Kumaraswamy(alpha=jnp.array([2]), beta=jnp.array([4]), activate_jit=False)
-# mm = distributions.Uniform(low=jnp.array([0, 1]), high=jnp.array([3, 7]))
-# dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
-
-# def cc(x):
-#     mm = distributions.Normal(loc=[0, 1], scale=[3, 7])
-#     # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
-#     return (mm.prob(x))
-#
-#
-# DD = vmap(fun=jacfwd(cc), in_axes=1, out_axes=1)(x)
-#
-# DD
-
-# TT = E.pdf(x)
-# TT2 = E.log(x)
 
 E1 = KK.pdf(x)
 E2 = KK.log_pdf(x)
@@ -714,43 +690,7 @@ E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
 E11 = KK.statistics
 E12 = KK.sample(100)
-# E10 = KK.maximum_liklihood_estimation(x=x)
+E10 = KK.maximum_liklihood_estimation(x=x)
 
-E10
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# class PDF(ContinuousDistributions):
-#     def __init__(self, : float = None, : float = None,
-#                  activate_jit: bool = False, random_seed: int = 1, fixed_parameters: bool = True,
-#                  n_chains: int = 1) -> None:
-#
-#         self.name = 'U'
-#
-#         # recalling parameter values from the main parent class
-#         super(PDF, self).__init__(
-#             , activate_jit=activate_jit, random_seed=random_seed,
-#             fixed_parameters=fixed_parameters, n_chains=n_chains)
-#
-#
-#         # checking the correctness of the parameters
-#         if self.alpha < 0:
-#             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-#
-#         if self.fixed_parameters:  # specifying the main probability function for invariant simulation
-#             self.distance_function = distributions.(, name=self.name)
-#             self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-#             self.vectorized_index_diff_fcn = [0]
-#         ContinuousDistributions.parallelization(self)
-#     @property
-#     def statistics(self):
-#         information = {'mean': self.distance_function.mean(name='mean'),
-#                        'mode': self.distance_function.mode(name='mode'),
-#                        'entropy': self.distance_function.entropy(name='entropy'),
-#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-#                        'median': self.distance_function.quantile(value=0.5, name='median'),
-#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-#                        'range': self.distance_function.range(name='range'),
-#                        'std': self.distance_function.stddev(name='stddev'),
-#                        'var': self.distance_function.variance(name='variance'),
-#                        }
-#         return information
+
