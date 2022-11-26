@@ -860,6 +860,7 @@ class StudentT(ContinuousDistributions):
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return x
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfStudentT(ContinuousDistributions):
     def __init__(self, scale: jnp.ndarray = None, loc: jnp.ndarray = None, df: jnp.ndarray = None,
@@ -878,14 +879,15 @@ class HalfStudentT(ContinuousDistributions):
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
-        super(HalfStudentT, self).__init__(scale=scale, loc=loc, df=df, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        super(HalfStudentT, self).__init__(scale=scale, loc=loc, df=df, activate_jit=activate_jit,
+                                           random_seed=random_seed,
+                                           n_chains=n_chains, validate_input_range=validate_input_range,
+                                           in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'HalfStudentT'
         self.distance_function = distributions.HalfStudentT(loc=self.loc.tolist(), scale=self.scale.tolist(),
                                                             df=self.df.tolist(),
                                                             validate_args=True,
-                                                           name=self.name)
+                                                            name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -901,8 +903,9 @@ class HalfStudentT(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+        return jnp.clip(a=x, a_min=self.loc, a_max=jnp.inf)
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
