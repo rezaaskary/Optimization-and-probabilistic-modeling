@@ -17,7 +17,14 @@ class ContinuousDistributions:
                  n_chains: int = 1,
                  random_seed: int = 1,
                  in_vec_dim: int = 1,
+                 validate_input_range: bool = True,
                  out_vec_dim: int = 1) -> None:
+
+        if isinstance(validate_input_range, bool):
+            self.validate_input_range = validate_input_range
+        else:
+            raise Exception(f'Please specify whether the input should be validated before evaluation '
+                            f'({self.__class__} distribution)!')
 
         if isinstance(in_vec_dim, int):
             self.in_vec_dim = in_vec_dim
@@ -288,7 +295,7 @@ class ContinuousDistributions:
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: jnp.ndarray = None, upper: jnp.ndarray = None,
-                 activate_jit: bool = False, random_seed: int = 1,
+                 activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
@@ -311,7 +318,8 @@ class Uniform(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                      n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                      n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim,
+                                      validate_input_range=validate_input_range)
         self.name = 'Uniform'
         # checking the correctness of the parameters
         if jnp.any(self.lower >= self.upper):
@@ -362,7 +370,8 @@ class Normal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Normal, self).__init__(loc=loc, scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
-                                     n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                     n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim,
+                                     validate_input_range=validate_input_range)
         self.name = 'Normal'
         # checking the correctness of the parameters
         if not isinstance(self.loc, type(self.scale)):
@@ -398,7 +407,8 @@ class TruncatedNormal(ContinuousDistributions):
     def __init__(self, loc: jnp.ndarray = None, var: jnp.ndarray = None,
                  scale: jnp.ndarray = None, lower: jnp.ndarray = None,
                  upper: jnp.ndarray = None, activate_jit: bool = False, random_seed: int = 1,
-                 multi_distribution: bool = True, n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1,
+                 validate_input_range: bool = True) -> None:
         """
         Continuous TruncatedNormal distribution
         :param  : A ndarray or float indicating ----- of the distribution
@@ -414,7 +424,8 @@ class TruncatedNormal(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(TruncatedNormal, self).__init__(lower=lower, upper=upper, scale=scale, loc=loc, var=var,
                                               activate_jit=activate_jit, random_seed=random_seed,
-                                              n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                              n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim,
+                                              validate_input_range=validate_input_range)
         self.name = 'TruncatedNormal'
         # checking the correctness of the parameters
 
@@ -448,7 +459,7 @@ class TruncatedNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfNormal(ContinuousDistributions):
     def __init__(self, scale: jnp.ndarray = None, var: jnp.ndarray = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = False,
+                 activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Continuous HalfNormal distribution
@@ -464,7 +475,8 @@ class HalfNormal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(HalfNormal, self).__init__(scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
-                                         n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                         n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim,
+                                         validate_input_range=validate_input_range)
         self.name = 'HalfNormal'
         # checking the correctness of the parameters
 
@@ -493,7 +505,7 @@ class HalfNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TwoPieceNormal(ContinuousDistributions):
     def __init__(self, alpha: jnp.ndarray = None, scale: jnp.ndarray = None, var: jnp.ndarray = None,
-                 loc: jnp.ndarray = None,
+                 loc: jnp.ndarray = None, validate_input_range: bool = True,
                  activate_jit: bool = False, random_seed: int = 1,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -510,6 +522,7 @@ class TwoPieceNormal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(TwoPieceNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha,
+                                             validate_input_range=validate_input_range,
                                              activate_jit=activate_jit, random_seed=random_seed,
                                              n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'TwoPieceNormal'
@@ -538,7 +551,7 @@ class TwoPieceNormal(ContinuousDistributions):
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
-                 activate_jit: bool = False, random_seed: int = 1,
+                 activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Continuous  distribution
@@ -554,7 +567,8 @@ class Beta(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Beta, self).__init__(alpha=alpha, beta=beta, activate_jit=activate_jit, random_seed=random_seed,
-                                   n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                   n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim,
+                                   validate_input_range=validate_input_range)
         self.name = 'Beta'
 
         self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
@@ -576,10 +590,12 @@ class Beta(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=0, a_max=1.0)
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Kumaraswamy(ContinuousDistributions):
     def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
-                 activate_jit: bool = False, random_seed: int = 1,
+                 activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Continuous Kumaraswamy distribution
@@ -595,7 +611,7 @@ class Kumaraswamy(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, activate_jit=activate_jit, random_seed=random_seed,
-                                          n_chains=n_chains,
+                                          n_chains=n_chains, validate_input_range=validate_input_range,
                                           in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Kumaraswamy'
         self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha.tolist(),
@@ -623,54 +639,46 @@ class Kumaraswamy(ContinuousDistributions):
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# class Kumaraswamy(ContinuousDistributions):
-#     def __init__(self, alpha: float = None, beta: float = None,
-#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+# class pdf(ContinuousDistributions):
+#     def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
+#                  activate_jit: bool = False, random_seed: int = 1,
 #                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
 #         """
-#         Kumaraswamy Distribution (The input variable should  be in the range of (0,1))
-#         :param alpha:
-#         :param beta:
-#         :param activate_jit:
-#         :param random_seed:
-#         :param fixed_parameters:
-#         :param n_chains:
+#         Continuous  distribution
+#         :param  : A ndarray or float indicating ----- of the distribution
+#         :param  : A ndarray or float indicating ---- of the distribution
+#         :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+#         :param random_seed: An integer used to specify the random seed
+#         :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+#          distribution with different parameters
+#         :param n_chains: An integer used to indicate the number of chains/samples
+#         :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+#         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
 #         """
-#
-#         self.name = 'Kumaraswamy'
-#
 #         # recalling parameter values from the main parent class
-#         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta
-#                                           , activate_jit=activate_jit, random_seed=random_seed,
-#                                           multi_distribution=multi_distribution, n_chains=n_chains)
-#
-#         # checking the correctness of the parameters
-#         if any(self.alpha <= 1):
-#             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-#         if any(self.beta <= 1):
-#             raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
-#
-#         if self.multi_distribution:  # specifying the main probability function for invariant simulation
-#             self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
-#                                                                concentration0=self.beta,
-#                                                                name=self.name)
-#             self.vectorized_index_fcn = [0]
-#             self.vectorized_index_diff_fcn = [0]
+#         super(pdf, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
+#                                   n_chains=n_chains,
+#                                   in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+#         self.name = ''
+#         self.distance_function = distributions.(=self..tolist(), =self..tolist(),
+#                                                            name=self.name)
 #         ContinuousDistributions.parallelization(self)
 #
 #     @property
 #     def statistics(self):
 #         information = {'mean': self.distance_function.mean(name='mean'),
-#                        'mode': self.distance_function.mode(name='mode'),
 #                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'mode': self.distance_function.mode(name='mode'),
 #                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
 #                        'median': self.distance_function.quantile(value=0.5, name='median'),
 #                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'range': self.distance_function.range(name='range'),
 #                        'std': self.distance_function.stddev(name='stddev'),
 #                        'var': self.distance_function.variance(name='variance'),
 #                        }
 #         return information
-
+#    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+#        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
@@ -685,7 +693,7 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 # KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
 # KK = TwoPieceNormal(scale=jnp.array([4, 5]), loc=jnp.array([4, 8]), alpha=jnp.array([4, 8]), activate_jit=False)
 # KK = Beta(alpha=jnp.array([4, 5]), beta=jnp.array([4, 8]), activate_jit=False)
-KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]))
+# KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]))
 # KK = distributions.Kumaraswamy(concentration0=jnp.array([4,3]),concentration1=jnp.array([6,3]))
 
 E1 = KK.pdf(x)
