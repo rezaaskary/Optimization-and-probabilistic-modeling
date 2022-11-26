@@ -1,4 +1,3 @@
-import jax.random
 from tensorflow_probability.substrates.jax import distributions
 from jax import vmap, jit, grad, random, lax, scipy, jacfwd
 import jax.numpy as jnp
@@ -389,7 +388,7 @@ class Uniform(ContinuousDistributions):
         if not isinstance(self.lower, type(self.upper)):
             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
 
-        if  jnp.any(self.lower >= self.upper):
+        if jnp.any(self.lower >= self.upper):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
