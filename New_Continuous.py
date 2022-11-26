@@ -78,7 +78,7 @@ class ContinuousDistributions:
             raise Exception(f'Please Enter either variance or standard deviation ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(scale, (jnp.ndarray, float, int)) and not isinstance(var, (jnp.ndarray, float, int)):
-            if scale > 0:
+            if jnp.any(scale > 0):
                 self.scale = scale
                 self.var = scale ** 2
             else:
@@ -420,6 +420,8 @@ class Uniform(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Normal(ContinuousDistributions):
     def __init__(self, loc: (float, int, jnp.ndarray) = None, scale: (float, int, jnp.ndarray) = None,
@@ -440,13 +442,16 @@ class Normal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Normal, self).__init__(loc=loc, scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
-                                  multi_distribution=multi_distribution, n_chains=n_chains,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                     multi_distribution=multi_distribution, n_chains=n_chains,
+                                     in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = ''
         # checking the correctness of the parameters
         if not isinstance(self.loc, type(self.scale)):
             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
 
+        if self.loc is None or self.scale is None:
+            raise Exception(f'The value of either mean or standard deviation is not specified'
+                            f'({self.name} distribution)!')
 
         if self.multi_distribution:  # activating multiple distribution
             if not isinstance(self.scale, jnp.ndarray):
@@ -454,9 +459,9 @@ class Normal(ContinuousDistributions):
                                 f' distribution)')
 
             self.distance_function = distributions.Normal(scale=self.scale.tolist(), loc=self.loc.tolist(),
-                                                           name=self.name)
+                                                          name=self.name)
         else:  # activating single distribution
-            if isinstance(self., jnp.ndarray):
+            if isinstance(self.scale, jnp.ndarray):
                 raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
                                 f' distribution)')
             self.distance_function = distributions.Normal(scale=self.scale, loc=self.loc, name=self.name)
@@ -470,50 +475,10 @@ class Normal(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class Normal(ContinuousDistributions):
-    def __init__(self, scale: float = None, var: float = None, loc: float = None,
-                 random_seed: int = 1, activate_jit: bool = False, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-
-        self.name = 'Normal'
-
-        # recalling parameter values from the main parent class
-        super(Normal, self).__init__(scale=scale, var=var, loc=loc,
-                                     activate_jit=activate_jit, random_seed=random_seed,
-                                     multi_distribution=multi_distribution, n_chains=n_chains)
-
-        # checking the correctness of the parameters
-        if self.loc is None or self.scale is None:
-            raise Exception(f'The value of either mean or standard deviation is not specified'
-                            f'({self.name} distribution)!')
-
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Normal(loc=self.loc, scale=self.scale, name='Normal')
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
-
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TruncatedNormal(ContinuousDistributions):
@@ -731,10 +696,10 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
-             multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
+# KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
+#              multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
 
-# KK = Normal(scale=2, loc=3, activate_jit=True)
+KK = Normal(scale=jnp.array([2,4]), loc=jnp.array([3,6]), activate_jit=False,multi_distribution=True,in_vec_dim=1,out_vec_dim=1)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
 # KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
@@ -753,8 +718,7 @@ E9 = KK.diff_log_cdf(x)
 E11 = KK.statistics
 E12 = KK.sample(100)
 E10 = KK.maximum_liklihood_estimation(x=x)
-
-
+E11
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class pdf(ContinuousDistributions):
 #     def __init__(self, : (float, int, jnp.ndarray) = None, : (float, int, jnp.ndarray) = None,
@@ -793,7 +757,7 @@ E10 = KK.maximum_liklihood_estimation(x=x)
 #             if isinstance(self., jnp.ndarray):
 #                 raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
 #                                 f' distribution)')
-#             self.distance_function = distributions.Uniform(=self., =self., name=self.name)
+#             self.distance_function = distributions.(=self., =self., name=self.name)
 #
 #         ContinuousDistributions.parallelization(self)
 #
@@ -801,6 +765,7 @@ E10 = KK.maximum_liklihood_estimation(x=x)
 #     def statistics(self):
 #         information = {'mean': self.distance_function.mean(name='mean'),
 #                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'mode': self.distance_function.mode(name='mode'),
 #                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
 #                        'median': self.distance_function.quantile(value=0.5, name='median'),
 #                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
