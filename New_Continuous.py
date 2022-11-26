@@ -358,7 +358,7 @@ class ContinuousDistributions:
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None,
+    def __init__(self, lower: (float, int, jnp.ndarray) = None, upper: (float, int, jnp.ndarray) = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -370,14 +370,15 @@ class Uniform(ContinuousDistributions):
         London, UK: Springer. pp. 60–61. ISBN 978-1-85233-896-1
 
         Continuous uniform distribution
-        :param lower:
-        :param upper:
-        :param activate_jit:
-        :param random_seed:
-        :param multi_distribution:
-        :param n_chains:
-        :param in_vec_dim:
-        :param out_vec_dim:
+        :param lower: A ndarray or float indicating the lower bound of the distribution
+        :param upper: A ndarray or float indicating the upper bound of the distribution
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
@@ -669,7 +670,7 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=2.0, upper=7.0, activate_jit=True, random_seed=6,
+KK = Uniform(lower=2, upper=7, activate_jit=True, random_seed=6,
              multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
 
 # KK = Normal(scale=2, loc=3, activate_jit=True)
@@ -698,7 +699,18 @@ class PDF(ContinuousDistributions):
     def __init__(self, : float = None, : float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-        
+        """
+
+        :param :
+        :param :
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+        """
         # recalling parameter values from the main parent class
         super(PDF, self).__init__( activate_jit=activate_jit, random_seed=random_seed,
                                       multi_distribution=multi_distribution, n_chains=n_chains,
