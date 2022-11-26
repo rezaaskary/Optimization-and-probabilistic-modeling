@@ -31,7 +31,6 @@ class ContinuousDistributions:
         else:
             raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
 
-
         if isinstance(n_chains, int):
             self.n_chains = n_chains
         elif n_chains is None:
@@ -151,7 +150,7 @@ class ContinuousDistributions:
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     def parallelization(self):
-        def probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        def probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
             The probability of variable x taken from the distribution
             :param x: An array with the size of (1xC)
@@ -167,7 +166,7 @@ class ContinuousDistributions:
             """
             return self.distance_function.cdf(value=x, name='cdf')
 
-        def log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+        def log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
             The log probability of the distribution
             :param x: An array with the size of (1xC)
@@ -183,40 +182,84 @@ class ContinuousDistributions:
             """
             return self.distance_function.log_cdf(value=x, name='log cdf')
 
-        def diff_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            f"""
-            Derivative of the distribution
-            :param x: An array with the size of (1xC)
-            :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
-            """
-            return (self.distance_function.prob(value=x, name='diff prob'))[0]
+        if self.multi_distribution: # when only one probability distribution is called
+            def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
+                """
+                return (self.distance_function.prob(value=x, name='diff prob'))[0]
 
-        def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            f"""
-            Derivative of cumulative function of the distribution
-            :param x: An array with the size of (1xC)
-            :return: derivatives of CDF of the distribution with respect to variable x calculated in size
-            of (1xC)
-            """
-            return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+            def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of cumulative function of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of CDF of the distribution with respect to variable x calculated in size
+                of (1xC)
+                """
+                return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
 
-        def diff_log_probablity_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            f"""
-             Derivative of the  log of distribution
-            :param x: An array with the size of (1xC)
-            :return: derivatives of the log of the distribution with respect to variable x calculated in
-            size of (1xC)
-            """
-            return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
+            def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                 Derivative of the  log of distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the log of the distribution with respect to variable x calculated in
+                size of (1xC)
+                """
+                return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
 
-        def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
-            f"""
-            Derivative of the  log of cumulative function of the distribution
-            :param x: An array with the size of (1xC)
-            :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
-            size of (1xC)
-            """
-            return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+            def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of the  log of cumulative function of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
+                size of (1xC)
+                """
+                return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+
+
+        else: # when multiple probability distribution (with different or similar parameters) are evaluated
+
+            def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
+                """
+                return (self.distance_function.prob(value=x, name='diff prob'))[0]
+
+            def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of cumulative function of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of CDF of the distribution with respect to variable x calculated in size
+                of (1xC)
+                """
+                return (self.distance_function.cdf(value=x, name='diff cdf'))[0]
+
+            def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                 Derivative of the  log of distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the log of the distribution with respect to variable x calculated in
+                size of (1xC)
+                """
+                return (self.distance_function.log_prob(value=x, name='diff log  prob'))[0]
+
+            def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
+                f"""
+                Derivative of the  log of cumulative function of the distribution
+                :param x: An array with the size of (1xC)
+                :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
+                size of (1xC)
+                """
+                return (self.distance_function.log_cdf(value=x, name='diff log  cdf'))[0]
+
+
+
+
+
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
