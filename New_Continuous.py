@@ -477,9 +477,11 @@ class HalfNormal(ContinuousDistributions):
                        }
         return information
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TwoPieceNormal(ContinuousDistributions):
-    def __init__(self, alpha: jnp.ndarray = None, scale: jnp.ndarray = None, var: jnp.ndarray = None, loc: jnp.ndarray = None,
+    def __init__(self, alpha: jnp.ndarray = None, scale: jnp.ndarray = None, var: jnp.ndarray = None,
+                 loc: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -508,6 +510,47 @@ class TwoPieceNormal(ContinuousDistributions):
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Beta(ContinuousDistributions):
+    def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+        """
+        Continuous  distribution
+        :param  : A ndarray or float indicating ----- of the distribution
+        :param  : A ndarray or float indicating ---- of the distribution
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+        """
+        # recalling parameter values from the main parent class
+        super(Beta, self).__init__(alpha=alpha, beta=beta, activate_jit=activate_jit, random_seed=random_seed,
+                                  n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'Beta'
+
+        self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
+                                                    concentration0=self.beta.tolist(),
+                                                    concentration1=self.alpha.tolist(),
+                                                    name=self.name)
+
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
                        'entropy': self.distance_function.entropy(name='entropy'),
                        'mode': self.distance_function.mode(name='mode'),
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
@@ -519,43 +562,9 @@ class TwoPieceNormal(ContinuousDistributions):
                        }
         return information
 
-class TwoPieceNormal(ContinuousDistributions):
-    def __init__(self, scale: float = None, loc: float = None, var: float = None, alpha: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-
-        self.name = 'TwoPieceNormal'
-
-        # recalling parameter values from the main parent class
-        super(TwoPieceNormal, self).__init__(var=var, loc=loc, scale=scale, alpha=alpha, n_chains=n_chains
-                                             , activate_jit=activate_jit, random_seed=random_seed,
-                                             multi_distribution=multi_distribution)
-
-        # checking the correctness of the parameters
-        if self.alpha < 0:
-            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.TwoPieceNormal(scale=self.scale, loc=self.loc, skewness=self.alpha,
-                                                                  name=self.name)
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
 
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: float = None, beta: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
@@ -575,7 +584,7 @@ class Beta(ContinuousDistributions):
         # recalling parameter values from the main parent class
         super(Beta, self).__init__(alpha=alpha, beta=beta
                                    , activate_jit=activate_jit, random_seed=random_seed,
-                                   multi_distribution=multi_distribution, n_chains=n_chains)
+                                    n_chains=n_chains)
 
         # checking the correctness of the parameters
         if any(self.alpha < 0):
@@ -653,15 +662,18 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=jnp.array([4]), upper=jnp.array([7]), activate_jit=True, random_seed=6,
-             in_vec_dim=1, out_vec_dim=1)
+# KK = Uniform(lower=jnp.array([4]), upper=jnp.array([7]), activate_jit=True, random_seed=6,
+#              in_vec_dim=1, out_vec_dim=1)
+
+
+
 
 # KK = TruncatedNormal(scale=2, loc=7, lower=-4,
 #                      upper=7, activate_jit=False, multi_distribution=False, in_vec_dim=1,
 #                      out_vec_dim=1)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True,multi_distribution=False)
 # KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
-# KK = TwoPieceNormal(scale=3, loc=1, activate_jit=False, alpha=2)
+KK = TwoPieceNormal(scale=jnp.array([4,5]), loc=jnp.array([4,8]), alpha=jnp.array([4,8]), activate_jit=False)
 # KK = Beta(alpha=2, beta=3, activate_jit=False)
 
 
