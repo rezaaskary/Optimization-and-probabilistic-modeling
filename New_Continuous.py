@@ -1,6 +1,6 @@
 import jax.random
 from tensorflow_probability.substrates.jax import distributions
-from jax import vmap, jit, grad, random, lax, scipy
+from jax import vmap, jit, grad, random, lax, scipy, jacfwd
 import jax.numpy as jnp
 
 
@@ -17,7 +17,20 @@ class ContinuousDistributions:
                  activate_jit: bool = False,
                  n_chains: int = 1,
                  random_seed: int = 1,
-                 multi_distribution: bool = True) -> None:
+                 multi_distribution: bool = True,
+                 in_vec_dim: int = 1,
+                 out_vec_dim: int = 1) -> None:
+
+        if isinstance(in_vec_dim, int):
+            self.in_vec_dim = in_vec_dim
+        else:
+            raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
+
+        if isinstance(out_vec_dim, int):
+            self.in_vec_dim = out_vec_dim
+        else:
+            raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
+
 
         if isinstance(n_chains, int):
             self.n_chains = n_chains
@@ -217,7 +230,7 @@ class ContinuousDistributions:
             return self.distance_function.experimental_fit(value=x, validate_args=checking_inputs).parameters
 
         def sampling_from_distribution(sample_shape: tuple = None) -> jnp.ndarray:
-            return (self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')).reshape((-1, sample_shape))
+            return (self.distance_function.sample(sample_shape=sample_shape, seed=self.key, name='sample from pdf')).T
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         self.sample = sampling_from_distribution
@@ -257,12 +270,14 @@ class ContinuousDistributions:
             self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
                                      in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff)
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
-                 random_seed: int = 1, multi_distribution: bool = True, n_chains: int = 1) -> None:
+                 random_seed: int = 1, multi_distribution: bool = True, n_chains: int = 1,
+                 in_vec_dim: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
@@ -277,7 +292,8 @@ class Uniform(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                      multi_distribution=multi_distribution, n_chains=n_chains)
+                                      multi_distribution=multi_distribution, n_chains=n_chains,
+                                      in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Uniform'
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
@@ -287,7 +303,8 @@ class Uniform(ContinuousDistributions):
                             f' ({self.name} distribution)!')
 
         if self.multi_distribution:
-            self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(), name='Uniform')
+            self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
+                                                           name='Uniform')
             self.vectorized_index_fcn = [1]
             self.vectorized_index_diff_fcn = [1]
             self.out_index = 1
@@ -569,7 +586,10 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=jnp.array([2,3]), upper=jnp.array([5,24]), activate_jit=False, random_seed=6, multi_distribution=True)
+KK = Uniform(lower=jnp.array([2, 3]), upper=jnp.array([5, 24]), activate_jit=False, random_seed=6,
+             multi_distribution=True)
+
+
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
 # KK = HalfNormal(scale=2, activate_jit=True)
@@ -585,19 +605,18 @@ KK = Uniform(lower=jnp.array([2,3]), upper=jnp.array([5,24]), activate_jit=False
 
 
 # KK = Kumaraswamy(alpha=jnp.array([2]), beta=jnp.array([4]), activate_jit=False)
-mm = distributions.Uniform(low=jnp.array([0, 1]), high=jnp.array([3, 7]))
-dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
+# mm = distributions.Uniform(low=jnp.array([0, 1]), high=jnp.array([3, 7]))
+# dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
 
 def cc(x):
-    mm = distributions.Uniform(low=[0, 1], high=[3, 7])
+    mm = distributions.Normal(loc=[0, 1], scale=[3, 7])
     # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
-    return mm.prob(x)[0]
+    return (mm.prob(x))
 
-DD = vmap(fun=grad(cc),in_axes=1,out_axes=1)(x)
+
+DD = vmap(fun=jacfwd(cc), in_axes=1, out_axes=1)(x)
 
 DD
-
-
 
 # TT = E.pdf(x)
 # TT2 = E.log(x)
@@ -608,7 +627,6 @@ E4 = KK.cdf(x)
 E5 = KK.log_cdf(x)
 E6 = KK.diff_pdf(x)
 E3 = KK.diff_log_pdf(x)
-
 
 E8 = KK.diff_cdf(x)
 E9 = KK.diff_log_cdf(x)
