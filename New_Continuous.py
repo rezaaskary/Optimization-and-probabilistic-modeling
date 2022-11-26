@@ -359,7 +359,7 @@ class ContinuousDistributions:
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: (float, jnp.ndarray) = None, upper: (float, jnp.ndarray) = None,
+    def __init__(self, lower: float = None, upper: float = None,
                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -371,8 +371,14 @@ class Uniform(ContinuousDistributions):
         London, UK: Springer. pp. 60–61. ISBN 978-1-85233-896-1
 
         Continuous uniform distribution
-        :param lower: The lower limit of uniform distribution
-        :param upper: The upper limit of uniform distribution
+        :param lower:
+        :param upper:
+        :param activate_jit:
+        :param random_seed:
+        :param multi_distribution:
+        :param n_chains:
+        :param in_vec_dim:
+        :param out_vec_dim:
         """
         # recalling parameter values from the main parent class
         super(Uniform, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
@@ -382,14 +388,16 @@ class Uniform(ContinuousDistributions):
         # checking the correctness of the parameters
         if not isinstance(self.lower, type(self.upper)):
             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
-        if any(self.lower >= self.upper):
+
+        if  jnp.any(self.lower >= self.upper):
             raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
                             f' ({self.name} distribution)!')
 
-        if self.multi_distribution:
+        if self.multi_distribution:  # activating multiple distribution
+
             self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
                                                            name='Uniform')
-        else:  # activating multiple distribution
+        else:  # activating single distribution
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
 
         ContinuousDistributions.parallelization(self)
@@ -662,9 +670,8 @@ class Kumaraswamy(ContinuousDistributions):
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=10, shape=(1, 1000), dtype=jnp.float64)
-KK = Uniform(lower=jnp.array([2, 3]), upper=jnp.array([5, 24]), activate_jit=False, random_seed=6,
-             multi_distribution=True)
-
+KK = Uniform(lower=2.0, upper=7.0, activate_jit=True, random_seed=6,
+             multi_distribution=False, in_vec_dim=1, out_vec_dim=1)
 
 # KK = Normal(scale=2, loc=3, activate_jit=True)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True)
@@ -684,15 +691,15 @@ KK = Uniform(lower=jnp.array([2, 3]), upper=jnp.array([5, 24]), activate_jit=Fal
 # mm = distributions.Uniform(low=jnp.array([0, 1]), high=jnp.array([3, 7]))
 # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
 
-def cc(x):
-    mm = distributions.Normal(loc=[0, 1], scale=[3, 7])
-    # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
-    return (mm.prob(x))
-
-
-DD = vmap(fun=jacfwd(cc), in_axes=1, out_axes=1)(x)
-
-DD
+# def cc(x):
+#     mm = distributions.Normal(loc=[0, 1], scale=[3, 7])
+#     # dd = mm.sample(sample_shape=34, seed=jax.random.PRNGKey(4))
+#     return (mm.prob(x))
+#
+#
+# DD = vmap(fun=jacfwd(cc), in_axes=1, out_axes=1)(x)
+#
+# DD
 
 # TT = E.pdf(x)
 # TT2 = E.log(x)
