@@ -359,9 +359,9 @@ class ContinuousDistributions:
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Uniform(ContinuousDistributions):
-    def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
-                 random_seed: int = 1, multi_distribution: bool = True, n_chains: int = 1,
-                 in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+    def __init__(self, lower: (float, jnp.ndarray) = None, upper: (float, jnp.ndarray) = None,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
@@ -389,16 +389,8 @@ class Uniform(ContinuousDistributions):
         if self.multi_distribution:
             self.distance_function = distributions.Uniform(low=self.lower.tolist(), high=self.upper.tolist(),
                                                            name='Uniform')
-            self.vectorized_index_fcn = [1]
-            self.vectorized_index_diff_fcn = [1]
-            self.out_index = 1
-            self.out_index_diff = 1
         else:  # activating multiple distribution
             self.distance_function = distributions.Uniform(low=self.lower, high=self.upper, name='Uniform')
-            self.vectorized_index_fcn = [0]
-            self.vectorized_index_diff_fcn = [0]
-            self.out_index = 1
-            self.out_index_diff = 1
 
         ContinuousDistributions.parallelization(self)
 
