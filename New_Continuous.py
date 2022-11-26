@@ -153,7 +153,7 @@ class ContinuousDistributions:
             :param x: An array with the size of (1xC)
             :return: The probability of the distribution with the size of (1xC)
             """
-            return self.distance_function.prob(value=x, name='prob')
+            return self.distance_function.prob(value=self.valid_range(x), name='prob')
 
         def cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -161,7 +161,7 @@ class ContinuousDistributions:
             :param x: An array with the size of (1xC) 
             :return: The cumulative distribution function of the distribution with the size of (1xC)
             """
-            return self.distance_function.cdf(value=x, name='cdf')
+            return self.distance_function.cdf(value=self.valid_range(x), name='cdf')
 
         def log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -169,7 +169,7 @@ class ContinuousDistributions:
             :param x: An array with the size of (1xC)
             :return: The log function of the distribution with the size of (1xC)
             """
-            return self.distance_function.log_prob(value=x, name='log prob')
+            return self.distance_function.log_prob(value=self.valid_range(x), name='log prob')
 
         def log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -177,7 +177,7 @@ class ContinuousDistributions:
             :param x: An array with the size of (1xC)
             :return: The log function of cumulative the distribution with the size of (1xC)
             """
-            return self.distance_function.log_cdf(value=x, name='log cdf')
+            return self.distance_function.log_cdf(value=self.valid_range(x), name='log cdf')
 
         def diff_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -185,7 +185,7 @@ class ContinuousDistributions:
             :param x: An array with the size of (1xC)
             :return: derivatives of the distribution with respect to variable x calculated in size of (1xC)
             """
-            return self.distance_function.prob(value=x, name='diff prob')
+            return self.distance_function.prob(value=self.valid_range(x), name='diff prob')
 
         def diff_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -194,7 +194,7 @@ class ContinuousDistributions:
             :return: derivatives of CDF of the distribution with respect to variable x calculated in size
             of (1xC)
             """
-            return self.distance_function.cdf(value=x, name='diff cdf')
+            return self.distance_function.cdf(value=self.valid_range(x), name='diff cdf')
 
         def diff_log_probability_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -203,7 +203,7 @@ class ContinuousDistributions:
             :return: derivatives of the log of the distribution with respect to variable x calculated in
             size of (1xC)
             """
-            return self.distance_function.log_prob(value=x, name='diff log  prob')
+            return self.distance_function.log_prob(value=self.valid_range(x), name='diff log  prob')
 
         def diff_log_cumulative_distribution_(x: jnp.ndarray = None) -> jnp.ndarray:
             f"""
@@ -212,7 +212,7 @@ class ContinuousDistributions:
             :return: derivatives of the log CDF of the distribution with respect to variable x calculated in
             size of (1xC)
             """
-            return self.distance_function.log_cdf(value=x, name='diff log  cdf')
+            return self.distance_function.log_cdf(value=self.valid_range(x), name='diff log  cdf')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -559,9 +559,10 @@ class Beta(ContinuousDistributions):
                        }
         return information
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Kumaraswamy(ContinuousDistributions):
-    def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
+    def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -577,12 +578,14 @@ class Kumaraswamy(ContinuousDistributions):
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
-        super(Kumaraswamy, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta, activate_jit=activate_jit, random_seed=random_seed,
+                                          n_chains=n_chains,
+                                          in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Kumaraswamy'
-        self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
-                                                           concentration0=self.beta,
+        self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha.tolist(),
+                                                           concentration0=self.beta.tolist(),
+                                                           allow_nan_stats=False,
+                                                           validate_args=True,
                                                            name=self.name)
         ContinuousDistributions.parallelization(self)
 
@@ -594,60 +597,63 @@ class Kumaraswamy(ContinuousDistributions):
                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
                        'median': self.distance_function.quantile(value=0.5, name='median'),
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class Kumaraswamy(ContinuousDistributions):
-    def __init__(self, alpha: float = None, beta: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-        """
-        Kumaraswamy Distribution (The input variable should  be in the range of (0,1))
-        :param alpha:
-        :param beta:
-        :param activate_jit:
-        :param random_seed:
-        :param fixed_parameters:
-        :param n_chains:
-        """
-
-        self.name = 'Kumaraswamy'
-
-        # recalling parameter values from the main parent class
-        super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta
-                                          , activate_jit=activate_jit, random_seed=random_seed,
-                                          multi_distribution=multi_distribution, n_chains=n_chains)
-
-        # checking the correctness of the parameters
-        if any(self.alpha <= 1):
-            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-        if any(self.beta <= 1):
-            raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
-
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
-                                                               concentration0=self.beta,
-                                                               name=self.name)
-            self.vectorized_index_fcn = [0]
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
+# class Kumaraswamy(ContinuousDistributions):
+#     def __init__(self, alpha: float = None, beta: float = None,
+#                  activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+#                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+#         """
+#         Kumaraswamy Distribution (The input variable should  be in the range of (0,1))
+#         :param alpha:
+#         :param beta:
+#         :param activate_jit:
+#         :param random_seed:
+#         :param fixed_parameters:
+#         :param n_chains:
+#         """
+#
+#         self.name = 'Kumaraswamy'
+#
+#         # recalling parameter values from the main parent class
+#         super(Kumaraswamy, self).__init__(alpha=alpha, beta=beta
+#                                           , activate_jit=activate_jit, random_seed=random_seed,
+#                                           multi_distribution=multi_distribution, n_chains=n_chains)
+#
+#         # checking the correctness of the parameters
+#         if any(self.alpha <= 1):
+#             raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
+#         if any(self.beta <= 1):
+#             raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
+#
+#         if self.multi_distribution:  # specifying the main probability function for invariant simulation
+#             self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
+#                                                                concentration0=self.beta,
+#                                                                name=self.name)
+#             self.vectorized_index_fcn = [0]
+#             self.vectorized_index_diff_fcn = [0]
+#         ContinuousDistributions.parallelization(self)
+#
+#     @property
+#     def statistics(self):
+#         information = {'mean': self.distance_function.mean(name='mean'),
+#                        'mode': self.distance_function.mode(name='mode'),
+#                        'entropy': self.distance_function.entropy(name='entropy'),
+#                        'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+#                        'median': self.distance_function.quantile(value=0.5, name='median'),
+#                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+#                        'std': self.distance_function.stddev(name='stddev'),
+#                        'var': self.distance_function.variance(name='variance'),
+#                        }
+#         return information
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -662,8 +668,9 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True,multi_distribution=False)
 # KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
 # KK = TwoPieceNormal(scale=jnp.array([4, 5]), loc=jnp.array([4, 8]), alpha=jnp.array([4, 8]), activate_jit=False)
-KK = Beta(alpha=jnp.array([4, 5]), beta=jnp.array([4, 8]), activate_jit=False)
-
+# KK = Beta(alpha=jnp.array([4, 5]), beta=jnp.array([4, 8]), activate_jit=False)
+KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]))
+# KK = distributions.Kumaraswamy(concentration0=jnp.array([4,3]),concentration1=jnp.array([6,3]))
 
 E1 = KK.pdf(x)
 E2 = KK.log_pdf(x)
@@ -717,3 +724,5 @@ E11
 #                        'var': self.distance_function.variance(name='variance'),
 #                        }
 #         return information
+#    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+#        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
