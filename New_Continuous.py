@@ -693,4 +693,43 @@ E12 = KK.sample(100)
 E10 = KK.maximum_liklihood_estimation(x=x)
 
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class PDF(ContinuousDistributions):
+    def __init__(self, : float = None, : float = None,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+        
+        # recalling parameter values from the main parent class
+        super(PDF, self).__init__( activate_jit=activate_jit, random_seed=random_seed,
+                                      multi_distribution=multi_distribution, n_chains=n_chains,
+                                      in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = ''
+        # checking the correctness of the parameters
+        if not isinstance(self.lower, type(self.upper)):
+            raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
 
+        if jnp.any(self.lower >= self.upper):
+            raise Exception(f'The lower limit of the uniform distribution is greater than the upper limit'
+                            f' ({self.name} distribution)!')
+
+        if self.multi_distribution:  # activating multiple distribution
+
+            self.distance_function = distributions.(low=self.lower.tolist(), high=self.upper.tolist(),
+                                                           name=self.name)
+        else:  # activating single distribution
+            self.distance_function = distributions.(low=self.lower, high=self.upper, name=self.name)
+
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'range': self.distance_function.range(name='range'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
