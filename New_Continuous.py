@@ -16,7 +16,6 @@ class ContinuousDistributions:
                  activate_jit: bool = False,
                  n_chains: int = 1,
                  random_seed: int = 1,
-                 multi_distribution: bool = True,
                  in_vec_dim: int = 1,
                  out_vec_dim: int = 1) -> None:
 
@@ -37,12 +36,6 @@ class ContinuousDistributions:
         else:
             raise Exception(f'The value of upper is not specified correctly ({self.__class__} distribution)!')
 
-        if isinstance(multi_distribution, bool):
-            self.multi_distribution = multi_distribution
-        else:
-            raise Exception(f'Please correctly specify the type of simulation (fixed or variant parameters in'
-                            f' ({self.__class__} distribution)) !')
-
         if isinstance(random_seed, int):
             self.key = random.PRNGKey(random_seed)
         else:
@@ -60,31 +53,33 @@ class ContinuousDistributions:
             raise Exception(f'Please specify the activation of the just-in-time evaluation'
                             f' ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(lower, (jnp.ndarray, float, int)):
+        if isinstance(lower, jnp.ndarray):
             self.lower = lower
         elif lower is None:
             self.lower = None
         else:
-            raise Exception(f'The value of lower is not specified correctly ({self.__class__} distribution)!')
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(upper, (jnp.ndarray, float, int)):
+        if isinstance(upper, jnp.ndarray):
             self.upper = upper
         elif upper is None:
             self.upper = None
         else:
-            raise Exception(f'The value of lower is not specified correctly ({self.__class__} distribution)!')
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(loc, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
+        if isinstance(loc, jnp.ndarray) and isinstance(var, jnp.ndarray):
             raise Exception(f'Please Enter either variance or standard deviation ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(scale, (jnp.ndarray, float, int)) and not isinstance(var, (jnp.ndarray, float, int)):
+        if isinstance(scale, jnp.ndarray) and not isinstance(var, jnp.ndarray):
             if jnp.any(scale > 0):
                 self.scale = scale
                 self.var = scale ** 2
             else:
                 raise Exception(f'The standard deviation should be a positive value ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if not isinstance(scale, (jnp.ndarray, float, int)) and isinstance(var, (jnp.ndarray, float, int)):
+        if not isinstance(scale, jnp.ndarray) and isinstance(var, jnp.ndarray):
             if jnp.arra(var > 0):
                 self.scale = var ** 0.5
                 self.variance = var
@@ -102,27 +97,30 @@ class ContinuousDistributions:
         # else:
         #     raise Exception(f'The value of nu is not specified correctly ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(loc, (jnp.ndarray, float, int)):
+        if isinstance(loc, jnp.ndarray):
             self.loc = loc
         elif loc is None:
             self.loc = None
         else:
-            raise Exception(f'The value of loc is not specified correctly ({self.__class__} distribution)!')
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(alpha, (jnp.ndarray, float, list, int)):
+        if isinstance(alpha, jnp.ndarray):
             self.alpha = alpha
         elif alpha is None:
             self.alpha = None
         else:
-            raise Exception(f'The value of alpha is not specified correctly ({self.__class__} distribution)!')
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if isinstance(beta, (jnp.ndarray, float, list, int)):
+        if isinstance(beta, jnp.ndarray):
             self.beta = beta
         elif beta is None:
             self.beta = None
         else:
-            raise Exception(f'The value of beta is not specified correctly ({self.__class__} distribution)!')
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -286,8 +284,6 @@ class ContinuousDistributions:
                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
 
-
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -346,9 +342,9 @@ class Uniform(ContinuousDistributions):
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Normal(ContinuousDistributions):
-    def __init__(self, loc: (float, int, jnp.ndarray) = None, scale: (float, int, jnp.ndarray) = None,
-                 var: (float, int, jnp.ndarray) = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+    def __init__(self, loc: jnp.ndarray = None, scale: jnp.ndarray = None,
+                 var: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         Continuous Normal distribution
@@ -364,12 +360,12 @@ class Normal(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Normal, self).__init__(loc=loc, scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
-                                     multi_distribution=multi_distribution, n_chains=n_chains,
-                                     in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
-        self.name = ''
+                                      n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'Normal'
         # checking the correctness of the parameters
         if not isinstance(self.loc, type(self.scale)):
             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
+
 
         if self.loc is None or self.scale is None:
             raise Exception(f'The value of either mean or standard deviation is not specified'
@@ -696,7 +692,7 @@ class Kumaraswamy(ContinuousDistributions):
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
 KK = Uniform(lower=jnp.array([4]), upper=jnp.array([7]), activate_jit=True, random_seed=6,
-              in_vec_dim=1, out_vec_dim=1)
+             in_vec_dim=1, out_vec_dim=1)
 
 # KK = TruncatedNormal(scale=2, loc=7, lower=-4,
 #                      upper=7, activate_jit=False, multi_distribution=False, in_vec_dim=1,
