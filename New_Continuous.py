@@ -275,10 +275,10 @@ class ContinuousDistributions:
         self.maximum_liklihood_estimation = mle
 
         if self.activate_jit:  # activating jit
-            self.pdf = jit(vmap(fun=probablity_distribution_, in_axes=self.in_vec_dim,
+            self.pdf = jit(vmap(fun=probability_distribution_, in_axes=self.in_vec_dim,
                                 out_axes=self.out_vec_dim))
 
-            self.log_pdf = jit(vmap(fun=log_probablity_distribution_, in_axes=self.in_vec_dim,
+            self.log_pdf = jit(vmap(fun=log_probability_distribution_, in_axes=self.in_vec_dim,
                                     out_axes=self.out_vec_dim))
 
             self.cdf = jit(
@@ -287,35 +287,46 @@ class ContinuousDistributions:
             self.log_cdf = jit(vmap(fun=log_cumulative_distribution_, in_axes=self.in_vec_dim,
                                     out_axes=self.out_vec_dim))
 
-            self.diff_pdf = jit(vmap(grad(fun=diff_probablity_distribution_), in_axes=self.in_vec_dim
-                                     , out_axes=self.out_vec_dim))
+            if not self.multi_distribution:
+                self.diff_pdf = jit(vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                         , out_axes=self.out_vec_dim))
 
-            self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probablity_distribution_),
-                                         in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+                self.diff_log_pdf = jit(vmap(grad(fun=diff_log_probability_distribution_),
+                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-            self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
-                                     , out_axes=self.out_vec_dim))
+                self.diff_cdf = jit(vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                         , out_axes=self.out_vec_dim))
 
-            self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
-                                         in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+                self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
+                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+
+            else:
+
 
         else:  # Only using vectorized function
-            self.pdf = vmap(fun=probablity_distribution_, in_axes=self.vectorized_index_fcn,
-                            out_axes=self.out_index)
-            self.log_pdf = vmap(fun=log_probablity_distribution_, in_axes=self.vectorized_index_fcn,
-                                out_axes=self.out_index)
-            self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.vectorized_index_fcn,
-                            out_axes=self.out_index)
-            self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.vectorized_index_fcn,
-                                out_axes=self.out_index)
-            self.diff_pdf = vmap(grad(fun=diff_probablity_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                 , out_axes=self.out_index_diff)
-            self.diff_log_pdf = vmap(grad(fun=diff_log_probablity_distribution_),
-                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff)
-            self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.vectorized_index_diff_fcn
-                                 , out_axes=self.out_index_diff)
+            self.pdf = vmap(fun=probability_distribution_, in_axes=self.in_vec_dim,
+                            out_axes=self.out_vec_dim)
+
+            self.log_pdf = vmap(fun=log_probability_distribution_, in_axes=self.in_vec_dim,
+                                out_axes=self.out_vec_dim)
+
+            self.cdf = vmap(fun=cumulative_distribution_, in_axes=self.in_vec_dim,
+                            out_axes=self.out_vec_dim)
+
+            self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.in_vec_dim,
+                                out_axes=self.out_vec_dim)
+
+            self.diff_pdf = vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                 , out_axes=self.out_vec_dim)
+
+            self.diff_log_pdf = vmap(grad(fun=diff_log_probability_distribution_),
+                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_vec_dim)
+
+            self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                 , out_axes=self.out_vec_dim)
+
             self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
-                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_index_diff)
+                                     in_axes=self.in_vec_dim, out_axes=self.out_vec_dim)
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -324,7 +335,7 @@ class ContinuousDistributions:
 class Uniform(ContinuousDistributions):
     def __init__(self, lower: float = None, upper: float = None, activate_jit: bool = False,
                  random_seed: int = 1, multi_distribution: bool = True, n_chains: int = 1,
-                 in_vec_dim: int = 1) -> None:
+                 in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
         In probability theory and statistics, the continuous uniform distribution or rectangular distribution is a
         family of symmetric probability distributions. The distribution describes an experiment where there is an
