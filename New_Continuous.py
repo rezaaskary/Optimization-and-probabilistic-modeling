@@ -299,6 +299,7 @@ class ContinuousDistributions:
                 size of (1xC)
                 """
                 return self.distance_function.log_cdf(value=x, name='diff log  cdf')
+
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
         def mle(x: jnp.ndarray = None, checking_inputs: bool = False) -> dict:
@@ -735,8 +736,8 @@ class Exponential(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Exponential, self).__init__(rate=rate, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                          n_chains=n_chains, validate_input_range=validate_input_range,
+                                          in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Exponential'
         self.distance_function = distributions.Exponential(rate=self.rate.tolist(),
                                                            force_probs_to_zero_outside_support=True,
@@ -753,11 +754,13 @@ class Exponential(ContinuousDistributions):
                        'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
                        'range': self.distance_function.range(name='range'),
                        'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
+                       'var': self.distance_function.variance(name='variance')
                        }
         return information
-   def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-       return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
+
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
+
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000), dtype=jnp.float64)
@@ -772,7 +775,7 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 # KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
 # KK = TwoPieceNormal(scale=jnp.array([4, 5]), loc=jnp.array([4, 8]), alpha=jnp.array([4, 8]), activate_jit=False)
 # KK = Beta(alpha=jnp.array([4, 5]), beta=jnp.array([4, 8]), activate_jit=False)
-KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]),validate_input_range=True)
+KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]), validate_input_range=True)
 # KK = distributions.Kumaraswamy(concentration0=jnp.array([4,3]),concentration1=jnp.array([6,3]))
 
 E1 = KK.pdf(x)
