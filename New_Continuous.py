@@ -420,6 +420,61 @@ class Uniform(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Normal(ContinuousDistributions):
+    def __init__(self, loc: (float, int, jnp.ndarray) = None, scale: (float, int, jnp.ndarray) = None,
+                 var: (float, int, jnp.ndarray) = None,
+                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+        """
+        Continuous Normal distribution
+        :param  : A ndarray or float indicating ----- of the distribution
+        :param  : A ndarray or float indicating ---- of the distribution
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+        """
+        # recalling parameter values from the main parent class
+        super(Normal, self).__init__(loc=loc, scale=scale, var=var, activate_jit=activate_jit, random_seed=random_seed,
+                                  multi_distribution=multi_distribution, n_chains=n_chains,
+                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = ''
+        # checking the correctness of the parameters
+        if not isinstance(self.loc, type(self.scale)):
+            raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
+
+
+        if self.multi_distribution:  # activating multiple distribution
+            if not isinstance(self.scale, jnp.ndarray):
+                raise Exception(f'Please enter the input parameter in the format of ndarray ({self.__class__}'
+                                f' distribution)')
+
+            self.distance_function = distributions.Normal(scale=self.scale.tolist(), loc=self.loc.tolist(),
+                                                           name=self.name)
+        else:  # activating single distribution
+            if isinstance(self., jnp.ndarray):
+                raise Exception(f'Please enter the input parameter in the format of float ({self.__class__}'
+                                f' distribution)')
+            self.distance_function = distributions.Normal(scale=self.scale, loc=self.loc, name=self.name)
+
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'range': self.distance_function.range(name='range'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
