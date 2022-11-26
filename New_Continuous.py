@@ -14,6 +14,8 @@ class ContinuousDistributions:
                  scale: jnp.ndarray = None,
                  rate: jnp.ndarray = None,
                  df: jnp.ndarray = None,
+                 kappa: jnp.ndarray = None,
+                 lambd: jnp.ndarray = None,
                  variant_chains: bool = False,
                  activate_jit: bool = False,
                  n_chains: int = 1,
@@ -66,6 +68,22 @@ class ContinuousDistributions:
             self.lower = lower
         elif lower is None:
             self.lower = None
+        else:
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(kappa, jnp.ndarray):
+            self.kappa = kappa
+        elif kappa is None:
+            self.kappa = None
+        else:
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(lambd, jnp.ndarray):
+            self.lambd = lambd
+        elif kappa is None:
+            self.lambd = None
         else:
             raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
                             f' format of ndarrauy ({self.__class__} distribution)!')
