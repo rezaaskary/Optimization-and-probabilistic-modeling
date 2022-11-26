@@ -300,8 +300,19 @@ class ContinuousDistributions:
                 self.diff_log_cdf = jit(vmap(grad(fun=diff_log_cumulative_distribution_),
                                              in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-            else:
+            else:  # which means activating evaluation of multiple probability distribution with different parameters
 
+                self.diff_pdf = jit(vmap(jacfwd(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                         , out_axes=self.out_vec_dim))
+
+                self.diff_log_pdf = jit(vmap(jacfwd(fun=diff_log_probability_distribution_),
+                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+
+                self.diff_cdf = jit(vmap(jacfwd(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                         , out_axes=self.out_vec_dim))
+
+                self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
+                                             in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
         else:  # Only using vectorized function
             self.pdf = vmap(fun=probability_distribution_, in_axes=self.in_vec_dim,
@@ -316,17 +327,32 @@ class ContinuousDistributions:
             self.log_cdf = vmap(fun=log_cumulative_distribution_, in_axes=self.in_vec_dim,
                                 out_axes=self.out_vec_dim)
 
-            self.diff_pdf = vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
-                                 , out_axes=self.out_vec_dim)
+            if not self.multi_distribution:
+                self.diff_pdf = (vmap(grad(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                      , out_axes=self.out_vec_dim))
 
-            self.diff_log_pdf = vmap(grad(fun=diff_log_probability_distribution_),
-                                     in_axes=self.vectorized_index_diff_fcn, out_axes=self.out_vec_dim)
+                self.diff_log_pdf = (vmap(grad(fun=diff_log_probability_distribution_),
+                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
-            self.diff_cdf = vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
-                                 , out_axes=self.out_vec_dim)
+                self.diff_cdf = (vmap(grad(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                      , out_axes=self.out_vec_dim))
 
-            self.diff_log_cdf = vmap(grad(fun=diff_log_cumulative_distribution_),
-                                     in_axes=self.in_vec_dim, out_axes=self.out_vec_dim)
+                self.diff_log_cdf = (vmap(grad(fun=diff_log_cumulative_distribution_),
+                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+
+            else:  # which means activating evaluation of multiple probability distribution with different parameters
+
+                self.diff_pdf = (vmap(jacfwd(fun=diff_probability_distribution_), in_axes=self.in_vec_dim
+                                      , out_axes=self.out_vec_dim))
+
+                self.diff_log_pdf = (vmap(jacfwd(fun=diff_log_probability_distribution_),
+                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
+
+                self.diff_cdf = (vmap(jacfwd(fun=diff_cumulative_distribution_), in_axes=self.in_vec_dim
+                                      , out_axes=self.out_vec_dim))
+
+                self.diff_log_cdf = (vmap(jacfwd(fun=diff_log_cumulative_distribution_),
+                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
