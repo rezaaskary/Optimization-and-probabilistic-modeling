@@ -325,6 +325,9 @@ class Uniform(ContinuousDistributions):
                                                        name='Uniform')
         ContinuousDistributions.parallelization(self)
 
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return x
+
     @property
     def statistics(self):
         information = {'mean': self.distance_function.mean(name='mean'),
@@ -386,6 +389,9 @@ class Normal(ContinuousDistributions):
                        }
         return information
 
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return x
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TruncatedNormal(ContinuousDistributions):
@@ -435,6 +441,9 @@ class TruncatedNormal(ContinuousDistributions):
                        }
         return information
 
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return x
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class HalfNormal(ContinuousDistributions):
@@ -476,6 +485,9 @@ class HalfNormal(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return x
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -519,6 +531,9 @@ class TwoPieceNormal(ContinuousDistributions):
                        }
         return information
 
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return x
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Beta(ContinuousDistributions):
@@ -559,7 +574,8 @@ class Beta(ContinuousDistributions):
                        }
         return information
 
-
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.clip(a=x, a_min=0, a_max=1.0)
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Kumaraswamy(ContinuousDistributions):
     def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
