@@ -519,6 +519,7 @@ class TwoPieceNormal(ContinuousDistributions):
                        }
         return information
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Beta(ContinuousDistributions):
     def __init__(self, alpha: jnp.ndarray = None, beta: jnp.ndarray = None,
@@ -538,7 +539,7 @@ class Beta(ContinuousDistributions):
         """
         # recalling parameter values from the main parent class
         super(Beta, self).__init__(alpha=alpha, beta=beta, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+                                   n_chains=n_chains, in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Beta'
 
         self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
@@ -546,6 +547,43 @@ class Beta(ContinuousDistributions):
                                                     concentration1=self.alpha.tolist(),
                                                     name=self.name)
 
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Kumaraswamy(ContinuousDistributions):
+    def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+        """
+        Continuous Kumaraswamy distribution
+        :param  : A ndarray or float indicating ----- of the distribution
+        :param  : A ndarray or float indicating ---- of the distribution
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+        """
+        # recalling parameter values from the main parent class
+        super(Kumaraswamy, self).__init__(lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
+                                  n_chains=n_chains,
+                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'Kumaraswamy'
+        self.distance_function = distributions.Kumaraswamy(concentration1=self.alpha,
+                                                           concentration0=self.beta,
+                                                           name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -561,54 +599,6 @@ class Beta(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
-
-
-
-
-class Beta(ContinuousDistributions):
-    def __init__(self, alpha: float = None, beta: float = None,
-                 activate_jit: bool = False, random_seed: int = 1, multi_distribution: bool = True,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
-        """
-        Beta Distribution
-        :param alpha:
-        :param beta:
-        :param activate_jit:
-        :param random_seed:
-        :param fixed_parameters:
-        :param n_chains:
-        """
-
-        self.name = 'Beta'
-
-        # recalling parameter values from the main parent class
-        super(Beta, self).__init__(alpha=alpha, beta=beta
-                                   , activate_jit=activate_jit, random_seed=random_seed,
-                                    n_chains=n_chains)
-
-        # checking the correctness of the parameters
-        if any(self.alpha < 0):
-            raise Exception(f'The input parameters alpha is not sacrificed correctly ({self.name} Distribution)!')
-        if any(self.beta < 0):
-            raise Exception(f'The input parameters beta is not sacrificed correctly ({self.name} Distribution)!')
-        if self.multi_distribution:  # specifying the main probability function for invariant simulation
-            self.distance_function = distributions.Beta(force_probs_to_zero_outside_support=True,
-                                                        concentration0=self.beta, concentration1=self.alpha,
-                                                        name=self.name)
-            self.vectorized_index_fcn = [1]  # input x, parameter 1, parameter 2
-            self.vectorized_index_diff_fcn = [0]
-        ContinuousDistributions.parallelization(self)
-
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
-
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Kumaraswamy(ContinuousDistributions):
@@ -666,15 +656,13 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 #              in_vec_dim=1, out_vec_dim=1)
 
 
-
-
 # KK = TruncatedNormal(scale=2, loc=7, lower=-4,
 #                      upper=7, activate_jit=False, multi_distribution=False, in_vec_dim=1,
 #                      out_vec_dim=1)
 # KK = TruncatedNormal(scale=2, loc=3, lower=-2, upper=4, activate_jit=True,multi_distribution=False)
 # KK = HalfNormal(scale=jnp.array([4]), activate_jit=True, multi_distribution=True)
-KK = TwoPieceNormal(scale=jnp.array([4,5]), loc=jnp.array([4,8]), alpha=jnp.array([4,8]), activate_jit=False)
-# KK = Beta(alpha=2, beta=3, activate_jit=False)
+# KK = TwoPieceNormal(scale=jnp.array([4, 5]), loc=jnp.array([4, 8]), alpha=jnp.array([4, 8]), activate_jit=False)
+KK = Beta(alpha=jnp.array([4, 5]), beta=jnp.array([4, 8]), activate_jit=False)
 
 
 E1 = KK.pdf(x)
@@ -712,10 +700,6 @@ E11
 #                                   n_chains=n_chains,
 #                                   in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
 #         self.name = ''
-#         # checking the correctness of the parameters
-#         if not isinstance(self., type(self.)):
-#             raise Exception(f'The input parameters are not consistent ({self.name} distribution)!')
-#
 #         self.distance_function = distributions.(=self..tolist(), =self..tolist(),
 #                                                            name=self.name)
 #         ContinuousDistributions.parallelization(self)
