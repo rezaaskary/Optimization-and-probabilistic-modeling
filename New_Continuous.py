@@ -149,7 +149,6 @@ class ContinuousDistributions:
         else:
             raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
                             f' format of ndarrauy ({self.__class__} distribution)!')
-
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(alpha, jnp.ndarray):
             self.alpha = alpha
