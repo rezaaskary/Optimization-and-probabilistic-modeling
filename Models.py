@@ -10,6 +10,16 @@ class PPCA_:
         if not (min(y.shape) > 1):
             raise Exception('Too few feature variables')
 
+        if isinstance(tolerance, float):
+            self.tolerance = tolerance
+        else:
+            raise Exception('The value of tolerance  should be a small float number.')
+
+        if isinstance(max_iter, int):
+            self.max_iter = max_iter
+        else:
+            raise Exception('Maximum number of iteration must be a positive integer.')
+
         if not isinstance(y, jnp.ndarray):
             raise Exception('Invalid format of input matrix y!. Please enter the input matrix with ndarray format')
         else:
@@ -31,6 +41,9 @@ class PPCA_:
                 f' principal components k set to {self.n_comp}')
         else:
             pass
+        self.w = random.normal(key=random.PRNGKey(1), shape=(self.p, self.n_comp))
+        self.v = random.uniform(key=random.PRNGKey(1), shape=(1, 1))
+
 
 
 
