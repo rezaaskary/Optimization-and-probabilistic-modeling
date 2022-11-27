@@ -142,13 +142,6 @@ class ContinuousDistributions:
             self.sigma = None
             self.variance = None
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        # if isinstance(nu, (jnp.ndarray, float, int)):
-        #     self.nu = nu
-        # elif nu is None:
-        #     self.nu = None
-        # else:
-        #     raise Exception(f'The value of nu is not specified correctly ({self.__class__} distribution)!')
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(loc, jnp.ndarray):
             self.loc = loc
         elif loc is None:

@@ -1,8 +1,6 @@
-import jax.numpy as jnp
-import matplotlib.pyplot as plt
 from tensorflow_probability.substrates.jax import distributions
-from jax import vmap, jit, grad, random, lax, scipy
-from matplotlib.pyplot import plot, grid, figure, show
+from jax import vmap, jit, grad, random, lax, scipy, jacfwd
+import jax.numpy as jnp
 
 
 class DiscreteDistributions:
