@@ -64,23 +64,42 @@ class PPCA_:
         self.traces = ((self.y.reshape((-1, 1))).T @ self.y.reshape((-1, 1))) / (n - 1)
         self.eps = jnp.finfo(float).eps
 
+        def body_fun(value: tuple = None) -> tuple:
+            iter, v, w, nloglk, delta, diff = value
+            iter += 1
+            sw = y @ (y.T @ w) / (n - 1)
+            m = w.T @ w + v * jnp.eye(k)
+            wnew = sw @ jnp.linalg.inv(v * jnp.eye(k) + jnp.linalg.inv(m) @ w.T @ sw)
+            vnew = (traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / p
+
+            dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
+            dv = jnp.abs(v - vnew) / (eps + v)
+            delta = max([dw, dv])
+            cc = wnew @ wnew.T + vnew * jnp.eye(p)
+            nloglk_new = (p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) +
+                          jnp.trace(jnp.linalg.inv(cc) @ y @ y.T / (n - 1))) * n / 2
+
+            diff = nloglk - nloglk_new
+            return iter, vnew, wnew, nloglk_new, delta, diff
+
         def cond_fun(value: tuple = None) -> bool:
-            return True
-        def body_fun(value: tuple = None) -> bool:
+            iter, v, w, nloglk, delta, diff = value
+            return jnp.where(delta < self.tolerance, False,
+                      jnp.where(jnp.abs(diff) < self.tolerance, False,
+                                jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False, True)))
 
-
-            return
-
-
-        jax.lax.while_loop(cond_fun, body_fun, init_val)
+        self.itr,   \
+        self.v,\
+        self.w,\
+        self.nloglk,\
+        self.delta,\
+        self.diff = lax.while_loop(cond_fun, body_fun, init_val)
 
         def while_loop(cond_fun, body_fun, init_val):
             val = init_val
             while cond_fun(val):
                 val = body_fun(val)
             return val
-
-
 
         return
 
