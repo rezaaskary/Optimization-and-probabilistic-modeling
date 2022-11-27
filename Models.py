@@ -109,10 +109,29 @@ class PPCA:
                     break
                 nloglk = nloglk_new
             mux = jnp.mean(x, axis=1)[:, np.newaxis]
-            x = x - np.tile(mux, [1, n])
+            x = x - jnp.tile(mux, [1, n])
             mu = mu + w @ mux
 
+        else:
+            iterfmtstr = ''
+            W, X, mu, v, itercount, dw, nloglk = emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr)
 
+            if np.all(W == 0):
+                coeff = np.zeros((p, k))
+                coeff[::(p + 1)] = 1
+                score = np.zeros((n, k))
+                latent = np.zeros(k, 1)
+                mu = (np.mean(Y, axis=1)).T
+                v = 0
+                rsltStruct = {'W': W, \
+                              'Xexp': X.T, \
+                              'Recon': np.tile(mu, [n, 1]), \
+                              'v': v, \
+                              'NumIter': itercount, \
+                              'RMSResid': 0, \
+                              'nloglk': nloglk
+                              }
+                return coeff, score, latent, mu, v, rsltStruct
 
 
 
