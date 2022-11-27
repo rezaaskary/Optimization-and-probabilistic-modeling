@@ -7,6 +7,8 @@ class DiscreteDistributions:
     def __init__(self,
                  n: jnp.ndarray = None,
                  p: jnp.ndarray = None,
+                 a: jnp.ndarray = None,
+                 b: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
@@ -443,6 +445,50 @@ class Binomial(DiscreteDistributions):
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class BetaBinomial(DiscreteDistributions):
+    def __init__(self, n: jnp.ndarray = None, a: jnp.ndarray = None, a: jnp.ndarray = None,
+                 activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+        """
+        Discrete  distribution
+        :param  : A ndarray or float indicating ----- of the distribution
+        :param  : A ndarray or float indicating ---- of the distribution
+        :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
+        :param random_seed: An integer used to specify the random seed
+        :param multi_distribution: A boolean variable used to indicate the evaluation of multiple probability
+         distribution with different parameters
+        :param n_chains: An integer used to indicate the number of chains/samples
+        :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
+        :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
+        """
+        # recalling parameter values from the main parent class
+        super(BetaBinomial, self).__init__(n=n, a=a, b=b, activate_jit=activate_jit, random_seed=random_seed,
+                                  n_chains=n_chains, validate_input_range=validate_input_range,
+                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'BetaBinomial'
+        self.distance_function = distributions.BetaBinomial(total_count=self.n.tolist(), concentration1=self.a.tolist(),
+                                                            concentration0=self.b.tolist(),
+                                                            validate_args=True,
+                                                           name=self.name)
+        ContinuousDistributions.parallelization(self)
+
+    @property
+    def statistics(self):
+        information = {'mean': self.distance_function.mean(name='mean'),
+                       'entropy': self.distance_function.entropy(name='entropy'),
+                       'mode': self.distance_function.mode(name='mode'),
+                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
+                       'median': self.distance_function.quantile(value=0.5, name='median'),
+                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
+                       'range': self.distance_function.range(name='range'),
+                       'std': self.distance_function.stddev(name='stddev'),
+                       'var': self.distance_function.variance(name='variance'),
+                       }
+        return information
+    def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class pdf(DiscreteDistributions):
 #     def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
 #                  activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
@@ -483,3 +529,4 @@ class Binomial(DiscreteDistributions):
 #         return information
 #     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
 #         return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+#
