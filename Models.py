@@ -86,14 +86,31 @@ class PPCA:
                     wnew_sample = wnew[obs[:, j], :]
                     vsum = vsum + sum((Y[obs[:, j], j] - wnew_sample @ X[:, j] - mu[obs[:, j], 0]) ** 2 + \
                                       v * (jnp.diag(wnew_sample @ c[:, :, j] @ wnew_sample.T)))
+
                 vnew = vsum / numObs
                 eps = jnp.finfo(float).eps
                 nloglk_new = 0
 
+                for j in range(n):
+                    idxobs = obs[:, j]
+                    y_c = y[idxobs, j:j + 1] - mu[obs[:, j], 0:1]
 
+                    wobs = wnew[idxobs, :]
+                    cy = wobs @ wobs.T + vnew * jnp.eye(sum(idxobs))
+                    nloglk_new = nloglk_new + (sum(idxobs) * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cy)) +
+                                               jnp.trace(jnp.linalg.inv(cy) @ y_c @ y_c.T)) / 2
 
+                dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
 
-
+                w = wnew
+                v = vnew
+                print(jnp.abs(nloglk - nloglk_new))
+                if jnp.abs(nloglk - nloglk_new) < tolfun:
+                    break
+                nloglk = nloglk_new
+            mux = jnp.mean(x, axis=1)[:, np.newaxis]
+            x = x - np.tile(mux, [1, n])
+            mu = mu + w @ mux
 
 
 
