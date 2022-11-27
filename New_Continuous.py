@@ -1343,6 +1343,8 @@ class ExponentiallyModifiedGaussian(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return x
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Triangular(ContinuousDistributions):
     def __init__(self, lower: jnp.ndarray = None, upper: jnp.ndarray = None, peak: jnp.ndarray = None,
@@ -1361,14 +1363,15 @@ class Triangular(ContinuousDistributions):
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
-        super(Triangular, self).__init__(lower=lower, upper=upper, peak=peak, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        super(Triangular, self).__init__(lower=lower, upper=upper, peak=peak, activate_jit=activate_jit,
+                                         random_seed=random_seed,
+                                         n_chains=n_chains, validate_input_range=validate_input_range,
+                                         in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'Triangular'
         self.distance_function = distributions.Triangular(low=self.lower.tolist(), high=self.upper.tolist(),
                                                           peak=self.peak.tolist(),
                                                           validate_args=True,
-                                                           name=self.name)
+                                                          name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -1384,8 +1387,9 @@ class Triangular(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+        return x
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
