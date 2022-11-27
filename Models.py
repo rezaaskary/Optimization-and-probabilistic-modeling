@@ -20,8 +20,17 @@ class PPCA_:
         self.y = self.y[:, ~all_nans]
         self.num_obs = (~self.nans).sum()
         self.p, self.n = self.shape
+        self.max_rank = min([self.p, self.n])
 
-
+        if (not jnp.isscalar(n_comp)) or (not isinstance(n_comp, int)):
+            raise Exception('invalid n_comp!. Please enter a scalar integer as the number of components')
+        elif n_comp > self.max_rank - 1:
+            self.n_comp = max([1, self.max_rank - 1])
+            print(
+                f'Warning: Maximum possible rank of the data is {elf.max_rank}. Computation continues with the number of'
+                f' principal components k set to {self.n_comp}')
+        else:
+            pass
 
 
 
