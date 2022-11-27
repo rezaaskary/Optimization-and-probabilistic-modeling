@@ -52,27 +52,37 @@ class PPCA_:
         self.wnew = jnp.zeros(shape=(p, k), dtype=jnp.float64)
         self.c = jnp.zeros(shape=(k, k, n), dtype=jnp.float64)
         self.nloglk = jnp.inf
-
+        self.iter = 0
         if self.any_missing:
             self.run = self._incomplete_matrix_cal
         else:
             self.run = self._complete_matrix_cal
 
-
     def _complete_matrix_cal(self):
         self.mu = jnp.mean(y, axis=1)[:, jnp.newaxis]
         self.y -= jnp.tile(self.mu, [1, n])
+        self.traces = ((self.y.reshape((-1, 1))).T @ self.y.reshape((-1, 1))) / (n - 1)
+        self.eps = jnp.finfo(float).eps
+
+        def cond_fun(value: tuple = None) -> bool:
+            return True
+        def body_fun(value: tuple = None) -> bool:
+
+
+            return
+
+
+        jax.lax.while_loop(cond_fun, body_fun, init_val)
+
+        def while_loop(cond_fun, body_fun, init_val):
+            val = init_val
+            while cond_fun(val):
+                val = body_fun(val)
+            return val
 
 
 
         return
-
-
-
-
-
-
-
 
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
