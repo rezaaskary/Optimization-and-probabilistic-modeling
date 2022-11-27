@@ -1525,6 +1525,8 @@ class LogitNormal(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return x
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class TruncatedCauchy(ContinuousDistributions):
     def __init__(self, loc: jnp.ndarray = None, scale: jnp.ndarray = None, lower: jnp.ndarray = None,
@@ -1544,14 +1546,15 @@ class TruncatedCauchy(ContinuousDistributions):
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
-        super(TruncatedCauchy, self).__init__(loc=loc, scale=scale, lower=lower, upper=upper, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        super(TruncatedCauchy, self).__init__(loc=loc, scale=scale, lower=lower, upper=upper, activate_jit=activate_jit,
+                                              random_seed=random_seed,
+                                              n_chains=n_chains, validate_input_range=validate_input_range,
+                                              in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         self.name = 'TruncatedCauchy'
         self.distance_function = distributions.TruncatedCauchy(loc=self.loc.tolist(), scale=self.scale.tolist(),
                                                                low=self.lower.tolist(), high=self.upper.tolist(),
                                                                validate_args=True,
-                                                                name=self.name)
+                                                               name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -1567,8 +1570,9 @@ class TruncatedCauchy(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+        return x
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
