@@ -14,21 +14,21 @@ def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
     eps = jnp.finfo(float).eps
     while iter < maxiter:
         iter += 1
-        sw = Y @ (y.T @ w) / (n - 1)
+        sw = y @ (y.T @ w) / (n - 1)
         m = w.T @ w + v * jnp.eye(k)
         wnew = sw @ jnp.linalg.inv(v * jnp.eye(k) + jnp.linalg.inv(m) @ w.T @ sw)
-        vnew = (traces - np.trace(SW @ np.linalg.inv(M) @ Wnew.T)) / p
+        vnew = (traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / p
 
         dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
         dv = jnp.abs(v - vnew) / (eps + v)
         delta = max([dw, dv])
         cc = wnew @ wnew.T + vnew * jnp.eye(p)
-        nloglk_new = (p * jnp.log(2 * np.pi) + jnp.log(np.linalg.det(cc)) + \
+        nloglk_new = (p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) + \
                       jnp.trace(jnp.linalg.inv(cc) @ y @ y.T / (n - 1))) * n / 2
-        w = Wnew
+        w = wnew
         v = vnew
         print(delta)
-        print(np.abs(nloglk - nloglk_new))
+        print(jnp.abs(nloglk - nloglk_new))
         if delta < tolx:
             break
         elif (nloglk - nloglk_new) < tolfun:
@@ -107,16 +107,16 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
                 idxobs = obs[:, j]
                 w_sample = w[idxobs, :]
                 # Use Sherman-Morrison formula to find the inv(v.*eye(k)+w'*w)
-                cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ np.linalg.inv(
-                    np.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
+                cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ jnp.linalg.inv(
+                    jnp.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
                 x = x.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
                 c = c.at[:, :, j].set(cj)
 
-            mu = jnp.nanmean(y - w @ x, axis=1)[:, np.newaxis]
+            mu = jnp.nanmean(y - w @ x, axis=1)[:, jnp.newaxis]
             for i in range(p):
                 idxobs = obs[i, :]
                 m = x[:, idxobs] @ x[:, idxobs].T + v * jnp.sum(c[:, :, idxobs], axis=2)
-                ww = X[:, idxobs] @ (Y[i, idxobs] - mu[i, 0]).T
+                ww = x[:, idxobs] @ (y[i, idxobs] - mu[i, 0]).T
                 wnew[i, :] = jnp.linalg.solve(m, ww)
             vsum = 0
             for j in range(n):
@@ -153,25 +153,25 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
         iterfmtstr = ''
         w, x, mu, v, itercount, dw, nloglk = emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr)
 
-        if jnp.all(w == 0):
-            coeff = jnp.zeros((p, k))
-            coeff[::(p + 1)] = 1
-            score = jnp.zeros((n, k))
-            latent = jnp.zeros((k, 1))
-            mu = (jnp.mean(y, axis=1)).T
-            v = 0
-            rsltStruct = {'W': w, \
-                          'Xexp': x.T, \
-                          'Recon': jnp.tile(mu, [n, 1]), \
-                          'v': v, \
-                          'NumIter': itercount, \
-                          'RMSResid': 0, \
-                          'nloglk': nloglk
-                          }
-            return coeff, score, latent, mu, v, rsltStruct
+    if jnp.all(w == 0):
+        coeff = jnp.zeros((p, k))
+        coeff[::(p + 1)] = 1
+        score = jnp.zeros((n, k))
+        latent = jnp.zeros((k, 1))
+        mu = (jnp.mean(y, axis=1)).T
+        v = 0
+        rsltStruct = {'W': w, \
+                      'Xexp': x.T, \
+                      'Recon': jnp.tile(mu, [n, 1]), \
+                      'v': v, \
+                      'NumIter': itercount, \
+                      'RMSResid': 0, \
+                      'nloglk': nloglk
+                      }
+        return coeff, score, latent, mu, v, rsltStruct
 
 
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
-
+    data = data.at[2,4].set(jnp.nan)
     PPCA(y=data, k=2)
