@@ -5,15 +5,25 @@ import sys
 import warnings
 
 
-class PPCA:
+class PPCA_:
     def __init__(self, y: jnp.ndarray = None, n_comp: int = 2, max_iter: int = 500, tolerance: float = 1e-6):
         if not (min(y.shape) > 1):
             raise Exception('Too few feature variables')
 
-        if not isinstance(y,jnp.ndarray):
+        if not isinstance(y, jnp.ndarray):
             raise Exception('Invalid format of input matrix y!. Please enter the input matrix with ndarray format')
         else:
             self.y = y.T
+        self.nans = jnp.isnan(y)
+        self.any_missing = jnp.any(self.nans)
+        all_nans = jnp.where(jnp.all(self.nans, axis=0))
+        self.y = self.y[:, ~all_nans]
+        self.num_obs = (~self.nans).sum()
+        self.p, self.n = self.shape
+
+
+
+
 
 
 
