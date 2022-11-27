@@ -487,7 +487,7 @@ class BetaBinomial(DiscreteDistributions):
                        }
         return information
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
+        return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class pdf(DiscreteDistributions):
 #     def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
