@@ -6,45 +6,68 @@ import jax.numpy as jnp
 
 
 class PPCA:
-    def __init__(self,Y: jnp.ndarray = None, ):
+    def __init__(self,y: jnp.ndarray = None, k: int = 2):
+        if not (min(y.shape) > 1): raise Exception('Too few feature variables')
+        y = y.T
+        nans = jnp.isnan(y)
+        any_missing = jnp.any(nans)
+        all_nan_rows = jnp.all(nans, axis=0)
+        y = y[:, ~all_nan_rows]
+        nans = nans[:, ~all_nan_rows]
+        obs = ~nans
+        num_obs = obs.sum()
+        p, n = y.shape
+        max_rank = min([n, p])
+        flagWarnK = False
+        if (not np.isscalar(k)) or (not isinstance(k, int)):
+            raise Exception('invalid k!')
+        elif k > maxRank - 1:
+            k = max([1, maxRank - 1])
+            flagWarnK = True
+            print(
+                f'Warning: Maximum possible rank of the data is {maxRank}. Computation continues with the number of principal components k set to {k}')
+        else:
+            pass
+
+        param_names = ['Options', 'W0', 'v0']
+        setflag = dict(zip(param_names, [0, 0, 0]))
+        opt = [None]
+        w = random.normal(key=random.PRNGKey(1), shape=(p, k))
+        v = random.uniform(key=random.PRNGKey(1), shape=(1, 1))
+        tolx = 1e-6
+        tolfun = 1e-6
+        maxiter = 2e4
+        dispopt = 'off'
+        if (setflag['W0']) and flagWarnK and w.shape[1] == max_rank:
+            w = w[:, :-1]  # remove the last column
+            print(f'Warning: Initial value W0 is truncated to {n} by {k}')
+
+        if (setflag['W0']) and (jnp.any(jnp.isnan(w))):
+            raise Exception(f'Initial matrix W0 must be a {p} by {k} numeric matrix without any NaN element')
+
+        if (setflag['v0']) and (not (jnp.isscalar(k) and v > 0) or jnp.isnan(v) or n == jnp.inf):
+            raise Exception('Initial residual variance v0 must be a positive scalar and must not be Inf.')
 
 
 
 
 
 
-def emppca_complete(Y, k, W, v, MaxIter, TolFun, TolX, dispnum, iterfmtstr):
-    p, n = Y.shape
-    mu = np.mean(Y, axis=1)[:, np.newaxis]
-    Y -= np.tile(mu, [1, n])
-    iter = 0
-    nloglk = np.inf
-    traceS = ((Y.reshape((-1, 1))).T @ Y.reshape((-1, 1))) / (n - 1)
-    eps = np.finfo(float).eps
-    while iter < MaxIter:
-        iter += 1
-        SW = Y @ (Y.T @ W) / (n - 1)
-        M = W.T @ W + v * np.eye(k)
-        Wnew = SW @ np.linalg.inv(v * np.eye(k) + np.linalg.inv(M) @ W.T @ SW)
-        vnew = (traceS - np.trace(SW @ np.linalg.inv(M) @ Wnew.T)) / p
 
-        dw = (np.abs(W - Wnew) / (np.sqrt(eps) + (np.abs(Wnew)).max())).max()
-        dv = np.abs(v - vnew) / (eps + v)
-        delta = max([dw, dv])
-        CC = Wnew @ Wnew.T + vnew * np.eye(p)
-        nloglk_new = (p * np.log(2 * np.pi) + np.log(np.linalg.det(CC)) + \
-                      np.trace(np.linalg.inv(CC) @ Y @ Y.T / (n - 1))) * n / 2
-        W = Wnew
-        v = vnew
-        print(delta)
-        print(np.abs(nloglk - nloglk_new))
-        if delta < TolX:
-            break
-        elif (nloglk - nloglk_new) < TolFun:
-            break
-        elif np.abs(vnew) < np.sqrt(eps):
-            break
-        nloglk = nloglk_new
-    ##=====================================================
-    Xmu = np.linalg.inv(M) @ Wnew.T @ Y
-    return Wnew, Xmu, mu, vnew, iter, dw, nloglk_new
+
+
+
+
+
+
+
+
+
+
+
+
+
+if __name__=='__main__':
+    data = random.gamma(key=random.PRNGKey(23),a=0.2,shape=(50,5))
+
+    PPCA(y=data,k=2)
