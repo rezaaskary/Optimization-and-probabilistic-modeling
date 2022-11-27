@@ -58,8 +58,25 @@ class PPCA:
         c = jnp.zeros((k, k, n))
         nloglk = jnp.inf
 
+        dispnum = [1, 0, 0]
+        headernames = ['Iteration      Variance     |Delta X|      Negative Log-likelihood']
+        if dispnum[1]:
+            print(headernames)
 
+        itercount = 0
 
+        if any_missing:
+            while itercount < maxiter:
+                itercount += 1
+                for j in range(n):
+                    y_sample = y[:, j:j+1]
+                    idxobs = obs[:, j]
+                    w_sample = W[idxobs, :]
+                    # Use Sherman-Morrison formula to find the inv(v.*eye(k)+w'*w)
+                    cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ np.linalg.inv(np.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
+                    x = x.at[:, j:j+1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
+                    c = c.at[:, :, j].set(cj)
+                mu = jnp.nanmean(y - w @ x, axis=1)[:, np.newaxis]
 
 
 
