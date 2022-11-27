@@ -65,16 +65,25 @@ class DiscreteDistributions:
             raise Exception(f'Please specify the activation of the just-in-time evaluation'
                             f' ({self.__class__} distribution)!')
 
-            # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            if isinstance(n, jnp.ndarray):
-                self.n = n
-            elif n is None:
-                self.n = None
-            else:
-                raise Exception(
-                    f'The value of input parameters is not specified correctly. Please enter parameters  in the'
-                    f' format of ndarrauy ({self.__class__} distribution)!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(n, jnp.ndarray):
+            self.n = n
+        elif n is None:
+            self.n = None
+        else:
+            raise Exception(
+                f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                f' format of ndarrauy ({self.__class__} distribution)!')
 
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(p, jnp.ndarray):
+            self.p = p
+        elif p is None:
+            self.p = None
+        else:
+            raise Exception(
+                f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                f' format of ndarrauy ({self.__class__} distribution)!')
 
 
 
