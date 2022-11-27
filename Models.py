@@ -3,10 +3,8 @@ from jax import vmap, jit, grad, random, lax, scipy, jacfwd
 import jax.numpy as jnp
 
 
-
-
 class PPCA:
-    def __init__(self,y: jnp.ndarray = None, k: int = 2):
+    def __init__(self, y: jnp.ndarray = None, k: int = 2):
         if not (min(y.shape) > 1): raise Exception('Too few feature variables')
         y = y.T
         nans = jnp.isnan(y)
@@ -51,7 +49,6 @@ class PPCA:
         if not sys.warnoptions:
             warnings.simplefilter('ignore')
 
-
         mu = jnp.zeros((p, 1))
         x = jnp.zeros((k, n))
         wnew = jnp.zeros((p, k))
@@ -69,14 +66,29 @@ class PPCA:
             while itercount < maxiter:
                 itercount += 1
                 for j in range(n):
-                    y_sample = y[:, j:j+1]
+                    y_sample = y[:, j:j + 1]
                     idxobs = obs[:, j]
                     w_sample = W[idxobs, :]
                     # Use Sherman-Morrison formula to find the inv(v.*eye(k)+w'*w)
-                    cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ np.linalg.inv(np.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
-                    x = x.at[:, j:j+1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
+                    cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ np.linalg.inv(
+                        np.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
+                    x = x.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
                     c = c.at[:, :, j].set(cj)
+
                 mu = jnp.nanmean(y - w @ x, axis=1)[:, np.newaxis]
+                for i in range(p):
+                    idxobs = obs[i, :]
+                    m = x[:, idxobs] @ x[:, idxobs].T + v * jnp.sum(c[:, :, idxobs], axis=2)
+                    ww = X[:, idxobs] @ (Y[i, idxobs] - mu[i, 0]).T
+                    wnew[i, :] = jnp.linalg.solve(m, ww)
+                vsum = 0
+                for j in range(n):
+                    wnew_sample = wnew[obs[:, j], :]
+                    vsum = vsum + sum((Y[obs[:, j], j] - wnew_sample @ X[:, j] - mu[obs[:, j], 0]) ** 2 + \
+                                      v * (jnp.diag(wnew_sample @ c[:, :, j] @ wnew_sample.T)))
+                vnew = vsum / numObs
+                eps = jnp.finfo(float).eps
+                nloglk_new = 0
 
 
 
@@ -88,9 +100,7 @@ class PPCA:
 
 
 
+if __name__ == '__main__':
+    data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
 
-
-if __name__=='__main__':
-    data = random.gamma(key=random.PRNGKey(23),a=0.2,shape=(50,5))
-
-    PPCA(y=data,k=2)
+    PPCA(y=data, k=2)
