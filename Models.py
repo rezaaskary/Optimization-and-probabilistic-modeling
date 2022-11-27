@@ -23,7 +23,8 @@ class PPCA_:
         if not isinstance(y, jnp.ndarray):
             raise Exception('Invalid format of input matrix y!. Please enter the input matrix with ndarray format')
         else:
-            self.y = y.T
+            self.y = jnp.array(object=y.T, dtype=jnp.float64)
+
         self.nans = jnp.isnan(y)
         self.any_missing = jnp.any(self.nans)
         all_nans = jnp.where(jnp.all(self.nans, axis=0))
@@ -41,10 +42,21 @@ class PPCA_:
                 f' principal components k set to {self.n_comp}')
         else:
             pass
-        self.w = random.normal(key=random.PRNGKey(1), shape=(self.p, self.n_comp))
-        self.v = random.uniform(key=random.PRNGKey(1), shape=(1, 1))
+        self.w = random.normal(key=random.PRNGKey(1), shape=(self.p, self.n_comp), dtype=jnp.float64)
+        self.v = random.uniform(key=random.PRNGKey(1), shape=(1, 1), dtype=jnp.float64)
+        if not sys.warnoptions:
+            warnings.simplefilter('ignore')
 
+        self.mu = jnp.zeros(shape=(p, 1), dtype=jnp.float64)
+        self.x = jnp.zeros(shape=(k, n), dtype=jnp.float64)
+        self.wnew = jnp.zeros(shape=(p, k), dtype=jnp.float64)
+        self.c = jnp.zeros(shape=(k, k, n), dtype=jnp.float64)
+        self.nloglk = jnp.inf
 
+        if self.any_missing:
+            self.run = self._incomplete_matrix_cal
+        else:
+            self.run = self._complete_matrix_cal
 
 
 
