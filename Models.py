@@ -19,9 +19,9 @@ class PPCA:
         p, n = y.shape
         max_rank = min([n, p])
         flagWarnK = False
-        if (not np.isscalar(k)) or (not isinstance(k, int)):
+        if (not jnp.isscalar(k)) or (not isinstance(k, int)):
             raise Exception('invalid k!')
-        elif k > maxRank - 1:
+        elif k > max_rank - 1:
             k = max([1, maxRank - 1])
             flagWarnK = True
             print(
@@ -48,9 +48,15 @@ class PPCA:
         if (setflag['v0']) and (not (jnp.isscalar(k) and v > 0) or jnp.isnan(v) or n == jnp.inf):
             raise Exception('Initial residual variance v0 must be a positive scalar and must not be Inf.')
 
+        if not sys.warnoptions:
+            warnings.simplefilter('ignore')
 
 
-
+        mu = jnp.zeros((p, 1))
+        x = jnp.zeros((k, n))
+        wnew = jnp.zeros((p, k))
+        c = jnp.zeros((k, k, n))
+        nloglk = jnp.inf
 
 
 
