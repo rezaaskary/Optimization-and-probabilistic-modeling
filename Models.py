@@ -4,6 +4,19 @@ import jax.numpy as jnp
 import sys
 import warnings
 
+
+class PPCA:
+    def __init__(self, y: jnp.ndarray = None, n_comp: int = 2, max_iter: int = 500, tolerance: float = 1e-6):
+        if not (min(y.shape) > 1):
+            raise Exception('Too few feature variables')
+
+        if not isinstance(y,jnp.ndarray):
+            raise Exception('Invalid format of input matrix y!. Please enter the input matrix with ndarray format')
+        else:
+            self.y = y.T
+
+
+
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
     p, n = y.shape
     mu = jnp.mean(y, axis=1)[:, jnp.newaxis]
@@ -117,14 +130,15 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
                 idxobs = obs[i, :]
                 m = x[:, idxobs] @ x[:, idxobs].T + v * jnp.sum(c[:, :, idxobs], axis=2)
                 ww = x[:, idxobs] @ (y[i, idxobs] - mu[i, 0]).T
-                wnew[i, :] = jnp.linalg.solve(m, ww)
-            vsum = 0
+                # wnew[i, :] = jnp.linalg.solve(m, ww)
+                wnew = wnew.at[i, :].set(jnp.linalg.solve(m, ww))
+            vsum = jnp.zeros((1, 1))
             for j in range(n):
                 wnew_sample = wnew[obs[:, j], :]
-                vsum = vsum + sum((Y[obs[:, j], j] - wnew_sample @ X[:, j] - mu[obs[:, j], 0]) ** 2 + \
-                                  v * (jnp.diag(wnew_sample @ c[:, :, j] @ wnew_sample.T)))
+                vsum = vsum + ((y[obs[:, j], j] - wnew_sample @ x[:, j] - mu[obs[:, j], 0]) ** 2 + \
+                               v * (jnp.diag(wnew_sample @ c[:, :, j] @ wnew_sample.T))).sum()
 
-            vnew = vsum / numObs
+            vnew = vsum / num_obs
             eps = jnp.finfo(float).eps
             nloglk_new = 0
 
@@ -145,7 +159,7 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
             if jnp.abs(nloglk - nloglk_new) < tolfun:
                 break
             nloglk = nloglk_new
-        mux = jnp.mean(x, axis=1)[:, np.newaxis]
+        mux = jnp.mean(x, axis=1)[:, jnp.newaxis]
         x = x - jnp.tile(mux, [1, n])
         mu = mu + w @ mux
 
@@ -173,5 +187,5 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
 
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
-    data = data.at[2,4].set(jnp.nan)
+    data = data.at[2, 4].set(jnp.nan)
     PPCA(y=data, k=2)
