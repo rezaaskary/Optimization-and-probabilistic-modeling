@@ -5,6 +5,8 @@ import jax.numpy as jnp
 
 class DiscreteDistributions:
     def __init__(self,
+                 n: jnp.ndarray = None,
+                 p: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
@@ -84,13 +86,6 @@ class DiscreteDistributions:
             raise Exception(
                 f'The value of input parameters is not specified correctly. Please enter parameters  in the'
                 f' format of ndarrauy ({self.__class__} distribution)!')
-
-
-
-
-
-
-
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if isinstance(lower, jnp.ndarray):
@@ -401,6 +396,7 @@ class DiscreteDistributions:
             self.diff_log_cdf = jit(vmap(jacfwd(fun=diff_log_cumulative_distribution_),
                                          in_axes=self.in_vec_dim, out_axes=self.out_vec_dim))
 
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -422,11 +418,12 @@ class Binomial(DiscreteDistributions):
         """
         # recalling parameter values from the main parent class
         super(Binomial, self).__init__(n=n, p=p, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
-        self.name = ''
-        self.distance_function = distributions.Binomial(=self..tolist(), =self..tolist(),
-                                                           name=self.name)
+                                       n_chains=n_chains, validate_input_range=validate_input_range,
+                                       in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'Binomial'
+        self.distance_function = distributions.Binomial(total_count=self.n.tolist(), probs=self.p.tolist(),
+                                                        validate_args=True,
+                                                        name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -442,11 +439,9 @@ class Binomial(DiscreteDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
-
-
-
+        return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
 
 # class pdf(DiscreteDistributions):
 #     def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
