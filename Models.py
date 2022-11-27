@@ -59,6 +59,20 @@ class PPCA_:
             self.run = self._complete_matrix_cal
 
 
+    def _complete_matrix_cal(self):
+        self.mu = jnp.mean(y, axis=1)[:, jnp.newaxis]
+        self.y -= jnp.tile(self.mu, [1, n])
+
+
+
+        return
+
+
+
+
+
+
+
 
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
