@@ -65,8 +65,8 @@ class PPCA_:
         self.eps = jnp.finfo(float).eps
 
         def body_fun(value: tuple = None) -> tuple:
-            iter, v, w, nloglk, delta, diff = value
-            iter += 1
+            itr, v, w, nloglk, delta, diff = value
+            itr += 1
             sw = y @ (y.T @ w) / (n - 1)
             m = w.T @ w + v * jnp.eye(k)
             wnew = sw @ jnp.linalg.inv(v * jnp.eye(k) + jnp.linalg.inv(m) @ w.T @ sw)
@@ -80,28 +80,28 @@ class PPCA_:
                           jnp.trace(jnp.linalg.inv(cc) @ y @ y.T / (n - 1))) * n / 2
 
             diff = nloglk - nloglk_new
-            return iter, vnew, wnew, nloglk_new, delta, diff
+            return itr, vnew, wnew, nloglk_new, delta, diff
 
         def cond_fun(value: tuple = None) -> bool:
             iter, v, w, nloglk, delta, diff = value
             return jnp.where(delta < self.tolerance, False,
-                      jnp.where(jnp.abs(diff) < self.tolerance, False,
-                                jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False, True)))
+                             jnp.where(jnp.abs(diff) < self.tolerance, False,
+                                       jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False,
+                                                 jnp.where(itr < self.max_iter, False, True))))
 
-        self.itr,   \
-        self.v,\
-        self.w,\
-        self.nloglk,\
-        self.delta,\
-        self.diff = lax.while_loop(cond_fun, body_fun, init_val)
-
-        def while_loop(cond_fun, body_fun, init_val):
-            val = init_val
-            while cond_fun(val):
-                val = body_fun(val)
-            return val
-
-        return
+        self.itr, \
+        self.v, \
+        self.w, \
+        self.nloglk, \
+        self.delta, \
+        self.diff = lax.while_loop(cond_fun=cond_fun, body_fun=body_fun,
+                                   init_val=(self.iter,
+                                             self.v,
+                                             self.w,
+                                             self.nloglk,
+                                             jnp.inf,
+                                             jnp.inf,
+                                             ))
 
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
