@@ -46,7 +46,8 @@ class PPCA_:
                   f'The matrix is shrank to {int(jnp.sum(~all_nans))} rows.\n'
                   f'---------------------------------------------------------------------------------------------')
         self.any_missing = jnp.any(self.nans)
-        self.num_obs = (~self.nans).sum()
+        self.obs = ~self.nans
+        self.num_obs = self.obs.sum()
         self.p, self.n = self.y.shape
         self.max_rank = min([self.p, self.n])
 
@@ -87,13 +88,10 @@ class PPCA_:
 
         def body_fun(value: tuple = None) -> tuple:
             itr, v, w, nloglk, delta, diff = value
-            itr = itr + 1
+            itr += 1
             sw = self.y @ (self.y.T @ w) / (self.n - 1)
             m = w.T @ w + v * jnp.eye(self.n_comp)
-            # wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.inv(m) @ w.T @ sw)
             wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.solve(a=m, b=w.T) @ sw)
-
-            # vnew = (self.traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / self.p
             vnew = (self.traces - jnp.trace(sw @ jnp.linalg.solve(a=m, b=wnew.T))) / self.p
             dw = (jnp.abs(w - wnew) / (jnp.sqrt(self.eps) + (jnp.abs(wnew)).max())).max()
             dv = jnp.abs(v - vnew) / (self.eps + v)
@@ -101,8 +99,7 @@ class PPCA_:
             cc = wnew @ wnew.T + vnew * jnp.eye(self.p)
             nloglk_new = (self.p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) +
                           jnp.trace(jnp.linalg.inv(cc) @ self.y @ self.y.T / (self.n - 1))) * self.n / 2
-            diff = nloglk - nloglk_new
-            return itr, vnew, wnew, nloglk_new, delta, diff
+            return itr, vnew, wnew, nloglk_new, delta, nloglk - nloglk_new
 
         def cond_fun(value: tuple = None):
             itr, v, w, nloglk, delta, diff = value
@@ -123,9 +120,33 @@ class PPCA_:
                                              self.diff,
                                              ))
         m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
-        xmu = jnp.linalg.inv(m) @ self.w.T @ self.y
-        RE = jnp.linalg.solve(a=m, b=self.w.T) @ self.y
+        xmu = jnp.linalg.solve(a=m, b=self.w.T) @ self.y
         return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
+
+    def _incomplete_matrix_cal(self):
+
+        def updating_c(values: tuple = None) -> tuple:
+            j, c_tensor, x_matrix = values
+            idxobs = self.obs[:, j]
+            y_sample = self.y[:, j:j + 1]
+            w_sample = self.w[idxobs, :]
+
+
+            return
+
+            y_sample = y[:, j:j + 1]
+            idxobs = obs[:, j]
+            w_sample = w[idxobs, :]
+            # Use Sherman-Morrison formula to find the inv(v.*eye(k)+w'*w)
+            cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ jnp.linalg.inv(
+                jnp.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
+            x = x.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
+            c = c.at[:, :, j].set(cj)
+
+
+
+
+        return
 
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
