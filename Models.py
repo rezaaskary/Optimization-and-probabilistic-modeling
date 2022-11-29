@@ -72,7 +72,7 @@ class PPCA_:
         self.c = jnp.zeros(shape=(self.n_comp, self.n_comp, self.n), dtype=jnp.float64)
         self.nloglk = jnp.array(jnp.inf, dtype=jnp.float64)
         self.itr = 0.0
-        self.delta = jnp.array(jnp.inf, dtype=jnp.float64).reshape((1,1))
+        self.delta = jnp.array(jnp.inf, dtype=jnp.float64).reshape((1, 1))
         self.diff = jnp.array(jnp.inf, dtype=jnp.float64)
         if self.any_missing:
             self.run = self._incomplete_matrix_cal
@@ -102,27 +102,39 @@ class PPCA_:
             diff = nloglk - nloglk_new
             return itr, vnew, wnew, nloglk_new, delta, diff
 
-        TT = (self.itr,
-                    self.v.copy(),
-                    self.w.copy(),
-                    self.nloglk.copy(),
-                    self.delta.copy(),
-                    self.diff.copy(),
-                    )
-        for i in range(100):
-            TT = body_fun(value=TT)
+        # TT = (self.itr,
+        #             self.v.copy(),
+        #             self.w.copy(),
+        #             self.nloglk.copy(),
+        #             self.delta.copy(),
+        #             self.diff.copy(),
+        #             )
+        # for i in range(100):
+        #     TT = body_fun(value=TT)
+        def true_fcn():
+            return True
+
+        def false_fcn():
+            return False
 
         def cond_fun(value: tuple = None) -> bool:
             itr, v, w, nloglk, delta, diff = value
-
+            return lax.cond((itr < self.max_iter) |
+                            (jnp.abs(diff) > self.tolerance) |
+                            (delta > self.tolerance) |
+                            (jnp.abs(v) > jnp.sqrt(self.tolerance))
+                            ,
+                            true_fcn(),
+                            false_fcn())
             # return bool(~jnp.logical_or(delta < self.tolerance, diff < self.tolerance, itr < self.max_iter,
             #                      jnp.abs(v) < jnp.sqrt(self.tolerance)))
 
-            # return bool(jnp.where(delta < self.tolerance, False,
+            # return jnp.where(delta < self.tolerance, False,
             #                       jnp.where(jnp.abs(diff) < self.tolerance, False,
             #                                 jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False,
-            #                                           jnp.where(itr < self.max_iter, False, True)))))
-            return itr < 10
+            #                                           jnp.where(itr < self.max_iter, False, True))))
+            # return itr < 10
+            return
 
         self.itr, \
         self.v, \
