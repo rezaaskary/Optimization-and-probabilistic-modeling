@@ -26,15 +26,13 @@ class PPCA_:
             self.y = jnp.array(object=y.T, dtype=jnp.float64)
 
         self.nans = jnp.isnan(self.y)
-        self.any_missing = jnp.any(self.nans)
-
         # finding features that for all samples are not measured
         all_nans_row_wise = jnp.all(self.nans, axis=1)
         if jnp.any(all_nans_row_wise):
             self.y = self.y[~all_nans_row_wise, :]
             self.nans = self.nans[~all_nans_row_wise, :]
             print(f'---------------------------------------------------------------------------------------------\n'
-                  f'The {int(jnp.where(all_nans_row_wise)[0])} th column of the input matrix has no measurements.\n'
+                  f'The {int(all_nans_row_wise.sum())} columns of the input matrix has no measurements.\n'
                   f'The matrix is shrank to {int(jnp.sum(~all_nans_row_wise))} columns.\n'
                   f'---------------------------------------------------------------------------------------------')
 
@@ -44,32 +42,34 @@ class PPCA_:
             self.y = self.y[:, ~all_nans]
             self.nans = self.nans[:, ~all_nans]
             print(f'---------------------------------------------------------------------------------------------\n'
-                  f'The {int(jnp.where(all_nans)[0])} th row of the input matrix has no measurements.\n'
-                  f'The matrix is shrank to {int(jnp.sum(~all_nans_row_wise))} rows.\n'
+                  f'The {int(all_nans.sum())} rows of the input matrix have no measurements.\n'
+                  f'The matrix is shrank to {int(jnp.sum(~all_nans))} rows.\n'
                   f'---------------------------------------------------------------------------------------------')
-
+        self.any_missing = jnp.any(self.nans)
         self.num_obs = (~self.nans).sum()
-        self.p, self.n = self.shape
+        self.p, self.n = self.y.shape
         self.max_rank = min([self.p, self.n])
 
         if (not jnp.isscalar(n_comp)) or (not isinstance(n_comp, int)):
             raise Exception('invalid n_comp!. Please enter a scalar integer as the number of components')
-        elif n_comp > self.max_rank - 1:
+        else:
+            self.n_comp = n_comp
+
+        if self.n_comp > self.max_rank - 1:
             self.n_comp = max([1, self.max_rank - 1])
             print(
-                f'Warning: Maximum possible rank of the data is {elf.max_rank}. Computation continues with the number of'
-                f' principal components k set to {self.n_comp}')
-        else:
-            pass
+                f'Warning: Maximum possible rank of the data is {elf.max_rank}. Computation continues with the number\n'
+                f'of principal components k set to {self.n_comp}')
+
         self.w = random.normal(key=random.PRNGKey(1), shape=(self.p, self.n_comp), dtype=jnp.float64)
         self.v = random.uniform(key=random.PRNGKey(1), shape=(1, 1), dtype=jnp.float64)
         if not sys.warnoptions:
             warnings.simplefilter('ignore')
 
-        self.mu = jnp.zeros(shape=(p, 1), dtype=jnp.float64)
-        self.x = jnp.zeros(shape=(k, n), dtype=jnp.float64)
-        self.wnew = jnp.zeros(shape=(p, k), dtype=jnp.float64)
-        self.c = jnp.zeros(shape=(k, k, n), dtype=jnp.float64)
+        self.mu = jnp.zeros(shape=(self.p, 1), dtype=jnp.float64)
+        self.x = jnp.zeros(shape=(self.n_comp, self.n), dtype=jnp.float64)
+        self.wnew = jnp.zeros(shape=(self.p, self.n_comp), dtype=jnp.float64)
+        self.c = jnp.zeros(shape=(self.n_comp, self.n_comp, self.n), dtype=jnp.float64)
         self.nloglk = jnp.inf
         self.iter = 0
         if self.any_missing:
@@ -78,7 +78,7 @@ class PPCA_:
             self.run = self._complete_matrix_cal
 
     def _complete_matrix_cal(self):
-        self.mu = jnp.mean(y, axis=1)[:, jnp.newaxis]
+        self.mu = jnp.mean(self.y, axis=1)[:, jnp.newaxis]
         self.y -= jnp.tile(self.mu, [1, self.n])
         self.traces = ((self.y.reshape((-1, 1))).T @ self.y.reshape((-1, 1))) / (self.n - 1)
         self.eps = jnp.finfo(float).eps
@@ -295,5 +295,7 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
     data = data.at[:, 2].set(jnp.nan)
+    data = data.at[3,:].set(jnp.nan)
     # PPCA(y=data,k=2)
-    PPCA_(y=data, n_comp=2,max_iter=500,tolerance=1e-6)
+    D = PPCA_(y=data, n_comp=2,max_iter=500,tolerance=1e-6)
+    D.run()
