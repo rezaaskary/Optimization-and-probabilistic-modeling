@@ -127,7 +127,9 @@ class PPCA_:
 
         def updating_c(j: int = None, values: tuple = None) -> tuple:
             c_tensor, x_matrix = values
-            idxobs = self.obs[:, j]
+            # idxobs = self.obs[:, j]
+            # m = jnp.where(self.y[:, j]>1)
+            m = self.y[jnp.where(~jnp.isnan(self.y[:, j])),j]
             y_sample = self.y[:, j:j + 1]
             w_sample = self.w[idxobs, :]
             cj = jnp.eye(self.n_comp) / self.v - (w_sample.T @ w_sample) @ jnp.linalg.inv(
@@ -136,10 +138,11 @@ class PPCA_:
             c_tensor = c_tensor.at[:, :, j].set(cj)
             return c_tensor, x_matrix
 
-        # self.c, self.x = lax.fori_loop(lower=0, upper=self.n, body_fun=updating_c,
-        #                                init_val=(self.c.copy(), self.x.copy()))
+        self.c, self.x = lax.fori_loop(lower=0, upper=self.n, body_fun=updating_c,
+                                       init_val=(self.c.copy(), self.x.copy()))
 
         def updating_c_vec(y, w, n_comp, v, mu):
+            F = jnp.where(~jnp.isnan(y))
             ys = y[jnp.where(~jnp.isnan(y))]
             ws = w[jnp.where(~jnp.isnan(y)), :]
             mus = mu[jnp.where(~jnp.isnan(y))]
