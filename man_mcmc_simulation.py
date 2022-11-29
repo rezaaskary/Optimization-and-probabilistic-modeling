@@ -9,23 +9,23 @@ x = random.randint(key=random.PRNGKey(7), shape=(1000, 1), minval=0, maxval=10, 
 
 M = distributions.Binomial(total_count=20, probs=0.5)
 
-RR = M.prob([0, 0.2, 1, 2, 3, 4, 5, 55])
+RR = jnp.array([0, 0.2, 1, 2, 3, 4, 5, 55])
+
+TT =RR < 1
 
 
-def true_fcn(itr):
-    return True
 
 
-def false_fcn(itr):
-    return False
 
 
-itr = jnp.array(4).reshape((1,))
-iir = jnp.array(2).reshape((1,))
-er = jnp.array(2.8).reshape((1,))
-T = lax.cond(pred=((7 < 100)), true_fun=lambda: True, false_fun=lambda: False)
-# T = lax.cond(itr.item() < 100, true_fcn(itr), false_fcn(itr),itr)
-T
+
+
+
+
+
+
+
+
 
 
 def vc(x):

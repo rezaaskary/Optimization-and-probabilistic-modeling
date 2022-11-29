@@ -130,18 +130,18 @@ class PPCA_:
             idxobs = self.obs[:, j]
             y_sample = self.y[:, j:j + 1]
             w_sample = self.w[idxobs, :]
+            cj = jnp.eye(self.n_comp) / self.v - (w_sample.T @ w_sample) @ jnp.linalg.inv(
+                jnp.eye(self.n_comp) + (w_sample.T @ w_sample) / self.v) / (self.v ** 2)
+            x_matrix = x_matrix.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - self.mu[idxobs])))
+            c_tensor = c_tensor.at[:, :, j].set(cj)
+            j += 1
+            return j, c_tensor, x_matrix
 
 
-            return
 
-            y_sample = y[:, j:j + 1]
-            idxobs = obs[:, j]
-            w_sample = w[idxobs, :]
-            # Use Sherman-Morrison formula to find the inv(v.*eye(k)+w'*w)
-            cj = jnp.eye(k) / v - (w_sample.T @ w_sample) @ jnp.linalg.inv(
-                jnp.eye(k) + (w_sample.T @ w_sample) / v) / (v ** 2)
-            x = x.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - mu[idxobs])))
-            c = c.at[:, :, j].set(cj)
+
+
+
 
 
 
