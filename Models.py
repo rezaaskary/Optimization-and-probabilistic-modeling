@@ -125,8 +125,8 @@ class PPCA_:
 
     def _incomplete_matrix_cal(self):
 
-        def updating_c(values: tuple = None) -> tuple:
-            j, c_tensor, x_matrix = values
+        def updating_c(j: int = None, values: tuple = None) -> tuple:
+            c_tensor, x_matrix = values
             idxobs = self.obs[:, j]
             y_sample = self.y[:, j:j + 1]
             w_sample = self.w[idxobs, :]
@@ -134,19 +134,26 @@ class PPCA_:
                 jnp.eye(self.n_comp) + (w_sample.T @ w_sample) / self.v) / (self.v ** 2)
             x_matrix = x_matrix.at[:, j:j + 1].set(cj @ (w_sample.T @ (y_sample[idxobs] - self.mu[idxobs])))
             c_tensor = c_tensor.at[:, :, j].set(cj)
-            j += 1
-            return j, c_tensor, x_matrix
+            return c_tensor, x_matrix
 
+        # self.c, self.x = lax.fori_loop(lower=0, upper=self.n, body_fun=updating_c,
+        #                                init_val=(self.c.copy(), self.x.copy()))
 
+        def updating_c_vec(y, w, n_comp, v, mu):
+            ys = y[jnp.where(~jnp.isnan(y))]
+            ws = w[jnp.where(~jnp.isnan(y)), :]
+            mus = mu[jnp.where(~jnp.isnan(y))]
 
+            cj = jnp.eye(n_comp) / v - (ws.T @ ws) @ jnp.linalg.inv(
+                jnp.eye(n_comp) + (ws.T @ ws) / v) / (v ** 2)
+            c2 = cj @ (ws.T @ (ys - mus))
+            return cj, c2
 
+        T, R = vmap(fun=updating_c_vec, in_axes=[1, None, None, None, None], out_axes=[1, 1])(self.y, self.w,
+                                                                                              self.n_comp, self.v,
+                                                                                              self.mu)
 
-
-
-
-
-
-        return
+        return T
 
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
@@ -319,8 +326,8 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
 
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
-    data = data.at[:, 2].set(jnp.nan)
-    data = data.at[3, :].set(jnp.nan)
+    data = data.at[4, 2].set(jnp.nan)
+    # data = data.at[3, :].set(jnp.nan)
     # PPCA(y=data,k=2)
     D = PPCA_(y=data, n_comp=2, max_iter=500, tolerance=1e-5)
     D.run()
