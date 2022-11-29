@@ -70,8 +70,10 @@ class PPCA_:
         self.x = jnp.zeros(shape=(self.n_comp, self.n), dtype=jnp.float64)
         self.wnew = jnp.zeros(shape=(self.p, self.n_comp), dtype=jnp.float64)
         self.c = jnp.zeros(shape=(self.n_comp, self.n_comp, self.n), dtype=jnp.float64)
-        self.nloglk = jnp.inf
-        self.iter = 0
+        self.nloglk = jnp.array(jnp.inf, dtype=jnp.float64)
+        self.itr = 0.0
+        self.delta = jnp.array(jnp.inf, dtype=jnp.float64).reshape((1,1))
+        self.diff = jnp.array(jnp.inf, dtype=jnp.float64)
         if self.any_missing:
             self.run = self._incomplete_matrix_cal
         else:
@@ -85,7 +87,7 @@ class PPCA_:
 
         def body_fun(value: tuple = None) -> tuple:
             itr, v, w, nloglk, delta, diff = value
-            itr += 1
+            itr = itr + 1
             sw = self.y @ (self.y.T @ w) / (self.n - 1)
             m = w.T @ w + v * jnp.eye(self.n_comp)
             wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.inv(m) @ w.T @ sw)
@@ -93,19 +95,34 @@ class PPCA_:
 
             dw = (jnp.abs(w - wnew) / (jnp.sqrt(self.eps) + (jnp.abs(wnew)).max())).max()
             dv = jnp.abs(v - vnew) / (self.eps + v)
-            delta = max([dw, dv])
+            delta = jnp.maximum(dw, dv)
             cc = wnew @ wnew.T + vnew * jnp.eye(self.p)
             nloglk_new = (self.p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) +
                           jnp.trace(jnp.linalg.inv(cc) @ self.y @ self.y.T / (self.n - 1))) * self.n / 2
             diff = nloglk - nloglk_new
             return itr, vnew, wnew, nloglk_new, delta, diff
 
+        TT = (self.itr,
+                    self.v.copy(),
+                    self.w.copy(),
+                    self.nloglk.copy(),
+                    self.delta.copy(),
+                    self.diff.copy(),
+                    )
+        for i in range(100):
+            TT = body_fun(value=TT)
+
         def cond_fun(value: tuple = None) -> bool:
-            iter, v, w, nloglk, delta, diff = value
-            return jnp.where(delta < self.tolerance, False,
-                             jnp.where(jnp.abs(diff) < self.tolerance, False,
-                                       jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False,
-                                                 jnp.where(itr < self.max_iter, False, True))))
+            itr, v, w, nloglk, delta, diff = value
+
+            # return bool(~jnp.logical_or(delta < self.tolerance, diff < self.tolerance, itr < self.max_iter,
+            #                      jnp.abs(v) < jnp.sqrt(self.tolerance)))
+
+            # return bool(jnp.where(delta < self.tolerance, False,
+            #                       jnp.where(jnp.abs(diff) < self.tolerance, False,
+            #                                 jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False,
+            #                                           jnp.where(itr < self.max_iter, False, True)))))
+            return itr < 10
 
         self.itr, \
         self.v, \
@@ -113,16 +130,17 @@ class PPCA_:
         self.nloglk, \
         self.delta, \
         self.diff = lax.while_loop(cond_fun=cond_fun, body_fun=body_fun,
-                                   init_val=(self.iter,
+                                   init_val=(self.itr,
                                              self.v,
                                              self.w,
                                              self.nloglk,
-                                             jnp.inf,
-                                             jnp.inf,
+                                             self.delta,
+                                             self.diff,
                                              ))
         m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
         xmu = jnp.linalg.inv(m) @ self.w.T @ self.y
         return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
+
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
     p, n = y.shape
@@ -295,7 +313,7 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
     data = data.at[:, 2].set(jnp.nan)
-    data = data.at[3,:].set(jnp.nan)
+    data = data.at[3, :].set(jnp.nan)
     # PPCA(y=data,k=2)
-    D = PPCA_(y=data, n_comp=2,max_iter=500,tolerance=1e-6)
+    D = PPCA_(y=data, n_comp=2, max_iter=500, tolerance=1e-6)
     D.run()
