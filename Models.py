@@ -119,13 +119,15 @@ class PPCA_:
 
         def cond_fun(value: tuple = None) -> bool:
             itr, v, w, nloglk, delta, diff = value
-            return lax.cond((itr < self.max_iter) |
-                            (jnp.abs(diff) > self.tolerance) |
-                            (delta > self.tolerance) |
-                            (jnp.abs(v) > jnp.sqrt(self.tolerance))
-                            ,
-                            true_fcn(),
-                            false_fcn())
+            return (itr < self.max_iter) | (jnp.abs(diff) > self.tolerance) | (delta > self.tolerance) | (jnp.abs(v) > jnp.sqrt(self.tolerance))
+            # return lax.cond(itr < 100, lambda x: True, lambda x: False)
+            # return lax.cond((itr < self.max_iter) |
+            #                 (jnp.abs(diff) > self.tolerance) |
+            #                 (delta > self.tolerance) |
+            #                 (jnp.abs(v) > jnp.sqrt(self.tolerance))
+            #                 ,
+            #                 true_fcn(),
+            #                 false_fcn(), itr)
             # return bool(~jnp.logical_or(delta < self.tolerance, diff < self.tolerance, itr < self.max_iter,
             #                      jnp.abs(v) < jnp.sqrt(self.tolerance)))
 
@@ -134,7 +136,7 @@ class PPCA_:
             #                                 jnp.where(jnp.abs(v) < jnp.sqrt(self.tolerance), False,
             #                                           jnp.where(itr < self.max_iter, False, True))))
             # return itr < 10
-            return
+
 
         self.itr, \
         self.v, \
