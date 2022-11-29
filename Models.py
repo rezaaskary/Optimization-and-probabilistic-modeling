@@ -90,9 +90,11 @@ class PPCA_:
             itr = itr + 1
             sw = self.y @ (self.y.T @ w) / (self.n - 1)
             m = w.T @ w + v * jnp.eye(self.n_comp)
-            wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.inv(m) @ w.T @ sw)
-            vnew = (self.traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / self.p
+            # wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.inv(m) @ w.T @ sw)
+            wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.solve(a=m, b=w.T) @ sw)
 
+            # vnew = (self.traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / self.p
+            vnew = (self.traces - jnp.trace(sw @ jnp.linalg.solve(a=m, b=wnew.T))) / self.p
             dw = (jnp.abs(w - wnew) / (jnp.sqrt(self.eps) + (jnp.abs(wnew)).max())).max()
             dv = jnp.abs(v - vnew) / (self.eps + v)
             delta = jnp.maximum(dw, dv)
@@ -122,6 +124,7 @@ class PPCA_:
                                              ))
         m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
         xmu = jnp.linalg.inv(m) @ self.w.T @ self.y
+        RE = jnp.linalg.solve(a=m, b=self.w.T) @ self.y
         return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
 
 
