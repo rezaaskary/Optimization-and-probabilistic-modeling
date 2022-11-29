@@ -25,10 +25,29 @@ class PPCA_:
         else:
             self.y = jnp.array(object=y.T, dtype=jnp.float64)
 
-        self.nans = jnp.isnan(y)
+        self.nans = jnp.isnan(self.y)
         self.any_missing = jnp.any(self.nans)
-        all_nans = jnp.where(jnp.all(self.nans, axis=0))
-        self.y = self.y[:, ~all_nans]
+
+        # finding features that for all samples are not measured
+        all_nans_row_wise = jnp.all(self.nans, axis=1)
+        if jnp.any(all_nans_row_wise):
+            self.y = self.y[~all_nans_row_wise, :]
+            self.nans = self.nans[~all_nans_row_wise, :]
+            print(f'---------------------------------------------------------------------------------------------\n'
+                  f'The {int(jnp.where(all_nans_row_wise)[0])} th column of the input matrix has no measurements.\n'
+                  f'The matrix is shrank to {int(jnp.sum(~all_nans_row_wise))} columns.\n'
+                  f'---------------------------------------------------------------------------------------------')
+
+        # finding measurements with all features that not measured (rows with all NaN values)
+        all_nans = jnp.all(self.nans, axis=0)
+        if jnp.any(all_nans):
+            self.y = self.y[:, ~all_nans]
+            self.nans = self.nans[:, ~all_nans]
+            print(f'---------------------------------------------------------------------------------------------\n'
+                  f'The {int(jnp.where(all_nans)[0])} th row of the input matrix has no measurements.\n'
+                  f'The matrix is shrank to {int(jnp.sum(~all_nans_row_wise))} rows.\n'
+                  f'---------------------------------------------------------------------------------------------')
+
         self.num_obs = (~self.nans).sum()
         self.p, self.n = self.shape
         self.max_rank = min([self.p, self.n])
@@ -275,5 +294,6 @@ def PPCA(y: jnp.ndarray = None, k: int = 2):
 
 if __name__ == '__main__':
     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
-    data = data.at[2, 4].set(jnp.nan)
-    PPCA(y=data, k=2)
+    data = data.at[:, 2].set(jnp.nan)
+    # PPCA(y=data,k=2)
+    PPCA_(y=data, n_comp=2,max_iter=500,tolerance=1e-6)
