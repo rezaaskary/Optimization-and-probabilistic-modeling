@@ -60,25 +60,24 @@ class PPCA_:
 
     def _complete_matrix_cal(self):
         self.mu = jnp.mean(y, axis=1)[:, jnp.newaxis]
-        self.y -= jnp.tile(self.mu, [1, n])
-        self.traces = ((self.y.reshape((-1, 1))).T @ self.y.reshape((-1, 1))) / (n - 1)
+        self.y -= jnp.tile(self.mu, [1, self.n])
+        self.traces = ((self.y.reshape((-1, 1))).T @ self.y.reshape((-1, 1))) / (self.n - 1)
         self.eps = jnp.finfo(float).eps
 
         def body_fun(value: tuple = None) -> tuple:
             itr, v, w, nloglk, delta, diff = value
             itr += 1
-            sw = y @ (y.T @ w) / (n - 1)
-            m = w.T @ w + v * jnp.eye(k)
-            wnew = sw @ jnp.linalg.inv(v * jnp.eye(k) + jnp.linalg.inv(m) @ w.T @ sw)
-            vnew = (traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / p
+            sw = self.y @ (self.y.T @ w) / (self.n - 1)
+            m = w.T @ w + v * jnp.eye(self.n_comp)
+            wnew = sw @ jnp.linalg.inv(v * jnp.eye(self.n_comp) + jnp.linalg.inv(m) @ w.T @ sw)
+            vnew = (self.traces - jnp.trace(sw @ jnp.linalg.inv(m) @ wnew.T)) / self.p
 
-            dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
-            dv = jnp.abs(v - vnew) / (eps + v)
+            dw = (jnp.abs(w - wnew) / (jnp.sqrt(self.eps) + (jnp.abs(wnew)).max())).max()
+            dv = jnp.abs(v - vnew) / (self.eps + v)
             delta = max([dw, dv])
-            cc = wnew @ wnew.T + vnew * jnp.eye(p)
-            nloglk_new = (p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) +
-                          jnp.trace(jnp.linalg.inv(cc) @ y @ y.T / (n - 1))) * n / 2
-
+            cc = wnew @ wnew.T + vnew * jnp.eye(self.p)
+            nloglk_new = (self.p * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cc)) +
+                          jnp.trace(jnp.linalg.inv(cc) @ self.y @ self.y.T / (self.n - 1))) * self.n / 2
             diff = nloglk - nloglk_new
             return itr, vnew, wnew, nloglk_new, delta, diff
 
@@ -102,7 +101,9 @@ class PPCA_:
                                              jnp.inf,
                                              jnp.inf,
                                              ))
-
+        m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
+        xmu = jnp.linalg.inv(m) @ self.w.T @ self.y
+        return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
 
 def emppca_complete(y, k, w, v, maxiter, tolfun, tolx, dispnum, iterfmtstr):
     p, n = y.shape
