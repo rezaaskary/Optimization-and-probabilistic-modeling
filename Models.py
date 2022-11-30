@@ -158,7 +158,7 @@ class PPCA_:
             self.vnew = vsum / self.num_obs
             nloglk_new = 0
 
-            for j in range(n):
+            for j in range(self.n):
                 idxobs = self.obs[:, j]
                 y_c = self.y[idxobs, j:j + 1] - self.mu[idxobs, 0:1]
 
@@ -167,17 +167,19 @@ class PPCA_:
                 nloglk_new = nloglk_new + (idxobs.sum() * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cy)) +
                                            jnp.trace(jnp.linalg.inv(cy) @ y_c @ y_c.T)) / 2
 
-            dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
+            dw = (jnp.abs(self.w - self.wnew) / (jnp.sqrt(eps) + (jnp.abs(self.wnew)).max())).max()
 
             self.w = self.wnew
             self.v = self.vnew
-
+            print(jnp.abs(self.nloglk - nloglk_new))
             if jnp.abs(self.nloglk-nloglk_new) < self.tolerance:
                 break
 
             self.nloglk = nloglk_new
-
-
+        mux = self.x.mean(axis=1)[:, jnp.newaxis]
+        self.x -= jnp.tile(mux, [1, self.n])
+        self.mu += self.w @ mux
+        return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
 
 
 
