@@ -125,6 +125,30 @@ class PPCA_:
 
     def _incomplete_matrix_cal(self):
 
+
+
+
+        while self.itr < self.max_iter:
+            for j in range(self.n):
+                ysamp = self.y[:, j:j+1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         def updating_c(j: int = None, values: tuple = None) -> tuple:
             c_tensor, x_matrix = values
             # idxobs = self.obs[:, j]
@@ -155,7 +179,6 @@ class PPCA_:
         T, R = vmap(fun=updating_c_vec, in_axes=[1, None, None, None, None], out_axes=[1, 1])(self.y, self.w,
                                                                                               self.n_comp, self.v,
                                                                                               self.mu)
-
         return T
 
 

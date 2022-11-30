@@ -1,6 +1,54 @@
 import numpy as np
-from jax import random, lax
+from jax import random, lax, vmap
 import jax.numpy as jnp
+
+data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
+data = data.at[4, 2].set(jnp.nan)
+data = data.at[5, 1].set(jnp.nan)
+data = data.at[5, 2].set(jnp.nan)
+
+ind = jnp.arange(0,50,dtype=int)
+def df(i, value):
+    # df = jnp.where(~jnp.isnan(value[i, :]))
+    df = jnp.where(value[i, :]>0)
+    val_sample = df
+
+    return
+def df2(value,row, colum, ind,miss):
+    rr = row[5*ind:5*(ind+1)-1]
+    # cc = colum[]
+    # T = value[]
+    rr
+    return rr
+
+
+f = jnp.where(~jnp.isnan(data))
+f2 =  (jnp.isnan(data)).sum(axis=1)
+miss = f2.cumsum()
+T1 = (~jnp.isnan(data)).sum(axis=1)
+rows = f[0]
+column= f[1]
+
+TT = data[rows[:5], column[rows[:5]]]
+
+
+T = vmap(fun=df2,in_axes=[None,None,None,0,0], out_axes=0)(data, rows, column, ind,miss)
+T
+#
+# lax.fori_loop(lower=0, upper=data.shape[0], body_fun=df, init_val=data)
+#
+# numpy.logical_not(numpy.isnan(x))
+
+
+
+
+
+
+
+
+
+
+
 
 # from Probablity_distributions import *
 from tensorflow_probability.substrates.jax import distributions
@@ -11,21 +59,7 @@ M = distributions.Binomial(total_count=20, probs=0.5)
 
 RR = jnp.array([0, 0.2, 1, 2, 3, 4, 5, 55])
 
-TT =RR < 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+TT = RR < 1
 
 
 def vc(x):
