@@ -131,6 +131,14 @@ class PPCA_:
         while self.itr < self.max_iter:
             for j in range(self.n):
                 ysamp = self.y[:, j:j+1]
+                idxobs = self.obs[:, j]
+                wsamp = self.w[idxobs, :]
+                cj = jnp.eye(self.n_comp) / self.v - (wsamp.T @ wsamp) @ jnp.linalg.inv(
+                    jnp.eye(self.n_comp) + (wsamp.T @ wsamp) / self.v) / (self.v ** 2)
+                self.x = self.x.at[:, j:j + 1].set(cj @ (wsamp.T @ (ysamp[idxobs] - self.mu[idxobs])))
+                self.c = self.c.at[:, :, j].set(cj)
+            self.c
+
 
 
 
