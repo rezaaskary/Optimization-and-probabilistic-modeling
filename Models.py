@@ -147,6 +147,16 @@ class PPCA_:
                 wm = self.x[:, idxobs] @ (self.y[i, idxobs] - self.mu[i, 0]).T
                 self.wnew = self.wnew.at[i, :].set(jnp.linalg.solve(m, wm))
 
+            vsum = jnp.zeros((1, 1))
+
+            for j in range(n):
+                idxobs = self.obs[:, j]
+                wnew_sample = self.wnew[idxobs, :]
+                vsum = vsum + ((y[idxobs, j] - wnew_sample @ self.x[:, j] - self.mu[idxobs, 0]) ** 2 +
+                               self.v * (jnp.diag(wnew_sample @ self.c[:, :, j] @ wnew_sample.T))).sum()
+                vsum
+
+
 
 
 
