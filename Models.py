@@ -149,12 +149,36 @@ class PPCA_:
 
             vsum = jnp.zeros((1, 1))
 
-            for j in range(n):
+            for j in range(self.n):
                 idxobs = self.obs[:, j]
                 wnew_sample = self.wnew[idxobs, :]
-                vsum = vsum + ((y[idxobs, j] - wnew_sample @ self.x[:, j] - self.mu[idxobs, 0]) ** 2 +
+                vsum = vsum + ((self.y[idxobs, j] - wnew_sample @ self.x[:, j] - self.mu[idxobs, 0]) ** 2 +
                                self.v * (jnp.diag(wnew_sample @ self.c[:, :, j] @ wnew_sample.T))).sum()
-                vsum
+
+            self.vnew = vsum / self.num_obs
+            nloglk_new = 0
+
+            for j in range(n):
+                idxobs = self.obs[:, j]
+                y_c = self.y[idxobs, j:j + 1] - self.mu[idxobs, 0:1]
+
+                wobs = self.wnew[idxobs, :]
+                cy = wobs @ wobs.T + self.vnew * jnp.eye(idxobs.sum())
+                nloglk_new = nloglk_new + (idxobs.sum() * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cy)) +
+                                           jnp.trace(jnp.linalg.inv(cy) @ y_c @ y_c.T)) / 2
+
+            dw = (jnp.abs(w - wnew) / (jnp.sqrt(eps) + (jnp.abs(wnew)).max())).max()
+
+            self.w = self.wnew
+            self.v = self.vnew
+
+            if jnp.abs(self.nloglk-nloglk_new) < self.tolerance:
+                break
+
+            self.nloglk = nloglk_new
+
+
+
 
 
 
