@@ -137,9 +137,15 @@ class PPCA_:
                     jnp.eye(self.n_comp) + (wsamp.T @ wsamp) / self.v) / (self.v ** 2)
                 self.x = self.x.at[:, j:j + 1].set(cj @ (wsamp.T @ (ysamp[idxobs] - self.mu[idxobs])))
                 self.c = self.c.at[:, :, j].set(cj)
-            self.c
 
+            self.mu = jnp.nanmean(self.y - self.w @ self.x, axis=1)[:, jnp.newaxis]
 
+            for i in range(self.p):
+                idxobs = self.obs[i, :]
+
+                m = self.x[:, idxobs] @ self.x[:, idxobs].T + self.v * jnp.sum(self.c[:, :, idxobs], axis=2)
+                wm = self.x[:, idxobs] @ (self.y[i, idxobs] - self.mu[i, 0]).T
+                self.wnew = self.wnew.at[i, :].set(jnp.linalg.solve(m, wm))
 
 
 
