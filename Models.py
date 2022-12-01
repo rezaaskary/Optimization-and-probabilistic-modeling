@@ -1,3 +1,4 @@
+import sklearn.decomposition
 from tensorflow_probability.substrates.jax import distributions
 from jax import vmap, jit, grad, random, lax, scipy, jacfwd
 import jax.numpy as jnp
@@ -179,9 +180,25 @@ class PPCA:
         return self.w, xmu, self.mu, self.v, self.itr, self.nloglk
 
 
-if __name__ == '__main__':
-    data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5))
-    # data = data.at[4, 2].set(jnp.nan)
-    D = PPCA(y=data, n_comp=2, max_iter=500, tolerance=1e-5)
-    D.run()
-    D
+# if __name__ == '__main__':
+#     data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5))
+#     # data = data.at[4, 2].set(jnp.nan)
+#     D = PPCA(y=data, n_comp=2, max_iter=500, tolerance=1e-5)
+#     D.run()
+
+
+
+import numpy as np
+data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5))
+data = np.array(data)
+
+D = sklearn.decomposition.FactorAnalysis(n_components=2).fit(data)
+D
+
+
+#
+# class FactorAnalysis:
+#     def __init__(self, x:jnp.ndarray = None, n_comp: int = None, tolerance: float = 1e-6, ):
+#
+#
+
