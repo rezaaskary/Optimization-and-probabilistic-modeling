@@ -5,7 +5,7 @@ import sys
 import warnings
 
 
-class PPCA_:
+class PPCA:
     def __init__(self, y: jnp.ndarray = None, n_comp: int = 2, max_iter: int = 500, tolerance: float = 1e-6):
         if not (min(y.shape) > 1):
             raise Exception('Too few feature variables')
@@ -121,16 +121,13 @@ class PPCA_:
                                              ))
         m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
         xmu = jnp.linalg.solve(a=m, b=self.w.T) @ self.y
-        return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
+        return self.w, xmu, self.mu, self.v, self.itr, self.nloglk
 
     def _incomplete_matrix_cal(self):
 
-
-
-
         while self.itr < self.max_iter:
             for j in range(self.n):
-                ysamp = self.y[:, j:j+1]
+                ysamp = self.y[:, j:j + 1]
                 idxobs = self.obs[:, j]
                 wsamp = self.w[idxobs, :]
                 cj = jnp.eye(self.n_comp) / self.v - (wsamp.T @ wsamp) @ jnp.linalg.inv(
@@ -172,19 +169,19 @@ class PPCA_:
             self.w = self.wnew
             self.v = self.vnew
             print(jnp.abs(self.nloglk - nloglk_new))
-            if jnp.abs(self.nloglk-nloglk_new) < self.tolerance:
+            if jnp.abs(self.nloglk - nloglk_new) < self.tolerance:
                 break
 
             self.nloglk = nloglk_new
         mux = self.x.mean(axis=1)[:, jnp.newaxis]
         self.x -= jnp.tile(mux, [1, self.n])
         self.mu += self.w @ mux
-        return self.w, xmu, self.mu, self.v, self.itr, dw, self.nloglk
-
+        return self.w, xmu, self.mu, self.v, self.itr, self.nloglk
 
 
 if __name__ == '__main__':
-    data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
-    data = data.at[4, 2].set(jnp.nan)
-    D = PPCA_(y=data, n_comp=2, max_iter=500, tolerance=1e-5)
+    data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5))
+    # data = data.at[4, 2].set(jnp.nan)
+    D = PPCA(y=data, n_comp=2, max_iter=500, tolerance=1e-5)
     D.run()
+    D

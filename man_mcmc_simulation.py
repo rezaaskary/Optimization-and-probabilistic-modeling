@@ -1,6 +1,14 @@
 import numpy as np
 from jax import random, lax, vmap
 import jax.numpy as jnp
+import sklearn
+
+
+
+
+
+
+
 
 data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(50, 5))
 data = data.at[4, 2].set(jnp.nan)
