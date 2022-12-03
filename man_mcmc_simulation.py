@@ -111,11 +111,18 @@ class FactorAnalysis_:
             psi_state_opt = psi_optimizer.init(params=parameters[0])
             f_state_opt = f_optimizer.init(params=parameters[1])
 
-            def step(parameters, f_state_opt, psi_state_opt) -> tuple:
-                likelihood_val, parameter_diff = self.grad_val(self.x_m,
-                                                               parameters[0],
-                                                               parameters[1])
+            def step(parameters, psi_state_opt, f_state_opt) -> tuple:
+                likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
+                psi_update, psi_state_opt =\
+                    psi_optimizer.update(updates=parameter_diff[0],
+                                         state=psi_state_opt,
+                                         params=parameters[0])
 
+                f_update, f_state_opt = \
+                    f_optimizer.update(updates=parameter_diff[1],
+                                         state=f_state_opt,
+                                         params=parameters[1])
+                parameters = (psi_update, f_update)
 
 
                 return
@@ -124,7 +131,7 @@ class FactorAnalysis_:
 
         ff = optax.sgd(learning_rate=0.01)
         pp = optax.sgd(learning_rate=0.01)
-
+        optax.apply_updates()
 
 
 
