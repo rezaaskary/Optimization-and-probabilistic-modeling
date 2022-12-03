@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from jax import random, vmap, lax, jacfwd, jit,value_and_grad
+from jax import random, vmap, lax, jacfwd, jit, value_and_grad
 import jax.numpy as jnp
 from sklearn.decomposition import FactorAnalysis
 import pandas as pd
-
 
 # from Probablity_distributions import *
 from tensorflow_probability.substrates.jax import distributions
@@ -20,6 +19,8 @@ EE = np.power(D, -0.5)
 EE
 
 import numpy as np
+
+
 class FactorAnalysis_:
     def __init__(self,
                  x: np.ndarray = None,
@@ -35,10 +36,6 @@ class FactorAnalysis_:
         else:
             raise Exception('Enter an integer as the value of seed for generating pseudo random numbers.')
 
-
-
-
-
         if isinstance(x, np.ndarray):
             if np.any(np.isnan(x)):
                 raise Exception(f'There are NaN values in the input matrix!')
@@ -47,7 +44,8 @@ class FactorAnalysis_:
                 self.n, self.p = self.x.shape
                 self.mean = self.x.mean(axis=0)
                 self.var = self.x.var(axis=0)
-                self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
+                # self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
+                self.x_m = (self.x - self.mean).T
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
@@ -85,9 +83,16 @@ class FactorAnalysis_:
             raise Exception('The format of maximum iterations is not supported.\n'
                             ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
         # self.psi = np.diag(np.power(np.ones((self.p,)), -0.5))
-        self.psi =random.uniform(key=random.PRNGKey(3),
-                       shape=(data.shape[0],),
-                       minval=0.01, maxval=0.99)
+        self.psi = random.uniform(key=self.key,
+                                  shape=(self.p,),
+                                  minval=0.01,
+                                  maxval=0.99)
+
+        self.f = random.uniform(key=self.key,
+                                shape=(self.p, self.n_comp),
+                                minval=0.01,
+                                maxval=0.99)
+
     def calculate(self):
 
         for i in range(self.max_iter):
@@ -115,13 +120,13 @@ class FactorAnalysis_:
 # data = data - jnp.tile(data.mean(axis=1)[:,jnp.newaxis], 5000)
 
 
-data = pd.read_csv('winequality-white.csv',delimiter=';')
+data = pd.read_csv('winequality-white.csv', delimiter=';')
 
-data = jnp.array(data.values[:,:-2])
+data = jnp.array(data.values[:, :-2])
 data = (data - data.mean(axis=0)).T
 L = data.shape[0]
-f = random.uniform(key=random.PRNGKey(3),shape=(data.shape[0], 2),minval=0.1,maxval=1)
-psi = random.uniform(key=random.PRNGKey(3),shape=(data.shape[0], ),minval=0.1,maxval=1)
+f = random.uniform(key=random.PRNGKey(3), shape=(data.shape[0], 2), minval=0.1, maxval=1)
+psi = random.uniform(key=random.PRNGKey(3), shape=(data.shape[0],), minval=0.1, maxval=1)
 
 import optax
 import functools
@@ -140,14 +145,13 @@ vfcn2 = vmap(fun=fcn2, in_axes=[1, None])
 def fcn1(data, psi, f):
     sigma = f @ f.T + jnp.diag(psi)
     sig_inv = jnp.linalg.inv(sigma)
-    out = -0.5 * vfcn2(data, sig_inv).sum() -0.5 * L * lax.log(jnp.linalg.det(2*jnp.pi*sigma))
+    out = -0.5 * vfcn2(data, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
     return out
 
 
-
-grad1 = jacfwd(fun=fcn1,argnums=1)
-grad2 = jacfwd(fun=fcn1,argnums=2)
-grad3 = jit(value_and_grad(fun=fcn1,argnums=[1,2]))
+grad1 = jacfwd(fun=fcn1, argnums=1)
+grad2 = jacfwd(fun=fcn1, argnums=2)
+grad3 = jit(value_and_grad(fun=fcn1, argnums=[1, 2]))
 
 # sd = grad1(data,jnp.ones((5,)), jnp.ones((5,2)))
 # sd2 = grad2(data,jnp.ones((5,)), jnp.ones((5,2)))
@@ -159,8 +163,7 @@ grad3 = jit(value_and_grad(fun=fcn1,argnums=[1,2]))
 
 
 # lr = jnp.arange()
-lr = jnp.linspace(start=1e-4,stop=0.1,num=2000)
-
+lr = jnp.linspace(start=1e-4, stop=0.1, num=2000)
 
 # optimizer = optax.adam(0.02)
 # Obtain the `opt_state` that contains statistics for the optimizer.
@@ -172,11 +175,9 @@ lr = jnp.linspace(start=1e-4,stop=0.1,num=2000)
 # grads = jax.grad(compute_loss)(params, xs, ys)
 
 
-
-
 for i in range(2000):
     TT = (grad3(data, psi, f))
-    psip, fp = (grad3(data,psi,f))
+    psip, fp = (grad3(data, psi, f))
     # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
     # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
 
@@ -184,9 +185,3 @@ for i in range(2000):
     psi = psi + lr[i] * psip
     lik = fcn1(data, psi, f)
     print(lik)
-
-
-
-
-
-
