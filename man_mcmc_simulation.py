@@ -28,7 +28,17 @@ class FactorAnalysis_:
                  n_comp: int = None,
                  tolerance: float = 1e-8,
                  max_iter: int = 1000,
-                 random_seed: int = 1) -> None:
+                 random_seed: int = 1,
+                 method: str = 'svd') -> None:
+
+        if isinstance(method, str) and method in ['svd', 'EM']:
+            self.method = method
+        elif not method:
+            raise Exception('Please enter the method of calculating the latent variables.')
+        else:
+            raise Exception('Please select from either svd or EM as the supported method for calculating the latent '
+                            'variables.')
+
 
         if isinstance(random_seed, int):
             self.key = random.PRNGKey(random_seed)
