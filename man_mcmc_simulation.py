@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from jax import random, vmap, lax, jacfwd, jit, value_and_grad
 import jax.numpy as jnp
+import optax
 from sklearn.decomposition import FactorAnalysis
 import pandas as pd
 
@@ -111,37 +112,36 @@ class FactorAnalysis_:
             psi_state_opt = psi_optimizer.init(params=parameters[0])
             f_state_opt = f_optimizer.init(params=parameters[1])
 
-            def step(parameters:tuple, psi_state_opt, f_state_opt) -> tuple:
+            def step(parameters: tuple, psi_state_opt, f_state_opt) -> tuple:
                 likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
-                psi_update, psi_state_opt =\
+                psi_update, psi_state_opt = \
                     psi_optimizer.update(updates=-parameter_diff[0],
                                          state=psi_state_opt,
                                          params=parameters[0])
 
                 f_update, f_state_opt = \
                     f_optimizer.update(updates=-parameter_diff[1],
-                                         state=f_state_opt,
-                                         params=parameters[1])
+                                       state=f_state_opt,
+                                       params=parameters[1])
                 parameters = (psi_update, f_update)
-                return parameters, psi_state_opt, f_state_opt
+                return parameters, psi_state_opt, f_state_opt, likelihood_val
 
             for i in range(2000):
-                parameters, psi_state_opt, f_state_opt = step(parameters=parameters,
-                     psi_state_opt=psi_state_opt,
-                     f_state_opt=f_state_opt)
+                parameters, psi_state_opt, f_state_opt, likelihood_val = step(parameters=parameters,
+                                                                              psi_state_opt=psi_state_opt,
+                                                                              f_state_opt=f_state_opt)
+                print(likelihood_val)
             return
+
         self.optimise = optimise
+
     def calculate(self):
 
-        psi_opt = optax.sgd(learning_rate=0.01)
-        f_opt = optax.sgd(learning_rate=0.01)
+        psi_opt = optax.sgd(learning_rate=0.001)
+        f_opt = optax.sgd(learning_rate=0.001)
         parameters = (self.psi, self.f)
         optimizers = (psi_opt, f_opt)
         self.optimise(parameters=parameters, optimizers=optimizers)
-
-
-
-
 
         # for i in range(self.max_iter):
         #     self.x_hat = self.psi @ self.x_m / np.sqrt(self.n)
@@ -171,10 +171,8 @@ class FactorAnalysis_:
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = jnp.array(data.values[:, :-2])
 
-T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000,random_seed=1)
+T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
 T.calculate()
-
-
 
 data = (data - data.mean(axis=0)).T
 L = data.shape[0]
