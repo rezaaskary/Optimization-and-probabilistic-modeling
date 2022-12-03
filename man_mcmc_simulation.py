@@ -46,7 +46,8 @@ class FactorAnalysis_:
                 self.mean = self.x.mean(axis=0)
                 self.var = self.x.var(axis=0)
                 # self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
-                self.x_m = (self.x - self.mean).T
+                self.x_m = ((self.x - self.mean)/self.x.std(axis=0)).T
+                self.x_m
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
@@ -137,8 +138,8 @@ class FactorAnalysis_:
 
     def calculate(self):
 
-        psi_opt = optax.sgd(learning_rate=0.001)
-        f_opt = optax.sgd(learning_rate=0.001)
+        psi_opt = optax.sgd(learning_rate=0.000001)
+        f_opt = optax.sgd(learning_rate=0.000001)
         parameters = (self.psi, self.f)
         optimizers = (psi_opt, f_opt)
         self.optimise(parameters=parameters, optimizers=optimizers)
@@ -171,14 +172,15 @@ class FactorAnalysis_:
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = jnp.array(data.values[:, :-2])
 
-T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
-T.calculate()
+# T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
+# T.calculate()
 
-data = (data - data.mean(axis=0)).T
-L = data.shape[0]
-f = random.uniform(key=random.PRNGKey(3), shape=(data.shape[0], 2), minval=0.1, maxval=1)
-psi = random.uniform(key=random.PRNGKey(3), shape=(data.shape[0],), minval=0.1, maxval=1)
-
+data2 = ((data - data.mean(axis=0))/data.std(axis=0)).T
+L = data2.shape[1]
+f = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0], 2), minval=0.1, maxval=1)
+psi = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0],), minval=0.1, maxval=1)
+# actorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
+# T.calc
 import optax
 import functools
 
@@ -193,15 +195,15 @@ vfcn2 = vmap(fun=fcn2, in_axes=[1, None])
 
 # f
 
-def fcn1(data, psi, f):
+def fcn1(data2, psi, f):
     sigma = f @ f.T + jnp.diag(psi)
     sig_inv = jnp.linalg.inv(sigma)
-    out = -0.5 * vfcn2(data, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
+    out = -0.5 * vfcn2(data2, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
     return out
 
 
-grad1 = jacfwd(fun=fcn1, argnums=1)
-grad2 = jacfwd(fun=fcn1, argnums=2)
+# grad1 = jacfwd(fun=fcn1, argnums=1)
+# grad2 = jacfwd(fun=fcn1, argnums=2)
 grad3 = jit(value_and_grad(fun=fcn1, argnums=[1, 2]))
 
 # sd = grad1(data,jnp.ones((5,)), jnp.ones((5,2)))
@@ -215,7 +217,7 @@ grad3 = jit(value_and_grad(fun=fcn1, argnums=[1, 2]))
 
 # lr = jnp.arange()
 lr = jnp.linspace(start=1e-4, stop=0.1, num=2000)
-
+lr = 1e-6
 # optimizer = optax.adam(0.02)
 # Obtain the `opt_state` that contains statistics for the optimizer.
 # params = {'f': f,'psi':psi}
@@ -225,14 +227,18 @@ lr = jnp.linspace(start=1e-4, stop=0.1, num=2000)
 # compute_loss = lambda params, x, y: optax.l2_loss(params['w'].dot(x), y)
 # grads = jax.grad(compute_loss)(params, xs, ys)
 
-
-for i in range(2000):
-    TT = (grad3(data, psi, f))
-    psip, fp = (grad3(data, psi, f))
+LL = jnp.inf
+for i in range(30000):
+    TT = (grad3(data2, psi, f))
+    # psip, fp = (grad3(data, psi, f))
     # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
     # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
-
-    f = f + lr[i] * fp
-    psi = psi + lr[i] * psip
-    lik = fcn1(data, psi, f)
-    print(lik)
+    fp = TT[1][1]
+    psip = TT[1][0]
+    f = f + lr * fp
+    psi = psi + lr * psip
+    # lik = fcn1(data, psi, f)
+    print(LL - TT[0])
+    LL = TT[0]
+f
+CC = f* jnp.tile( data.std(axis=0)[:,jnp.newaxis],reps=(1,2))
