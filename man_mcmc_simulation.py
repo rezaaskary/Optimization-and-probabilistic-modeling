@@ -102,9 +102,21 @@ class FactorAnalysis_:
             sigma = f @ f.T + jnp.diag(psi)
             invcov = jnp.linalg.inv(sigma)
             return -0.5 * gaussian_kernel_paralleled(obs, invcov).sum() - \
-                  0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
+                0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
+
+        self.grad_val = jit(value_and_grad(fun=liklihood_fcn, argnums=[1, 2]))
 
     def calculate(self):
+
+        ff = optax.sgd(learning_rate=0.01)
+        pp = optax.sgd(learning_rate=0.01)
+
+        def optimise(initial_parameters: tuple = None, optimizers: tuple = None) -> tuple:
+            return
+
+
+
+
 
         for i in range(self.max_iter):
             self.x_hat = self.psi @ self.x_m / np.sqrt(self.n)
