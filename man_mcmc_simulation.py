@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from jax import random, vmap, lax, jacfwd
+from jax import random, vmap, lax, jacfwd, jit,value_and_grad
 import jax.numpy as jnp
 from sklearn.decomposition import FactorAnalysis
 import pandas as pd
@@ -94,13 +94,26 @@ class FactorAnalysis_:
         return
 
 
-data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
-data = np.array(data.T)
+# data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
+# data = np.array(data.T)
+#
+# D = FactorAnalysis(x=data,n_comp=2,max_iter=100).calculate()
+# data = data - jnp.tile(data.mean(axis=1)[:,jnp.newaxis], 5000)
 
-D = FactorAnalysis(x=data,n_comp=2,max_iter=100).calculate()
-data = data - jnp.tile(data.mean(axis=1)[:,jnp.newaxis], 5000)
+
+data = pd.read_csv('winequality-white.csv',delimiter=';')
+
+data = jnp.array(data.values[:,:-2])
+data = (data - data.mean(axis=0)).T
+L = data.shape[0]
+f = random.uniform(key=random.PRNGKey(3),shape=(data.shape[0], 2),minval=0.1,maxval=1)
+psi = random.uniform(key=random.PRNGKey(3),shape=(data.shape[0], ),minval=0.1,maxval=1)
+
+import optax
+import functools
 
 
+# @functools.partial(vmap,in_axes=[1, None])
 def fcn2(obs, invmat):
     return obs.T @ invmat @ obs
 
@@ -108,35 +121,53 @@ def fcn2(obs, invmat):
 vfcn2 = vmap(fun=fcn2, in_axes=[1, None])
 
 
+# f
+
 def fcn1(data, psi, f):
     sigma = f @ f.T + jnp.diag(psi)
     sig_inv = jnp.linalg.inv(sigma)
-    S = (1/5000) * data@data.T
-    out = -2500*jnp.trace(sig_inv*S) + lax.log(jnp.linalg.det(2*jnp.pi*sigma))
-    # out = -0.5 * vfcn2(data,sig_inv).sum() -2500 * lax.log(jnp.linalg.det(2*jnp.pi*sigma))
-    return -out
+    out = -0.5 * vfcn2(data, sig_inv).sum() -0.5 * L * lax.log(jnp.linalg.det(2*jnp.pi*sigma))
+    return out
+
+
 
 grad1 = jacfwd(fun=fcn1,argnums=1)
 grad2 = jacfwd(fun=fcn1,argnums=2)
-grad3 = jacfwd(fun=fcn1,argnums=[1,2])
+grad3 = jit(value_and_grad(fun=fcn1,argnums=[1,2]))
 
 # sd = grad1(data,jnp.ones((5,)), jnp.ones((5,2)))
 # sd2 = grad2(data,jnp.ones((5,)), jnp.ones((5,2)))
-sd3 = grad3(data,jnp.ones((5,)), jnp.ones((5,2)))
+# sd3 = grad3(data,jnp.ones((5,)), jnp.ones((5,2)))
 # T = fcn1(data,jnp.ones((5,)), jnp.ones((5,2)))
 
-f = 0.1*jnp.ones((5,2))
-psi = 0.01*jnp.ones((5,))
+# f = 0.1*jnp.ones((5,2))
+# psi = 0.01*jnp.ones((5,))
 
 
-for i in range(1000):
-    d = i%10
-    psip, fp =grad3(data,psi,f)
+# lr = jnp.arange()
+lr = jnp.linspace(start=1e-4,stop=0.1,num=2000)
+
+
+# optimizer = optax.adam(0.02)
+# Obtain the `opt_state` that contains statistics for the optimizer.
+# params = {'f': f,'psi':psi}
+# opt_state = optimizer.init(params)
+
+#
+# compute_loss = lambda params, x, y: optax.l2_loss(params['w'].dot(x), y)
+# grads = jax.grad(compute_loss)(params, xs, ys)
+
+
+
+
+for i in range(2000):
+    TT = (grad3(data, psi, f))
+    psip, fp = (grad3(data,psi,f))
     # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
     # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
 
-    f = f - 0.5 * fp
-    psi = psi - 0.5*psip
+    f = f + lr[i] * fp
+    psi = psi + lr[i] * psip
     lik = fcn1(data, psi, f)
     print(lik)
 
