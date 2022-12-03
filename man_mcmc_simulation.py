@@ -111,49 +111,52 @@ class FactorAnalysis_:
             psi_state_opt = psi_optimizer.init(params=parameters[0])
             f_state_opt = f_optimizer.init(params=parameters[1])
 
-            def step(parameters, psi_state_opt, f_state_opt) -> tuple:
+            def step(parameters:tuple, psi_state_opt:, f_state_opt) -> tuple:
                 likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
                 psi_update, psi_state_opt =\
-                    psi_optimizer.update(updates=parameter_diff[0],
+                    psi_optimizer.update(updates=-parameter_diff[0],
                                          state=psi_state_opt,
                                          params=parameters[0])
 
                 f_update, f_state_opt = \
-                    f_optimizer.update(updates=parameter_diff[1],
+                    f_optimizer.update(updates=-parameter_diff[1],
                                          state=f_state_opt,
                                          params=parameters[1])
                 parameters = (psi_update, f_update)
+                return parameters, psi_state_opt, f_state_opt
 
-
-                return
+            for i in range(2000):
+                parameters, psi_state_opt, f_state_opt = step(parameters=parameters,
+                     psi_state_opt=psi_state_opt,
+                     f_state_opt=f_state_opt)
             return
+        self.optimise = optimise
     def calculate(self):
 
-        ff = optax.sgd(learning_rate=0.01)
-        pp = optax.sgd(learning_rate=0.01)
-        optax.apply_updates()
+        psi_opt = optax.sgd(learning_rate=0.01)
+        f_opt = optax.sgd(learning_rate=0.01)
+        self.optimise =
 
 
 
 
 
-
-        for i in range(self.max_iter):
-            self.x_hat = self.psi @ self.x_m / np.sqrt(self.n)
-            u, s, wh = np.linalg.svd(self.x_hat,
-                                     full_matrices=False,
-                                     compute_uv=True,
-                                     hermitian=False)
-            a = s ** 2
-            ah = a[:self.n_comp]
-            uh = u[:, :self.n_comp]
-            f = np.power(self.psi, 0.5) @ uh @ np.power(np.maximum(ah - 1.0, np.finfo(float).eps), 0.5)[:, np.newaxis]
-            liklihood = -0.5 * self.n * (np.log(s[:self.n_comp]).sum() +
-                                         self.n_comp + (s[self.n_comp:]).sum() + np.log(
-                        np.diag(self.psi).prod() * 2 * np.pi))
-            print(liklihood)
-            self.psi = np.diag(np.maximum(self.var - f[:, 0] ** 2, np.finfo(float).eps))
-        return
+        # for i in range(self.max_iter):
+        #     self.x_hat = self.psi @ self.x_m / np.sqrt(self.n)
+        #     u, s, wh = np.linalg.svd(self.x_hat,
+        #                              full_matrices=False,
+        #                              compute_uv=True,
+        #                              hermitian=False)
+        #     a = s ** 2
+        #     ah = a[:self.n_comp]
+        #     uh = u[:, :self.n_comp]
+        #     f = np.power(self.psi, 0.5) @ uh @ np.power(np.maximum(ah - 1.0, np.finfo(float).eps), 0.5)[:, np.newaxis]
+        #     liklihood = -0.5 * self.n * (np.log(s[:self.n_comp]).sum() +
+        #                                  self.n_comp + (s[self.n_comp:]).sum() + np.log(
+        #                 np.diag(self.psi).prod() * 2 * np.pi))
+        #     print(liklihood)
+        #     self.psi = np.diag(np.maximum(self.var - f[:, 0] ** 2, np.finfo(float).eps))
+        # return
 
 
 # data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
