@@ -39,7 +39,6 @@ class FactorAnalysis_:
             raise Exception('Please select from either svd or EM as the supported method for calculating the latent '
                             'variables.')
 
-
         if isinstance(random_seed, int):
             self.key = random.PRNGKey(random_seed)
         elif not random_seed:
@@ -56,8 +55,6 @@ class FactorAnalysis_:
                 self.mean = self.x.mean(axis=0)
                 self.var = self.x.var(axis=0)
                 self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
-                # self.x_m = ((self.x - self.mean)/self.x.std(axis=0)).T
-                self.x_m
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
@@ -94,7 +91,7 @@ class FactorAnalysis_:
         else:
             raise Exception('The format of maximum iterations is not supported.\n'
                             ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
-
+        self.eps = jnp.finfo(float).eps
         self.psi = random.uniform(key=self.key,
                                   shape=(self.p,),
                                   minval=1,
@@ -148,26 +145,40 @@ class FactorAnalysis_:
 
     def calculate(self):
 
-        # psi_opt = optax.sgd(learning_rate=0.000001)
-        # f_opt = optax.sgd(learning_rate=0.000001)
-        # parameters = (self.psi, self.f)
-        # optimizers = (psi_opt, f_opt)
-        # self.optimise(parameters=parameters, optimizers=optimizers)
+        def _em_factor_analysis(itr: int = None, values: tuple = None) -> tuple:
+            psi, f, old_likelihood, likelihood_error = values
+            x_hat = jnp.diag(psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
+            u_svd, s_svd, _ = jnp.linalg.svd(x_hat, full_matrices=False)
+            a_svd = s_svd ** 2
+            f = jnp.diag(psi ** 0.5) @ u_svd[:, :self.n_comp] @ jnp.diag(
+                np.maximum(a_svd[:self.n_comp] - 1.0, self.eps) ** 0.5)
+            likelihood = -0.5 * self.n * (jnp.log(a[:self.n_comp]).sum() +
+                                          self.n_comp + (a_svd[self.n_comp:]).sum() + np.log(
+                        jnp.linalg.det(jnp.diag(psi * 2 * jnp.pi))))
+            psi = self.var - jnp.diag(f @ f.T)
+            likelihood_error = likelihood - old_likelihood
+            return psi, f, likelihood, likelihood_error
 
-        for i in range(self.max_iter):
-            self.x_hat = jnp.diag(self.psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
-            u, s, wh = jnp.linalg.svd(self.x_hat,
-                                      full_matrices=False)
-            a = s ** 2
-            ah = a[:self.n_comp]
-            uh = u[:, :self.n_comp]
-            f = jnp.diag(self.psi ** 0.5) @u[:, :self.n_comp] @ jnp.diag(np.maximum(ah - 1.0, np.finfo(float).eps) ** 0.5)
-            liklihood = -0.5 * self.n * (jnp.log(a[:self.n_comp]).sum() +
-                                         self.n_comp + (a[self.n_comp:]).sum() + np.log(
-                        jnp.linalg.det(jnp.diag( self.psi * 2 * jnp.pi)) ))
-            print(liklihood)
-            # self.psi = np.diag(np.maximum(self.var - f[:, 0] ** 2, np.finfo(float).eps))
-            self.psi = self.var - jnp.diag(f@f.T)
+        psi = self.psi
+        f = self.f
+        likelihood = -jnp.inf
+        likelihood_error = - jnp.inf
+        for itr in range(self.max_iter):
+            psi, f, likelihood, likelihood_error = _em_factor_analysis(itr=itr,
+                                                                       values=(psi, f, likelihood, likelihood_error))
+
+        # for i in range(self.max_iter):
+        #     self.x_hat = jnp.diag(self.psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
+        #     u, s, wh = jnp.linalg.svd(self.x_hat,
+        #                               full_matrices=False)
+        #     a = s ** 2
+        #     f = jnp.diag(self.psi ** 0.5) @ u[:, :self.n_comp] @ jnp.diag(
+        #         np.maximum(a[:self.n_comp] - 1.0, np.finfo(float).eps) ** 0.5)
+        #     liklihood = -0.5 * self.n * (jnp.log(a[:self.n_comp]).sum() +
+        #                                  self.n_comp + (a[self.n_comp:]).sum() + np.log(
+        #                 jnp.linalg.det(jnp.diag(self.psi * 2 * jnp.pi))))
+        #     print(liklihood)
+        #     self.psi = self.var - jnp.diag(f @ f.T)
         return
 
 
