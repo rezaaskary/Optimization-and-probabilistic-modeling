@@ -106,17 +106,21 @@ class FactorAnalysis_:
 
         self.grad_val = jit(value_and_grad(fun=liklihood_fcn, argnums=[1, 2]))
 
+        def optimise(parameters: tuple = None, optimizers: tuple = None) -> tuple:
+            f_optimizer, psi_optimizer = optimizers
+            f_state_opt = f_optimizer.init(params=parameters[0])
+            psi_state_opt = psi_optimizer.init(params=parameters[1])
+
+            def step(parameters, f_state_opt, psi_state_opt)-> tuple:
+
+
+                return
     def calculate(self):
 
         ff = optax.sgd(learning_rate=0.01)
         pp = optax.sgd(learning_rate=0.01)
 
-        def optimise(initial_parameters: tuple = None, optimizers: tuple = None) -> tuple:
-            f_optimizer, psi_optimizer = optimizers
-            f_state_opt = f_optimizer.init(params=initial_parameters[0])
-            psi_value = psi_optimizer.init(params=initial_parameters[1])
 
-            return
 
 
 
