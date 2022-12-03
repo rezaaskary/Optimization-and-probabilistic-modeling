@@ -27,6 +27,9 @@ class FactorAnalysis_:
                  tolerance: float = 1e-8,
                  max_iter: int = 1000,
                  random_seed: int = 1, ) -> None:
+
+
+
         if isinstance(x, np.ndarray):
             if np.any(np.isnan(x)):
                 raise Exception(f'There are NaN values in the input matrix!')
@@ -72,8 +75,10 @@ class FactorAnalysis_:
         else:
             raise Exception('The format of maximum iterations is not supported.\n'
                             ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
-        self.psi = np.diag(np.power(np.ones((self.p,)), -0.5))
-
+        # self.psi = np.diag(np.power(np.ones((self.p,)), -0.5))
+        self.psi =random.uniform(key=random.PRNGKey(3),
+                       shape=(data.shape[0],),
+                       minval=0.01, maxval=0.99)
     def calculate(self):
 
         for i in range(self.max_iter):
