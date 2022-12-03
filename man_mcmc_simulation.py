@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from jax import random, vmap, lax, jacfwd
 import jax.numpy as jnp
+from sklearn.decomposition import FactorAnalysis
+import pandas as pd
+
 
 # from Probablity_distributions import *
 from tensorflow_probability.substrates.jax import distributions
@@ -17,7 +20,7 @@ EE = np.power(D, -0.5)
 EE
 
 import numpy as np
-class FactorAnalysis:
+class FactorAnalysis_:
     def __init__(self,
                  x: np.ndarray = None,
                  n_comp: int = None,
