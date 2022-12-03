@@ -100,9 +100,9 @@ class FactorAnalysis_:
 
         def liklihood_fcn(obs: jnp.ndarray = None, psi: jnp.ndarray = None, f: jnp.ndarray = None) -> jnp.ndarray:
             sigma = f @ f.T + jnp.diag(psi)
-            sig_inv = jnp.linalg.inv(sigma)
-            out = -0.5 * gaussian_kernel_paralleled(data, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
-            return out
+            invcov = jnp.linalg.inv(sigma)
+            return -0.5 * gaussian_kernel_paralleled(obs, invcov).sum() - \
+                  0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
 
     def calculate(self):
 
