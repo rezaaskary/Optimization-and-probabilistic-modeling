@@ -135,7 +135,9 @@ class FactorAnalysis_:
 
         psi_opt = optax.sgd(learning_rate=0.01)
         f_opt = optax.sgd(learning_rate=0.01)
-        self.optimise =
+        parameters = (self.psi, self.f)
+        optimizers = (psi_opt, f_opt)
+        self.optimise(parameters=parameters, optimizers=optimizers)
 
 
 
