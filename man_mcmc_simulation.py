@@ -23,7 +23,7 @@ import numpy as np
 
 class FactorAnalysis_:
     def __init__(self,
-                 x: np.ndarray = None,
+                 x: jnp.ndarray = None,
                  n_comp: int = None,
                  tolerance: float = 1e-8,
                  max_iter: int = 1000,
@@ -36,8 +36,8 @@ class FactorAnalysis_:
         else:
             raise Exception('Enter an integer as the value of seed for generating pseudo random numbers.')
 
-        if isinstance(x, np.ndarray):
-            if np.any(np.isnan(x)):
+        if isinstance(x, jnp.ndarray):
+            if jnp.any(jnp.isnan(x)):
                 raise Exception(f'There are NaN values in the input matrix!')
             else:
                 self.x = x
@@ -111,7 +111,7 @@ class FactorAnalysis_:
             psi_state_opt = psi_optimizer.init(params=parameters[0])
             f_state_opt = f_optimizer.init(params=parameters[1])
 
-            def step(parameters:tuple, psi_state_opt:, f_state_opt) -> tuple:
+            def step(parameters:tuple, psi_state_opt, f_state_opt) -> tuple:
                 likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
                 psi_update, psi_state_opt =\
                     psi_optimizer.update(updates=-parameter_diff[0],
@@ -169,8 +169,13 @@ class FactorAnalysis_:
 
 
 data = pd.read_csv('winequality-white.csv', delimiter=';')
-
 data = jnp.array(data.values[:, :-2])
+
+T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000,random_seed=1)
+T.calculate()
+
+
+
 data = (data - data.mean(axis=0)).T
 L = data.shape[0]
 f = random.uniform(key=random.PRNGKey(3), shape=(data.shape[0], 2), minval=0.1, maxval=1)
