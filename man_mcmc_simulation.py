@@ -45,8 +45,8 @@ class FactorAnalysis_:
                 self.n, self.p = self.x.shape
                 self.mean = self.x.mean(axis=0)
                 self.var = self.x.var(axis=0)
-                # self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
-                self.x_m = ((self.x - self.mean)/self.x.std(axis=0)).T
+                self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
+                # self.x_m = ((self.x - self.mean)/self.x.std(axis=0)).T
                 self.x_m
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
@@ -87,79 +87,78 @@ class FactorAnalysis_:
 
         self.psi = random.uniform(key=self.key,
                                   shape=(self.p,),
-                                  minval=0.01,
-                                  maxval=0.99)
+                                  minval=1,
+                                  maxval=1)
 
         self.f = random.uniform(key=self.key,
                                 shape=(self.p, self.n_comp),
-                                minval=0.01,
-                                maxval=0.99)
+                                minval=1,
+                                maxval=1)
 
-        def gaussian_kernel(obs: jnp.ndarray = None, invcov: jnp.ndarray = None) -> jnp.ndarray:
-            return obs.T @ invcov @ obs
-
-        gaussian_kernel_paralleled = vmap(fun=gaussian_kernel, in_axes=[1, None])
-
-        def liklihood_fcn(obs: jnp.ndarray = None, psi: jnp.ndarray = None, f: jnp.ndarray = None) -> jnp.ndarray:
-            sigma = f @ f.T + jnp.diag(psi)
-            invcov = jnp.linalg.inv(sigma)
-            return -0.5 * gaussian_kernel_paralleled(obs, invcov).sum() - \
-                0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
-
-        self.grad_val = jit(value_and_grad(fun=liklihood_fcn, argnums=[1, 2]))
-
-        def optimise(parameters: tuple = None, optimizers: tuple = None) -> tuple:
-            psi_optimizer, f_optimizer = optimizers
-            psi_state_opt = psi_optimizer.init(params=parameters[0])
-            f_state_opt = f_optimizer.init(params=parameters[1])
-
-            def step(parameters: tuple, psi_state_opt, f_state_opt) -> tuple:
-                likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
-                psi_update, psi_state_opt = \
-                    psi_optimizer.update(updates=-parameter_diff[0],
-                                         state=psi_state_opt,
-                                         params=parameters[0])
-
-                f_update, f_state_opt = \
-                    f_optimizer.update(updates=-parameter_diff[1],
-                                       state=f_state_opt,
-                                       params=parameters[1])
-                parameters = (psi_update, f_update)
-                return parameters, psi_state_opt, f_state_opt, likelihood_val
-
-            for i in range(2000):
-                parameters, psi_state_opt, f_state_opt, likelihood_val = step(parameters=parameters,
-                                                                              psi_state_opt=psi_state_opt,
-                                                                              f_state_opt=f_state_opt)
-                print(likelihood_val)
-            return
-
-        self.optimise = optimise
+        # def gaussian_kernel(obs: jnp.ndarray = None, invcov: jnp.ndarray = None) -> jnp.ndarray:
+        #     return obs.T @ invcov @ obs
+        #
+        # gaussian_kernel_paralleled = vmap(fun=gaussian_kernel, in_axes=[1, None])
+        #
+        # def liklihood_fcn(obs: jnp.ndarray = None, psi: jnp.ndarray = None, f: jnp.ndarray = None) -> jnp.ndarray:
+        #     sigma = f @ f.T + jnp.diag(psi)
+        #     invcov = jnp.linalg.inv(sigma)
+        #     return -0.5 * gaussian_kernel_paralleled(obs, invcov).sum() - \
+        #         0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
+        #
+        # self.grad_val = jit(value_and_grad(fun=liklihood_fcn, argnums=[1, 2]))
+        #
+        # def optimise(parameters: tuple = None, optimizers: tuple = None) -> tuple:
+        #     psi_optimizer, f_optimizer = optimizers
+        #     psi_state_opt = psi_optimizer.init(params=parameters[0])
+        #     f_state_opt = f_optimizer.init(params=parameters[1])
+        #
+        #     def step(parameters: tuple, psi_state_opt, f_state_opt) -> tuple:
+        #         likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
+        #         psi_update, psi_state_opt = \
+        #             psi_optimizer.update(updates=-parameter_diff[0],
+        #                                  state=psi_state_opt,
+        #                                  params=parameters[0])
+        #
+        #         f_update, f_state_opt = \
+        #             f_optimizer.update(updates=-parameter_diff[1],
+        #                                state=f_state_opt,
+        #                                params=parameters[1])
+        #         parameters = (psi_update, f_update)
+        #         return parameters, psi_state_opt, f_state_opt, likelihood_val
+        #
+        #     for i in range(2000):
+        #         parameters, psi_state_opt, f_state_opt, likelihood_val = step(parameters=parameters,
+        #                                                                       psi_state_opt=psi_state_opt,
+        #                                                                       f_state_opt=f_state_opt)
+        #         print(likelihood_val)
+        #     return
+        #
+        # self.optimise = optimise
 
     def calculate(self):
 
-        psi_opt = optax.sgd(learning_rate=0.000001)
-        f_opt = optax.sgd(learning_rate=0.000001)
-        parameters = (self.psi, self.f)
-        optimizers = (psi_opt, f_opt)
-        self.optimise(parameters=parameters, optimizers=optimizers)
+        # psi_opt = optax.sgd(learning_rate=0.000001)
+        # f_opt = optax.sgd(learning_rate=0.000001)
+        # parameters = (self.psi, self.f)
+        # optimizers = (psi_opt, f_opt)
+        # self.optimise(parameters=parameters, optimizers=optimizers)
 
-        # for i in range(self.max_iter):
-        #     self.x_hat = self.psi @ self.x_m / np.sqrt(self.n)
-        #     u, s, wh = np.linalg.svd(self.x_hat,
-        #                              full_matrices=False,
-        #                              compute_uv=True,
-        #                              hermitian=False)
-        #     a = s ** 2
-        #     ah = a[:self.n_comp]
-        #     uh = u[:, :self.n_comp]
-        #     f = np.power(self.psi, 0.5) @ uh @ np.power(np.maximum(ah - 1.0, np.finfo(float).eps), 0.5)[:, np.newaxis]
-        #     liklihood = -0.5 * self.n * (np.log(s[:self.n_comp]).sum() +
-        #                                  self.n_comp + (s[self.n_comp:]).sum() + np.log(
-        #                 np.diag(self.psi).prod() * 2 * np.pi))
-        #     print(liklihood)
-        #     self.psi = np.diag(np.maximum(self.var - f[:, 0] ** 2, np.finfo(float).eps))
-        # return
+        for i in range(self.max_iter):
+            self.x_hat = jnp.diag(self.psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
+            u, s, wh = jnp.linalg.svd(self.x_hat,
+                                      full_matrices=False)
+            a = s ** 2
+            ah = a[:self.n_comp]
+            uh = u[:, :self.n_comp]
+            f = jnp.diag(self.psi ** 0.5) @u[:, :self.n_comp] @ jnp.diag(np.maximum(ah - 1.0, np.finfo(float).eps) ** 0.5)
+            liklihood = -0.5 * self.n * (jnp.log(a[:self.n_comp]).sum() +
+                                         self.n_comp + (a[self.n_comp:]).sum() + np.log(
+                        jnp.linalg.det(jnp.diag( self.psi * 2 * jnp.pi)) ))
+            print(liklihood)
+            # self.psi = np.diag(np.maximum(self.var - f[:, 0] ** 2, np.finfo(float).eps))
+            self.psi = self.var - jnp.diag(f@f.T)
+        return
 
 
 # data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
@@ -172,10 +171,10 @@ class FactorAnalysis_:
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = jnp.array(data.values[:, :-2])
 
-# T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
-# T.calculate()
+T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=2000, random_seed=1)
+T.calculate()
 
-data2 = ((data - data.mean(axis=0))/data.std(axis=0)).T
+data2 = ((data - data.mean(axis=0)) / data.std(axis=0)).T
 L = data2.shape[1]
 f = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0], 2), minval=0.1, maxval=1)
 psi = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0],), minval=0.1, maxval=1)
@@ -216,7 +215,7 @@ grad3 = jit(value_and_grad(fun=fcn1, argnums=[1, 2]))
 
 
 # lr = jnp.arange()
-lr = jnp.linspace(start=1e-4, stop=0.1, num=2000)
+lr = jnp.linspace(start=1e-4, stop=0.1, num=5000)
 lr = 1e-6
 # optimizer = optax.adam(0.02)
 # Obtain the `opt_state` that contains statistics for the optimizer.
@@ -227,18 +226,18 @@ lr = 1e-6
 # compute_loss = lambda params, x, y: optax.l2_loss(params['w'].dot(x), y)
 # grads = jax.grad(compute_loss)(params, xs, ys)
 
-LL = jnp.inf
-for i in range(30000):
-    TT = (grad3(data2, psi, f))
-    # psip, fp = (grad3(data, psi, f))
-    # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
-    # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
-    fp = TT[1][1]
-    psip = TT[1][0]
-    f = f + lr * fp
-    psi = psi + lr * psip
-    # lik = fcn1(data, psi, f)
-    print(LL - TT[0])
-    LL = TT[0]
-f
-CC = f* jnp.tile( data.std(axis=0)[:,jnp.newaxis],reps=(1,2))
+# LL = jnp.inf
+# for i in range(30000):
+#     TT = (grad3(data2, psi, f))
+#     # psip, fp = (grad3(data, psi, f))
+#     # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
+#     # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
+#     fp = TT[1][1]
+#     psip = TT[1][0]
+#     f = f + lr * fp
+#     psi = psi + lr * psip
+#     # lik = fcn1(data, psi, f)
+#     print(LL - TT[0])
+#     LL = TT[0]
+# f
+# CC = f* jnp.tile( data.std(axis=0)[:,jnp.newaxis],reps=(1,2))
