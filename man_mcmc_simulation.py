@@ -82,7 +82,7 @@ class FactorAnalysis_:
         else:
             raise Exception('The format of maximum iterations is not supported.\n'
                             ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
-        # self.psi = np.diag(np.power(np.ones((self.p,)), -0.5))
+
         self.psi = random.uniform(key=self.key,
                                   shape=(self.p,),
                                   minval=0.01,
@@ -92,6 +92,17 @@ class FactorAnalysis_:
                                 shape=(self.p, self.n_comp),
                                 minval=0.01,
                                 maxval=0.99)
+
+        def gaussian_kernel(obs: jnp.ndarray = None, invcov: jnp.ndarray = None) -> jnp.ndarray:
+            return obs.T @ invcov @ obs
+
+        gaussian_kernel_paralleled = vmap(fun=gaussian_kernel, in_axes=[1, None])
+
+        def liklihood_fcn(obs: jnp.ndarray = None, psi: jnp.ndarray = None, f: jnp.ndarray = None) -> jnp.ndarray:
+            sigma = f @ f.T + jnp.diag(psi)
+            sig_inv = jnp.linalg.inv(sigma)
+            out = -0.5 * gaussian_kernel_paralleled(data, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
+            return out
 
     def calculate(self):
 
