@@ -60,7 +60,7 @@ class PPCA:
         if self.n_comp > self.max_rank - 1:
             self.n_comp = max([1, self.max_rank - 1])
             print(
-                f'Warning: Maximum possible rank of the data is {elf.max_rank}. Computation continues with the number\n'
+                f'Warning: Maximum possible rank of the data is {self.max_rank}. Computation continues with the number\n'
                 f'of principal components k set to {self.n_comp}')
 
         self.w = random.normal(key=random.PRNGKey(1), shape=(self.p, self.n_comp), dtype=jnp.float64)
@@ -74,6 +74,7 @@ class PPCA:
         self.c = jnp.zeros(shape=(self.n_comp, self.n_comp, self.n), dtype=jnp.float64)
         self.nloglk = jnp.array(jnp.inf, dtype=jnp.float64)
         self.itr = 0.0
+        self.eps = jnp.finfo(float).eps
         self.delta = jnp.array(jnp.inf, dtype=jnp.float64).reshape((1, 1))
         self.diff = jnp.array(jnp.inf, dtype=jnp.float64)
         if self.any_missing:
@@ -108,18 +109,18 @@ class PPCA:
             return (arg4 > self.tolerance) | (itr < self.max_iter)
 
         self.itr, \
-        self.v, \
-        self.w, \
-        self.nloglk, \
-        self.delta, \
-        self.diff = lax.while_loop(cond_fun=cond_fun, body_fun=body_fun,
-                                   init_val=(self.itr,
-                                             self.v,
-                                             self.w,
-                                             self.nloglk,
-                                             self.delta,
-                                             self.diff,
-                                             ))
+            self.v, \
+            self.w, \
+            self.nloglk, \
+            self.delta, \
+            self.diff = lax.while_loop(cond_fun=cond_fun, body_fun=body_fun,
+                                       init_val=(self.itr,
+                                                 self.v,
+                                                 self.w,
+                                                 self.nloglk,
+                                                 self.delta,
+                                                 self.diff,
+                                                 ))
         m = self.w.T @ self.w + self.v * jnp.eye(self.n_comp)
         xmu = jnp.linalg.solve(a=m, b=self.w.T) @ self.y
         return self.w, xmu, self.mu, self.v, self.itr, self.nloglk
@@ -165,7 +166,7 @@ class PPCA:
                 nloglk_new = nloglk_new + (idxobs.sum() * jnp.log(2 * jnp.pi) + jnp.log(jnp.linalg.det(cy)) +
                                            jnp.trace(jnp.linalg.inv(cy) @ y_c @ y_c.T)) / 2
 
-            dw = (jnp.abs(self.w - self.wnew) / (jnp.sqrt(eps) + (jnp.abs(self.wnew)).max())).max()
+            dw = (jnp.abs(self.w - self.wnew) / (jnp.sqrt(self.eps) + (jnp.abs(self.wnew)).max())).max()
 
             self.w = self.wnew
             self.v = self.vnew
@@ -177,7 +178,7 @@ class PPCA:
         mux = self.x.mean(axis=1)[:, jnp.newaxis]
         self.x -= jnp.tile(mux, [1, self.n])
         self.mu += self.w @ mux
-        return self.w, xmu, self.mu, self.v, self.itr, self.nloglk
+        return self.w, mux, self.mu, self.v, self.itr, self.nloglk
 
 
 # if __name__ == '__main__':
@@ -187,8 +188,7 @@ class PPCA:
 #     D.run()
 
 
-
-class FactorAnalysis_:
+class FactorAnalysis:
     def __init__(self,
                  x: jnp.ndarray = None,
                  n_comp: int = None,
@@ -196,7 +196,15 @@ class FactorAnalysis_:
                  max_iter: int = 1000,
                  random_seed: int = 1,
                  method: str = 'EM') -> None:
+        """
 
+        :param x:
+        :param n_comp:
+        :param tolerance:
+        :param max_iter:
+        :param random_seed:
+        :param method:
+        """
         if isinstance(method, str) and method in ['sgd', 'EM']:
             self.method = method
         elif not method:
@@ -220,7 +228,7 @@ class FactorAnalysis_:
                 self.n, self.p = self.x.shape
                 self.mean = self.x.mean(axis=0)
                 self.var = self.x.var(axis=0)
-                self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
+                self.x_m = (self.x - jnp.tile(self.mean, reps=(self.n, 1))).T
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
@@ -299,18 +307,17 @@ class FactorAnalysis_:
             self.psi, self.f, \
             self.log_likelihood, \
             self.log_likelihood_error = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
-                                                   init_val=(self.itr,
-                                                             self.psi,
-                                                             self.f,
-                                                             jnp.array(-jnp.inf, dtype=jnp.float32),
-                                                             jnp.array(-jnp.inf, dtype=jnp.float32)))
-        self.covariance = self.f@self.f.T + jnp.diag(self.psi)
+                                                       init_val=(self.itr,
+                                                                 self.psi,
+                                                                 self.f,
+                                                                 jnp.array(-jnp.inf, dtype=jnp.float32),
+                                                                 jnp.array(-jnp.inf, dtype=jnp.float32)))
+        self.covariance = self.f @ self.f.T + jnp.diag(self.psi)
 
         return self
 
     def fit_transform(self):
         self.fit()
-        coef = self.f/self.psi[:, jnp.newaxis]
-        self.latent_variables = jnp.linalg.inv(coef.T@self.f + jnp.eye(self.n_comp))@coef.T@self.x_m
+        coef = self.f / self.psi[:, jnp.newaxis]
+        self.latent_variables = jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
         return self
-
