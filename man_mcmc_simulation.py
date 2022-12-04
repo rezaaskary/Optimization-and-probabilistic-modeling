@@ -109,7 +109,7 @@ class FactorAnalysis_:
             return (error > self.tolerance) | (itr > self.max_iter)
 
         def _em_factor_analysis(values: tuple = None) -> tuple:
-            itr, psi, f, old_likelihood, likelihood_error = values
+            itr, psi, f, old_log_likelihood, log_likelihood_error = values
             x_hat = jnp.diag(psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
             u_svd, s_svd, _ = jnp.linalg.svd(x_hat, full_matrices=False)
             a_svd = s_svd ** 2
@@ -119,32 +119,37 @@ class FactorAnalysis_:
                                           self.n_comp + (a_svd[self.n_comp:]).sum() + jnp.log(
                         jnp.linalg.det(jnp.diag(psi * 2 * jnp.pi))))
             psi = self.var - jnp.diag(f @ f.T)
-            likelihood_error = likelihood - old_likelihood
+            log_likelihood_error = likelihood - old_log_likelihood
             itr += 1
-            return itr, psi, f, likelihood, likelihood_error
+            return itr, psi, f, likelihood, log_likelihood_error
 
         if self.method == 'EM':
             self.body_fun = _em_factor_analysis
             self.cond_fun = _cond_fun
 
-    def calculate(self):
+    def fit(self):
 
         self.itr, \
             self.psi, self.f, \
-            self.likelihood, \
-            self.likelihood_error = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
+            self.log_likelihood, \
+            self.log_likelihood_error = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
                                                    init_val=(self.itr,
                                                              self.psi,
                                                              self.f,
                                                              jnp.array(-jnp.inf, dtype=jnp.float32),
                                                              jnp.array(-jnp.inf, dtype=jnp.float32)))
+        self.covariance = self.f@self.f.T + jnp.diag(self.psi)
 
         return self
 
     def fit_transform(self):
-        self.calculate()
-        latent_variables = jnp.linalg.inv(self.f.T@self.f)@self.f.T@self.x_m
-        return latent_variables
+        self.fit()
+        coef = self.f/self.psi[:, jnp.newaxis]
+        self.latent_variables = jnp.linalg.inv(coef.T@self.f + jnp.eye(self.n_comp))@coef.T@self.x_m
+        return self
+
+
+
 
 # data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
 # data = np.array(data.T)
@@ -157,7 +162,7 @@ data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = jnp.array(data.values[:, :-2])
 
 T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-8, max_iter=500, random_seed=1)
-T.calculate()
+T.fit_transform()
 
 data2 = ((data - data.mean(axis=0)) / data.std(axis=0)).T
 L = data2.shape[1]
