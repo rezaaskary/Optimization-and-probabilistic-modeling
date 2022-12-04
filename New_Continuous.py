@@ -455,7 +455,8 @@ class Normal(ContinuousDistributions):
     def __init__(self, loc: jnp.ndarray = None, scale: jnp.ndarray = None,
                  var: jnp.ndarray = None,
                  activate_jit: bool = False, random_seed: int = 1,
-                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
+                 n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1,
+                 validate_input_range: bool = True) -> None:
         """
         Continuous Normal distribution
         :param  : A ndarray or float indicating ----- of the distribution
@@ -1621,19 +1622,19 @@ x = random.uniform(key=random.PRNGKey(7), minval=-10, maxval=20, shape=(1, 1000)
 # KK = Kumaraswamy(alpha=jnp.array([4, 7]), beta=jnp.array([6, 9]), validate_input_range=True)
 # KK = distributions.Kumaraswamy(concentration0=jnp.array([4,3]),concentration1=jnp.array([6,3]))
 
-E1 = KK.pdf(x)
-E2 = KK.log_pdf(x)
-E4 = KK.cdf(x)
-E5 = KK.log_cdf(x)
-E6 = KK.diff_pdf(x)
-E3 = KK.diff_log_pdf(x)
-
-E8 = KK.diff_cdf(x)
-E9 = KK.diff_log_cdf(x)
-E11 = KK.statistics
-E12 = KK.sample(100)
-E10 = KK.maximum_liklihood_estimation(x=x)
-E11
+# E1 = KK.pdf(x)
+# E2 = KK.log_pdf(x)
+# E4 = KK.cdf(x)
+# E5 = KK.log_cdf(x)
+# E6 = KK.diff_pdf(x)
+# E3 = KK.diff_log_pdf(x)
+#
+# E8 = KK.diff_cdf(x)
+# E9 = KK.diff_log_cdf(x)
+# E11 = KK.statistics
+# E12 = KK.sample(100)
+# E10 = KK.maximum_liklihood_estimation(x=x)
+# E1
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # class pdf(ContinuousDistributions):
 #     def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
