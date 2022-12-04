@@ -92,12 +92,12 @@ class CanonicalCorrelationAnalysis:
             else:
                 self.n_comp = n_comp
         elif not n_comp:
-            self.n_comp = min[self.p_x, self.p_y]
+            self.n_comp = min([self.p_x, self.p_y])
         else:
             raise Exception('The format of the number of component is not supported.\n'
                             ' Please enter the number of components as a positive integer!')
 
-        if self.n_comp > min[self.p_x, self.p_y]:
+        if self.n_comp > min([self.p_x, self.p_y]):
             raise Exception('The number of latent variables cannot be greater than the dimension of either matrices x '
                             'or y')
 
