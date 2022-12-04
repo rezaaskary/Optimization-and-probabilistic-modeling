@@ -77,6 +77,7 @@ class CanonicalCorrelationAnalysis:
                             f'The input matrix should be given in ndarray format.')
 
         if self.n_y == self.n_x:
+            self.p_z = self.p_y + self.p_x
             self.z = jnp.concatenate(arrays=(self.x, self.y), axis=1)
             self.mean = self.z.mean(axis=0)
             self.var = self.z.var(axis=0)
@@ -91,7 +92,7 @@ class CanonicalCorrelationAnalysis:
             else:
                 self.n_comp = n_comp
         elif not n_comp:
-            self.n_comp = self.p
+            self.n_comp = min[self.p_x, self.p_y]
         else:
             raise Exception('The format of the number of component is not supported.\n'
                             ' Please enter the number of components as a positive integer!')
@@ -99,7 +100,6 @@ class CanonicalCorrelationAnalysis:
         if self.n_comp > min[self.p_x, self.p_y]:
             raise Exception('The number of latent variables cannot be greater than the dimension of either matrices x '
                             'or y')
-
 
         if isinstance(tolerance, float):
             if tolerance > 1:
@@ -125,12 +125,12 @@ class CanonicalCorrelationAnalysis:
         self.eps = jnp.finfo(float).eps
         self.itr = 0.0
         self.psi = random.uniform(key=self.key,
-                                  shape=(self.p,),
+                                  shape=(self.p_z,),
                                   minval=0,
                                   maxval=1)
 
         self.f = random.uniform(key=self.key,
-                                shape=(self.p, self.n_comp),
+                                shape=(self.p_z, self.n_comp),
                                 minval=0,
                                 maxval=1)
 
@@ -141,13 +141,13 @@ class CanonicalCorrelationAnalysis:
 
         def _em_factor_analysis(values: tuple = None) -> tuple:
             itr, psi, f, old_log_likelihood, log_likelihood_error = values
-            x_hat = jnp.diag(psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
+            x_hat = jnp.diag(psi ** -0.5) @ self.z_m / jnp.sqrt(self.n_x)
             u_svd, s_svd, _ = jnp.linalg.svd(x_hat, full_matrices=False)
             a_svd = s_svd ** 2
             f = jnp.diag(psi ** 0.5) @ u_svd[:, :self.n_comp] @ jnp.diag(
                 jnp.maximum(a_svd[:self.n_comp] - 1.0, self.eps) ** 0.5)
-            likelihood = -0.5 * self.n * (jnp.log(a_svd[:self.n_comp]).sum() +
-                                          self.n_comp + (a_svd[self.n_comp:]).sum() + jnp.log(
+            likelihood = -0.5 * self.n_x * (jnp.log(a_svd[:self.n_comp]).sum() +
+                                            self.n_comp + (a_svd[self.n_comp:]).sum() + jnp.log(
                         jnp.linalg.det(jnp.diag(psi * 2 * jnp.pi))))
             psi = self.var - jnp.diag(f @ f.T)
             log_likelihood_error = likelihood - old_log_likelihood
@@ -169,11 +169,12 @@ class CanonicalCorrelationAnalysis:
                                                                  self.f,
                                                                  jnp.array(-jnp.inf, dtype=jnp.float32),
                                                                  jnp.array(-jnp.inf, dtype=jnp.float32)))
-        self.covariance = self.f @ self.f.T + jnp.diag(self.psi)
-
-        return self
+        self.covariance_x = self.f[:self.p_x, :] @ self.f[:self.p_x, :].T + jnp.diag(self.psi[:self.p_x])
+        self.covariance_y = self.f[self.p_x:, :] @ self.f[self.p_x:, :].T + jnp.diag(self.psi[self.p_x:])
+        return self.covariance_x, self.covariance_y
 
     def fit_transform(self):
         self.fit()
         coef = self.f / self.psi[:, jnp.newaxis]
-        return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
+        return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.z_m
+
