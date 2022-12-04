@@ -29,9 +29,9 @@ class FactorAnalysis_:
                  tolerance: float = 1e-8,
                  max_iter: int = 1000,
                  random_seed: int = 1,
-                 method: str = 'svd') -> None:
+                 method: str = 'EM') -> None:
 
-        if isinstance(method, str) and method in ['svd', 'EM']:
+        if isinstance(method, str) and method in ['sgd', 'EM']:
             self.method = method
         elif not method:
             raise Exception('Please enter the method of calculating the latent variables.')
@@ -103,12 +103,12 @@ class FactorAnalysis_:
                                 minval=0,
                                 maxval=1)
 
-        def _cond_fun(values: jnp.ndarray = None) -> bool:
+        def _cond_fun(values: tuple = None) -> bool:
             itr, _, _, _, likelihood_error = values
             error = jnp.abs(likelihood_error).astype(float)
             return (error > self.tolerance) | (itr > self.max_iter)
 
-        def _em_factor_analysis(values):
+        def _em_factor_analysis(values: tuple = None) -> tuple:
             itr, psi, f, old_likelihood, likelihood_error = values
             x_hat = jnp.diag(psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
             u_svd, s_svd, _ = jnp.linalg.svd(x_hat, full_matrices=False)
@@ -123,44 +123,28 @@ class FactorAnalysis_:
             itr += 1
             return itr, psi, f, likelihood, likelihood_error
 
-        self.body_fun = _em_factor_analysis
-        self.cond_fun = _cond_fun
+        if self.method == 'EM':
+            self.body_fun = _em_factor_analysis
+            self.cond_fun = _cond_fun
 
     def calculate(self):
 
+        self.itr, \
+            self.psi, self.f, \
+            self.likelihood, \
+            self.likelihood_error = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
+                                                   init_val=(self.itr,
+                                                             self.psi,
+                                                             self.f,
+                                                             jnp.array(-jnp.inf, dtype=jnp.float32),
+                                                             jnp.array(-jnp.inf, dtype=jnp.float32)))
 
-        psi = self.psi
-        f = self.f
-        likelihood = jnp.array(-jnp.inf, dtype=jnp.float32)
-        likelihood_error = jnp.array(-jnp.inf, dtype=jnp.float32)
-        # for itr in range(self.max_iter):
-        #     psi, f, likelihood, likelihood_error = _em_factor_analysis(itr=itr,
-        #                                                                values=(psi, f, likelihood, likelihood_error))
+        return self
 
-        T = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
-                           init_val=(self.itr,
-                                     self.psi,
-                                     self.f,
-                                     jnp.array(-jnp.inf, dtype=jnp.float32),
-                                     jnp.array(-jnp.inf, dtype=jnp.float32)))
-        T
-        # T = lax.fori_loop(body_fun=_em_factor_analysis, lower=0, upper=self.max_iter,
-        #                   init_val=(psi, f, likelihood, likelihood_error))
-
-        # for i in range(self.max_iter):
-        #     self.x_hat = jnp.diag(self.psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
-        #     u, s, wh = jnp.linalg.svd(self.x_hat,
-        #                               full_matrices=False)
-        #     a = s ** 2
-        #     f = jnp.diag(self.psi ** 0.5) @ u[:, :self.n_comp] @ jnp.diag(
-        #         np.maximum(a[:self.n_comp] - 1.0, np.finfo(float).eps) ** 0.5)
-        #     liklihood = -0.5 * self.n * (jnp.log(a[:self.n_comp]).sum() +
-        #                                  self.n_comp + (a[self.n_comp:]).sum() + np.log(
-        #                 jnp.linalg.det(jnp.diag(self.psi * 2 * jnp.pi))))
-        #     print(liklihood)
-        #     self.psi = self.var - jnp.diag(f @ f.T)
-        return
-
+    def fit_transform(self):
+        self.calculate()
+        latent_variables = jnp.linalg.inv(self.f.T@self.f)@self.f.T@self.x_m
+        return latent_variables
 
 # data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
 # data = np.array(data.T)
