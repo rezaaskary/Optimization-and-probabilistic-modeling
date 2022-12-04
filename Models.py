@@ -321,6 +321,7 @@ class FactorAnalysis:
         coef = self.f / self.psi[:, jnp.newaxis]
         return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
 
+
 class CanonicalCorrelationAnalysis:
     def __init__(self,
                  x: jnp.ndarray = None,
@@ -476,4 +477,3 @@ class CanonicalCorrelationAnalysis:
         self.fit()
         coef = self.f / self.psi[:, jnp.newaxis]
         return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.z_m
-
