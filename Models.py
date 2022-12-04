@@ -320,3 +320,5 @@ class FactorAnalysis:
         self.fit()
         coef = self.f / self.psi[:, jnp.newaxis]
         return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
+
+

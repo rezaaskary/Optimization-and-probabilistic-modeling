@@ -17,20 +17,30 @@ RR = M.prob([0, 0.2, 1, 2, 3, 4, 5, 55])
 
 D = np.eye(5) * 6
 EE = np.power(D, -0.5)
-EE
 
-import numpy as np
+data = pd.read_csv('winequality-white.csv', delimiter=';')
+data = jnp.array(data.values[:, :-2])
 
 
-class FactorAnalysis_:
+class CanonicalCorrelationAnalysis:
     def __init__(self,
                  x: jnp.ndarray = None,
+                 y: jnp.ndarray = None,
                  n_comp: int = None,
                  tolerance: float = 1e-8,
                  max_iter: int = 1000,
                  random_seed: int = 1,
                  method: str = 'EM') -> None:
+        """
 
+        :param x:
+        :param y:
+        :param n_comp:
+        :param tolerance:
+        :param max_iter:
+        :param random_seed:
+        :param method:
+        """
         if isinstance(method, str) and method in ['sgd', 'EM']:
             self.method = method
         elif not method:
@@ -46,18 +56,36 @@ class FactorAnalysis_:
         else:
             raise Exception('Enter an integer as the value of seed for generating pseudo random numbers.')
 
+        if isinstance(y, jnp.ndarray):
+            if jnp.any(jnp.isnan(y)):
+                raise Exception(f'There are NaN values in the input matrix y!')
+            else:
+                self.y = y
+                self.n_y, self.p_y = self.y.shape
+        else:
+            raise Exception(f'The format of {type(y)} is not supported.\n'
+                            f'The input matrix should be given in ndarray format.')
+
         if isinstance(x, jnp.ndarray):
             if jnp.any(jnp.isnan(x)):
                 raise Exception(f'There are NaN values in the input matrix!')
             else:
                 self.x = x
-                self.n, self.p = self.x.shape
-                self.mean = self.x.mean(axis=0)
-                self.var = self.x.var(axis=0)
-                self.x_m = (self.x - np.tile(self.mean, reps=(self.n, 1))).T
+                self.n_x, self.p_x = self.x.shape
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
+
+        if self.n_y == self.n_x:
+            self.z = jnp.concatenate(arrays=(self.x, self.y), axis=1)
+            self.mean = self.z.mean(axis=0)
+            self.var = self.z.var(axis=0)
+            self.z_m = (self.z - jnp.tile(self.mean, reps=(self.n_x, 1))).T
+
+        else:
+            raise Exception('Matrices x and y have different observations. They are not consistent.')
+
+
 
         if isinstance(n_comp, int):
             if n_comp < 1:
@@ -133,101 +161,16 @@ class FactorAnalysis_:
             self.psi, self.f, \
             self.log_likelihood, \
             self.log_likelihood_error = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
-                                                   init_val=(self.itr,
-                                                             self.psi,
-                                                             self.f,
-                                                             jnp.array(-jnp.inf, dtype=jnp.float32),
-                                                             jnp.array(-jnp.inf, dtype=jnp.float32)))
-        self.covariance = self.f@self.f.T + jnp.diag(self.psi)
+                                                       init_val=(self.itr,
+                                                                 self.psi,
+                                                                 self.f,
+                                                                 jnp.array(-jnp.inf, dtype=jnp.float32),
+                                                                 jnp.array(-jnp.inf, dtype=jnp.float32)))
+        self.covariance = self.f @ self.f.T + jnp.diag(self.psi)
 
         return self
 
     def fit_transform(self):
         self.fit()
-        coef = self.f/self.psi[:, jnp.newaxis]
-        self.latent_variables = jnp.linalg.inv(coef.T@self.f + jnp.eye(self.n_comp))@coef.T@self.x_m
-        return self
-
-
-
-
-# data = random.gamma(key=random.PRNGKey(23), a=0.2, shape=(5000, 5)).T
-# data = np.array(data.T)
-#
-# D = FactorAnalysis(x=data,n_comp=2,max_iter=100).calculate()
-# data = data - jnp.tile(data.mean(axis=1)[:,jnp.newaxis], 5000)
-
-
-data = pd.read_csv('winequality-white.csv', delimiter=';')
-data = jnp.array(data.values[:, :-2])
-
-T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-8, max_iter=500, random_seed=1)
-T.fit_transform()
-
-data2 = ((data - data.mean(axis=0)) / data.std(axis=0)).T
-L = data2.shape[1]
-f = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0], 2), minval=0.1, maxval=1)
-psi = random.uniform(key=random.PRNGKey(3), shape=(data2.shape[0],), minval=0.1, maxval=1)
-# actorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=1000, random_seed=1)
-# T.calc
-import optax
-import functools
-
-
-# @functools.partial(vmap,in_axes=[1, None])
-def fcn2(obs, invmat):
-    return obs.T @ invmat @ obs
-
-
-vfcn2 = vmap(fun=fcn2, in_axes=[1, None])
-
-
-# f
-
-def fcn1(data2, psi, f):
-    sigma = f @ f.T + jnp.diag(psi)
-    sig_inv = jnp.linalg.inv(sigma)
-    out = -0.5 * vfcn2(data2, sig_inv).sum() - 0.5 * L * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
-    return out
-
-
-# grad1 = jacfwd(fun=fcn1, argnums=1)
-# grad2 = jacfwd(fun=fcn1, argnums=2)
-grad3 = jit(value_and_grad(fun=fcn1, argnums=[1, 2]))
-
-# sd = grad1(data,jnp.ones((5,)), jnp.ones((5,2)))
-# sd2 = grad2(data,jnp.ones((5,)), jnp.ones((5,2)))
-# sd3 = grad3(data,jnp.ones((5,)), jnp.ones((5,2)))
-# T = fcn1(data,jnp.ones((5,)), jnp.ones((5,2)))
-
-# f = 0.1*jnp.ones((5,2))
-# psi = 0.01*jnp.ones((5,))
-
-
-# lr = jnp.arange()
-lr = jnp.linspace(start=1e-4, stop=0.1, num=5000)
-lr = 1e-6
-# optimizer = optax.adam(0.02)
-# Obtain the `opt_state` that contains statistics for the optimizer.
-# params = {'f': f,'psi':psi}
-# opt_state = optimizer.init(params)
-
-#
-# compute_loss = lambda params, x, y: optax.l2_loss(params['w'].dot(x), y)
-# grads = jax.grad(compute_loss)(params, xs, ys)
-
-# LL = jnp.inf
-# for i in range(30000):
-#     TT = (grad3(data2, psi, f))
-#     # psip, fp = (grad3(data, psi, f))
-#     # psip = grad1(data[:,i*50:(i+1)*50],psi, f)
-#     # fp = grad2(data[:,i*50:(i+1)*50],psi, f)
-#     fp = TT[1][1]
-#     psip = TT[1][0]
-#     f = f + lr * fp
-#     psi = psi + lr * psip
-#     # lik = fcn1(data, psi, f)
-#     print(LL - TT[0])
-#     LL = TT[0]
-# f
-# CC = f* jnp.tile( data.std(axis=0)[:,jnp.newaxis],reps=(1,2))
+        coef = self.f / self.psi[:, jnp.newaxis]
+        return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
