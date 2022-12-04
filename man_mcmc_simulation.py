@@ -85,8 +85,6 @@ class CanonicalCorrelationAnalysis:
         else:
             raise Exception('Matrices x and y have different observations. They are not consistent.')
 
-
-
         if isinstance(n_comp, int):
             if n_comp < 1:
                 raise Exception('The minimum number of principal components should be a positive integer.')
@@ -97,6 +95,11 @@ class CanonicalCorrelationAnalysis:
         else:
             raise Exception('The format of the number of component is not supported.\n'
                             ' Please enter the number of components as a positive integer!')
+
+        if self.n_comp > min[self.p_x, self.p_y]:
+            raise Exception('The number of latent variables cannot be greater than the dimension of either matrices x '
+                            'or y')
+
 
         if isinstance(tolerance, float):
             if tolerance > 1:
