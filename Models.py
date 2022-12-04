@@ -319,5 +319,4 @@ class FactorAnalysis:
     def fit_transform(self):
         self.fit()
         coef = self.f / self.psi[:, jnp.newaxis]
-        self.latent_variables = jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
-        return self
+        return jnp.linalg.inv(coef.T @ self.f + jnp.eye(self.n_comp)) @ coef.T @ self.x_m
