@@ -103,53 +103,12 @@ class FactorAnalysis_:
                                 minval=0,
                                 maxval=1)
 
-        # def gaussian_kernel(obs: jnp.ndarray = None, invcov: jnp.ndarray = None) -> jnp.ndarray:
-        #     return obs.T @ invcov @ obs
-        #
-        # gaussian_kernel_paralleled = vmap(fun=gaussian_kernel, in_axes=[1, None])
-        #
-        # def liklihood_fcn(obs: jnp.ndarray = None, psi: jnp.ndarray = None, f: jnp.ndarray = None) -> jnp.ndarray:
-        #     sigma = f @ f.T + jnp.diag(psi)
-        #     invcov = jnp.linalg.inv(sigma)
-        #     return -0.5 * gaussian_kernel_paralleled(obs, invcov).sum() - \
-        #         0.5 * self.n * lax.log(jnp.linalg.det(2 * jnp.pi * sigma))
-        #
-        # self.grad_val = jit(value_and_grad(fun=liklihood_fcn, argnums=[1, 2]))
-        #
-        # def optimise(parameters: tuple = None, optimizers: tuple = None) -> tuple:
-        #     psi_optimizer, f_optimizer = optimizers
-        #     psi_state_opt = psi_optimizer.init(params=parameters[0])
-        #     f_state_opt = f_optimizer.init(params=parameters[1])
-        #
-        #     def step(parameters: tuple, psi_state_opt, f_state_opt) -> tuple:
-        #         likelihood_val, parameter_diff = self.grad_val(self.x_m, parameters[0], parameters[1])
-        #         psi_update, psi_state_opt = \
-        #             psi_optimizer.update(updates=-parameter_diff[0],
-        #                                  state=psi_state_opt,
-        #                                  params=parameters[0])
-        #
-        #         f_update, f_state_opt = \
-        #             f_optimizer.update(updates=-parameter_diff[1],
-        #                                state=f_state_opt,
-        #                                params=parameters[1])
-        #         parameters = (psi_update, f_update)
-        #         return parameters, psi_state_opt, f_state_opt, likelihood_val
-        #
-        #     for i in range(2000):
-        #         parameters, psi_state_opt, f_state_opt, likelihood_val = step(parameters=parameters,
-        #                                                                       psi_state_opt=psi_state_opt,
-        #                                                                       f_state_opt=f_state_opt)
-        #         print(likelihood_val)
-        #     return
-        #
-        # self.optimise = optimise
-
-    def calculate(self):
-        def _cond_fun(values):
+        def _cond_fun(values: jnp.ndarray = None) -> bool:
             itr, _, _, _, likelihood_error = values
             error = jnp.abs(likelihood_error).astype(float)
-            return (error > self.tolerance) | (itr < self.max_iter)
-        def _em_factor_analysis(itr: int = None, values: tuple = None) -> tuple:
+            return (error > self.tolerance) | (itr > self.max_iter)
+
+        def _em_factor_analysis(values):
             itr, psi, f, old_likelihood, likelihood_error = values
             x_hat = jnp.diag(psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
             u_svd, s_svd, _ = jnp.linalg.svd(x_hat, full_matrices=False)
@@ -164,6 +123,12 @@ class FactorAnalysis_:
             itr += 1
             return itr, psi, f, likelihood, likelihood_error
 
+        self.body_fun = _em_factor_analysis
+        self.cond_fun = _cond_fun
+
+    def calculate(self):
+
+
         psi = self.psi
         f = self.f
         likelihood = jnp.array(-jnp.inf, dtype=jnp.float32)
@@ -172,11 +137,15 @@ class FactorAnalysis_:
         #     psi, f, likelihood, likelihood_error = _em_factor_analysis(itr=itr,
         #                                                                values=(psi, f, likelihood, likelihood_error))
 
-        lax.while_loop(body_fun=_em_factor_analysis, cond_fun=_cond_fun,
-                       init_val=(psi, f, likelihood, likelihood_error))
-
-        T = lax.fori_loop(body_fun=_em_factor_analysis, lower=0, upper=self.max_iter,
-                          init_val=(psi, f, likelihood, likelihood_error))
+        T = lax.while_loop(body_fun=self.body_fun, cond_fun=self.cond_fun,
+                           init_val=(self.itr,
+                                     self.psi,
+                                     self.f,
+                                     jnp.array(-jnp.inf, dtype=jnp.float32),
+                                     jnp.array(-jnp.inf, dtype=jnp.float32)))
+        T
+        # T = lax.fori_loop(body_fun=_em_factor_analysis, lower=0, upper=self.max_iter,
+        #                   init_val=(psi, f, likelihood, likelihood_error))
 
         # for i in range(self.max_iter):
         #     self.x_hat = jnp.diag(self.psi ** -0.5) @ self.x_m / jnp.sqrt(self.n)
@@ -203,7 +172,7 @@ class FactorAnalysis_:
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = jnp.array(data.values[:, :-2])
 
-T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-6, max_iter=2000, random_seed=1)
+T = FactorAnalysis_(x=data, n_comp=2, tolerance=1e-8, max_iter=500, random_seed=1)
 T.calculate()
 
 data2 = ((data - data.mean(axis=0)) / data.std(axis=0)).T
