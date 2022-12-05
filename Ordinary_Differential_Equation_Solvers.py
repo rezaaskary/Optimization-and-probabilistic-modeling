@@ -7,4 +7,7 @@ class ODESolvers:
                 fcn: callable = None,
                 n: int = None,
                 method: str = 'Euler'):
+        if isinstance(method, str):
+            if method not  in ['Euler', 'rk2', 'rk4']:
+
         return
