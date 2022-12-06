@@ -12,4 +12,7 @@ class ODESolvers:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
-
+        elif not method:
+            self.method = 'Euler'
+        else:
+            raise Exception(f'Please enter the method for solving system of ordinary differential equation.')
