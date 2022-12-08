@@ -141,7 +141,7 @@ class ContinuousDistributions:
                 raise Exception(f'The standard deviation should be a positive value ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if not isinstance(scale, jnp.ndarray) and isinstance(var, jnp.ndarray):
-            if jnp.arra(var > 0):
+            if jnp.all(var > 0):
                 self.scale = var ** 0.5
                 self.variance = var
             else:
@@ -1666,9 +1666,6 @@ class Bates(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=self.lower, a_max=self.upper)
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 ##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
