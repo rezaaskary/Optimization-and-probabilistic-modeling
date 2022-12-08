@@ -529,7 +529,7 @@ class BetaBinomial(DiscreteDistributions):
         return information
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.clip(a=x, a_min=0, a_max=jnp.inf)
+        return jnp.clip(a=x, a_min=0, a_max=self.n)
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -558,7 +558,7 @@ class Bernoulli(DiscreteDistributions):
         self.distance_function = distributions.Bernoulli(logits=self.logits.tolist(),
                                                          validate_args=True,
                                                          name=self.name)
-        ContinuousDistributions.parallelization(self)
+        DiscreteDistributions.parallelization(self)
 
     @property
     def statistics(self):
@@ -603,7 +603,7 @@ class Poisson(DiscreteDistributions):
         self.distance_function = distributions.Poisson(rate=self.lambd.tolist(),
                                                        validate_args=True,
                                                        name=self.name)
-        ContinuousDistributions.parallelization(self)
+        DiscreteDistributions.parallelization(self)
 
     @property
     def statistics(self):
