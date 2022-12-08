@@ -20,7 +20,7 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None)
 
 
 n_par = 3
-chains = 1000
+chains = 10000
 L = 10000
 par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
 x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(4, chains), dtype=jnp.float64)
@@ -29,11 +29,22 @@ d_dx = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None], out_axes=1)
 x = jnp.zeros((4, chains, L))
 x = x.at[:, :, 0].set(x_0)
 delta = 1
-for i in tqdm(range(L)):
-    K = d_dx(x[:, :, i], par, i)
-    x.at[:, :, i+1].set(x[:,:,0])
 
 
+# for i in tqdm(range(L)):
+
+
+def wrapper(itr: int, init_val: tuple) -> tuple:
+    x, par = init_val
+    x=x.at[:, :, itr + 1].set(d_dx(x[:, :, itr], par, itr)[:, :, 0])
+    return x, par
+
+
+M = jax.lax.fori_loop(lower=0,
+                      upper=L,
+                      body_fun=wrapper,
+                      init_val=(x, par))
+M
 
 
 class ODESolvers:
