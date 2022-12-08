@@ -432,11 +432,16 @@ class Binomial(DiscreteDistributions):
         super(Binomial, self).__init__(n=n, p=p, activate_jit=activate_jit, random_seed=random_seed,
                                        n_chains=n_chains, validate_input_range=validate_input_range,
                                        in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+
+        self.n = jnp.array(self.n, dtype=jnp.int32)
+        self.p = jnp.clip(a=self.p, a_min=0, a_max=1)
+
         self.name = 'Binomial'
-        self.distance_function = distributions.Binomial(total_count=self.n.tolist(), probs=self.p.tolist(),
+        self.distance_function = distributions.Binomial(total_count=self.n.tolist(),
+                                                        probs=self.p.tolist(),
                                                         validate_args=True,
                                                         name=self.name)
-        ContinuousDistributions.parallelization(self)
+        DiscreteDistributions.parallelization(self)
 
     @property
     def statistics(self):
