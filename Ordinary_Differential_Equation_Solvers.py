@@ -2,10 +2,11 @@ import jax.numpy as jnp
 from jax import lax, vmap
 import jax
 
+
 def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None) -> jnp.ndarray:
     m = 4  # the number of state variables
     dx_dt = jnp.zeros((m, 1))  # reallocating the values of state variables
-    dx0_dt = -6*x[0] + x[1]*x[2] * p[0]
+    dx0_dt = -6 * x[0] + x[1] * x[2] * p[0]
     dx1_dt = -2 * x[1] + jnp.sin(x[3] + x[2])
     dx2_dt = -8 * x[2] + jnp.sin(x[0] + x[1] * p[2])
     dx3_dt = -3 * x[3] + jnp.cos(x[3] ** p[3] * x[1])
@@ -16,20 +17,16 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None)
     dx_dt = dx_dt.at[3, 0].set(dx3_dt)
     return dx_dt
 
+
 n_par = 3
 chains = 1000
-x = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
+L = 10000
+par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
+x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(4, chains), dtype=jnp.float64)
 
-
-
-
-
-
-
-
-
-
-
+d_dx = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None], out_axes=1)
+x = jnp.zeros(4, chains, L)
+x = x.at[:, :, 0].set(x_0)
 
 
 
