@@ -1,8 +1,8 @@
 import jax.numpy as jnp
 from jax import lax, vmap
+import jax
 
-
-def ode_fcn(x:jnp.ndarray = None, p:jnp.ndarray = None, t:jnp.ndarray = None) -> jnp.ndarray:
+def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None) -> jnp.ndarray:
     m = 4  # the number of state variables
     dx_dt = jnp.zeros((m, 1))  # reallocating the values of state variables
     dx0_dt = -6*x[0] + x[1]*x[2] * p[0]
@@ -15,6 +15,16 @@ def ode_fcn(x:jnp.ndarray = None, p:jnp.ndarray = None, t:jnp.ndarray = None) ->
     dx_dt = dx_dt.at[2, 0].set(dx2_dt)
     dx_dt = dx_dt.at[3, 0].set(dx3_dt)
     return dx_dt
+
+n_par = 3
+chains = 1000
+x = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
+
+
+
+
+
+
 
 
 
