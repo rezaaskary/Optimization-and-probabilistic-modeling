@@ -176,22 +176,6 @@ class ContinuousDistributions:
                             f' format of ndarrauy ({self.__class__} distribution)!')
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    @property
-    def statistics(self):
-        information = {'mean': self.distance_function.mean(name='mean'),
-                       'mode': self.distance_function.mode(name='mode'),
-                       'entropy': self.distance_function.entropy(name='entropy'),
-                       'first_quantile': self.distance_function.quantile(value=0.25, name='first quantile'),
-                       'median': self.distance_function.quantile(value=0.5, name='median'),
-                       'third_quantile': self.distance_function.quantile(value=0.75, name='third quantile'),
-                       'range': self.distance_function.range(name='range'),
-                       'std': self.distance_function.stddev(name='stddev'),
-                       'var': self.distance_function.variance(name='variance'),
-                       }
-        return information
-
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
     def parallelization(self):
 
         if self.validate_input_range:
