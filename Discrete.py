@@ -467,7 +467,7 @@ class BetaBinomial(DiscreteDistributions):
                  activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
-        Discrete  distribution
+        Discrete BetaBinomial distribution
         :param  : A ndarray or float indicating ----- of the distribution
         :param  : A ndarray or float indicating ---- of the distribution
         :param activate_jit: A boolean variable used to activate/deactivate just-in-time evaluation
@@ -482,12 +482,15 @@ class BetaBinomial(DiscreteDistributions):
         super(BetaBinomial, self).__init__(n=n, a=a, b=b, activate_jit=activate_jit, random_seed=random_seed,
                                            n_chains=n_chains, validate_input_range=validate_input_range,
                                            in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        if jnp.any(self.a <= 0) or jnp.any(self.b <= 0):
+            raise Exception(f'The input parameters a and b should positive real numbers. ({self.name} distribution)')
         self.name = 'BetaBinomial'
-        self.distance_function = distributions.BetaBinomial(total_count=self.n.tolist(), concentration1=self.a.tolist(),
+        self.distance_function = distributions.BetaBinomial(total_count=self.n.tolist(),
+                                                            concentration1=self.a.tolist(),
                                                             concentration0=self.b.tolist(),
                                                             validate_args=True,
                                                             name=self.name)
-        ContinuousDistributions.parallelization(self)
+        DiscreteDistributions.parallelization(self)
 
     @property
     def statistics(self):
