@@ -5,6 +5,7 @@ import jax.numpy as jnp
 
 class ContinuousDistributions:
     def __init__(self,
+                 n: jnp.ndarray = None,
                  alpha: jnp.ndarray = None,
                  beta: jnp.ndarray = None,
                  lower: jnp.ndarray = None,
@@ -69,6 +70,14 @@ class ContinuousDistributions:
             self.lower = lower
         elif lower is None:
             self.lower = None
+        else:
+            raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                            f' format of ndarrauy ({self.__class__} distribution)!')
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(n, jnp.ndarray):
+            self.n = n
+        elif n is None:
+            self.n = None
         else:
             raise Exception(f'The value of input parameters is not specified correctly. Please enter parameters  in the'
                             f' format of ndarrauy ({self.__class__} distribution)!')
@@ -1604,9 +1613,11 @@ class VonMises(ContinuousDistributions):
 
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=-jnp.pi, a_max=jnp.pi)
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class pdf(ContinuousDistributions):
-    def __init__(self, : jnp.ndarray = None, : jnp.ndarray = None,
+class Bates(ContinuousDistributions):
+    def __init__(self, lower: jnp.ndarray = None, upper: jnp.ndarray = None, n: jnp.ndarray = 1,
                  activate_jit: bool = False, random_seed: int = 1, validate_input_range: bool = True,
                  n_chains: int = 1, in_vec_dim: int = 1, out_vec_dim: int = 1) -> None:
         """
@@ -1622,12 +1633,19 @@ class pdf(ContinuousDistributions):
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
         # recalling parameter values from the main parent class
-        super(pdf, self).__init__(=, =, activate_jit=activate_jit, random_seed=random_seed,
-                                  n_chains=n_chains, validate_input_range=validate_input_range,
-                                  in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
-        self.name = ''
-        self.distance_function = distributions.(=self..tolist(), =self..tolist(),
-                                                           name=self.name)
+        super(Bates, self).__init__(lower=lower, upper=upper, n=n, activate_jit=activate_jit, random_seed=random_seed,
+                                    n_chains=n_chains, validate_input_range=validate_input_range,
+                                    in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
+        self.name = 'Bates'
+
+        self.n = jnp.array(self.n, dtype=jnp.int32)
+        if jnp.any(self.n < 1):
+            raise Exception(f'The input variable n should be positive integer array equal'
+                            f' or greater than 1. ({self.name} distribution)')
+
+        self.distance_function = distributions.Bates(total_count=self.n.tolist(), low=self.lower.tolist(),
+                                                     high=self.upper.tolist(),
+                                                     name=self.name)
         ContinuousDistributions.parallelization(self)
 
     @property
@@ -1643,6 +1661,7 @@ class pdf(ContinuousDistributions):
                        'var': self.distance_function.variance(name='variance'),
                        }
         return information
+
     def valid_range(self, x: jnp.ndarray) -> jnp.ndarray:
         return jnp.clip(a=x, a_min=jnp.finfo(float).eps, a_max=1.0 - jnp.finfo(float).eps)
 
