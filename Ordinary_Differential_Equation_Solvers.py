@@ -16,6 +16,7 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None)
     dx_dt = dx_dt.at[1, 0].set(dx1_dt)
     dx_dt = dx_dt.at[2, 0].set(dx2_dt)
     dx_dt = dx_dt.at[3, 0].set(dx3_dt)
+
     return dx_dt
 
 
