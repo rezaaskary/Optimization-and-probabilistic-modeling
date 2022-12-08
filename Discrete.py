@@ -90,6 +90,27 @@ class DiscreteDistributions:
                 f' format of ndarrauy ({self.__class__} distribution)!')
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(a, jnp.ndarray):
+            self.a = a
+        elif a is None:
+            self.a = None
+        else:
+            raise Exception(
+                f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                f' format of ndarrauy ({self.__class__} distribution)!')
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if isinstance(b, jnp.ndarray):
+            self.b = b
+        elif b is None:
+            self.b = None
+        else:
+            raise Exception(
+                f'The value of input parameters is not specified correctly. Please enter parameters  in the'
+                f' format of ndarrauy ({self.__class__} distribution)!')
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
         if isinstance(p, jnp.ndarray):
             self.p = p
         elif p is None:
@@ -478,13 +499,14 @@ class BetaBinomial(DiscreteDistributions):
         :param in_vec_dim: An integer used to indicate the axis of the input variable x for parallelized calculations
         :param out_vec_dim: An integer used to indicate the axis of the output variable for exporting the output
         """
+        self.name = 'BetaBinomial'
         # recalling parameter values from the main parent class
         super(BetaBinomial, self).__init__(n=n, a=a, b=b, activate_jit=activate_jit, random_seed=random_seed,
                                            n_chains=n_chains, validate_input_range=validate_input_range,
                                            in_vec_dim=in_vec_dim, out_vec_dim=out_vec_dim)
         if jnp.any(self.a <= 0) or jnp.any(self.b <= 0):
             raise Exception(f'The input parameters a and b should positive real numbers. ({self.name} distribution)')
-        self.name = 'BetaBinomial'
+
         self.distance_function = distributions.BetaBinomial(total_count=self.n.tolist(),
                                                             concentration1=self.a.tolist(),
                                                             concentration0=self.b.tolist(),
