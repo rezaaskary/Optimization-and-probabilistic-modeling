@@ -95,7 +95,9 @@ class ODESolvers:
         if isinstance(iteration, int):
             self.iteration = iteration
         elif not iteration:
-
+            self.iteration = None
+        else:
+            raise Exception('Please enter an integer to specify the number of iterations for simulation.')
 
 
 
