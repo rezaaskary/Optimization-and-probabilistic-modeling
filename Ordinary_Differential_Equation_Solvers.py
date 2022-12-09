@@ -122,14 +122,14 @@ class ODESolvers:
             self.duration = self.steps * self.max_step_size
         elif self.max_step_size and self.duration and not self.steps:
             self.steps = self.duration // self.max_step_size + 1
+            ###
         elif self.steps and not self.duration and not self.max_step_size:
+            raise Exception('Please enter either the duration of simulation or max_step_size of simulation')
         elif not self.steps and self.max_step_size and not self.duration:
+            raise Exception('Please enter either the duration of simulation or steps of simulation')
         elif not self.steps and not self.max_step_size and self.duration:
-
+            raise Exception('Please enter either the max_step_size or steps of simulation')
         elif self.steps and self.duration and self.max_step_size:
-
-
-
 
 
         if self.max_step_size <= 0:
