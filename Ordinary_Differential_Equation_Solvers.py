@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import lax, vmap
+from jax import lax, vmap, jit
 import jax
 from tqdm import tqdm
 
@@ -180,11 +180,14 @@ class ODESolvers:
                             f' with the order of "x": the array of state variables, "p": the array of parameters,'
                             f' "t": the index of the step(counter), and "u": the array of the exogenous inputs of'
                             f' the system of odes at step i')
-        if self.n_params
-
-        else:
-            # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
-            self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, None], out_axes=1)
 
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
-        self.parameters = jnp.ones((self.n_states, self.n_sim, self.steps))
+        self.parameters = jnp.ones((self.n_params, self.n_sim, self.steps))
+
+        # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
+        if self.activate_jit:
+            self.parallelized_odes = jit(jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1))
+        else:
+            self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1)
+
+
