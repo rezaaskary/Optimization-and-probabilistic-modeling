@@ -65,6 +65,22 @@ class ODESolvers:
                 method: str = 'Euler',
                 activate_jit: bool = False,
                 n_input: int = None):
+        """
+        reference:
+        <<Süli, Endre. "Numerical solution of ordinary differential equations." Mathematical Institute,
+         University of Oxford (2010).>>
+        :param fcn:
+        :param steps:
+        :param max_step_size:
+        :param duration:
+        :param n_sim:
+        :param n_states:
+        :param n_params:
+        :param method:
+        :param activate_jit:
+        :param n_input:
+        :return:
+        """
 
         if hasattr(fcn, "__call__"):
             self.fcn = fcn
