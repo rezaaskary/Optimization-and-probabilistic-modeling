@@ -40,7 +40,7 @@ def wrapper(itr: int, init_val: tuple) -> tuple:
     x, par, u = init_val
     evaluation = d_dx(x[:, :, itr], par, itr, u[:, itr])[:, :, 0]
     # [:, :, 0]
-    x=x.at[:, :, itr + 1].set(evaluation)
+    x = x.at[:, :, itr + 1].set(evaluation)
     return x, par, u
 
 
@@ -99,7 +99,6 @@ class ODESolvers:
         else:
             raise Exception('Please enter an integer to specify the number of iterations for simulation.')
 
-
         if isinstance(duration, (int, float)):
             self.duration = duration
         elif not duration:
@@ -115,22 +114,32 @@ class ODESolvers:
             raise Exception('Please enter a positive value to specify the length of interval for solving the system of'
                             ' ODE.')
 
-
         if self.steps and self.duration and not self.max_step_size:
             self.max_step_size = self.duration / self.steps
+
         elif self.steps and self.max_step_size and not self.duration:
             self.duration = self.steps * self.max_step_size
+
         elif self.max_step_size and self.duration and not self.steps:
             self.steps = self.duration // self.max_step_size + 1
-            ###
+            self.delta = jnp.ones((self.steps,)) * self.max_step_size
+            self.delta = self.delta.at[-1].set(self.duration % self.max_step_size)
+
         elif self.steps and not self.duration and not self.max_step_size:
             raise Exception('Please enter either the duration of simulation or max_step_size of simulation')
+
         elif not self.steps and self.max_step_size and not self.duration:
             raise Exception('Please enter either the duration of simulation or steps of simulation')
+
         elif not self.steps and not self.max_step_size and self.duration:
             raise Exception('Please enter either the max_step_size or steps of simulation')
-        elif self.steps and self.duration and self.max_step_size:
 
+        elif self.steps and self.duration and self.max_step_size:
+            raise Exception('Over determination! only two values for solving ODEs are required.')
+
+        else:
+            raise Exception('Please enter values for two input variables "steps", "max_step_size", or "duration" to'
+                            ' solve equations.')
 
         if self.max_step_size <= 0:
             raise Exception('The length of steps must be a positive value.')
@@ -148,17 +157,3 @@ class ODESolvers:
 
         else:
             raise Exception('Please correctly specify the number of iteration for solving the system of ode.')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
