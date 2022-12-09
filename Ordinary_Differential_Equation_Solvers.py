@@ -72,7 +72,7 @@ class ODESolvers:
             raise Exception('The function of ode is not specified properly!')
 
         if isinstance(method, str):
-            if method not in ['euler', 'rk2', 'rk4', 'ralston', 'modified_euler']:
+            if method not in ['euler', 'rk2', 'rk4', 'ralston', 'modified_euler', 'heun']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
@@ -234,6 +234,16 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'modified_euler':
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
+                                            itr, u[:, :, itr])
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * k2)
+                return states, parameters, inputs
+
+        elif self.method == 'heun':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
