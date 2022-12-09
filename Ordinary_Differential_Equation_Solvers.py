@@ -121,7 +121,7 @@ class ODESolvers:
         elif self.steps and self.max_step_size and not self.duration:
             self.duration = self.steps * self.max_step_size
         elif self.max_step_size and self.duration and not self.steps:
-
+            self.steps = self.duration // self.max_step_size + 1
         elif self.steps and not self.duration and not self.max_step_size:
         elif not self.steps and self.max_step_size and not self.duration:
         elif not self.steps and not self.max_step_size and self.duration:
