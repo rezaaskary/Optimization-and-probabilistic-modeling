@@ -285,6 +285,16 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'AB_2nd':
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
+                                            itr, u[:, :, itr])
+                k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
+                                            parameters[:, :, itr], itr, u[:, :, itr])
+                states = states.at[:, :, itr + 1].set(
+                    states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
+                return states, parameters, inputs
 
 
 
