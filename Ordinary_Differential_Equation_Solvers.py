@@ -150,10 +150,5 @@ class ODESolvers:
         if self.duration <= 0:
             raise Exception('The duration of simulation must be a positive value.')
 
-
-
-
-
-
-        else:
-            raise Exception('Please correctly specify the number of iteration for solving the system of ode.')
+        if not 'self.delta' in locals():
+            self.delta = jnp.ones((self.steps,)) * self.max_step_size
