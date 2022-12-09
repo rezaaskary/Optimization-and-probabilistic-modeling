@@ -58,7 +58,9 @@ class ODESolvers:
                 n_sim: int = 1,
                 n_states: int = None,
                 method: str = 'Euler',
-                activate_jit: bool = False):
+                activate_jit: bool = False,
+                has_input: bool = False):
+
         if isinstance(method, str):
             if method not in ['Euler', 'rk2', 'rk4']:
                 self.method = method
@@ -82,3 +84,9 @@ class ODESolvers:
             self.activate_jit = False
         else:
             raise Exception('Please correctly specify jit-in-time compilation feature.')
+
+        if isinstance(has_input, bool):
+            self.has_input = has_input
+        else:
+            raise Exception('Please correctly specify whether the system of ode has input variable.')
+
