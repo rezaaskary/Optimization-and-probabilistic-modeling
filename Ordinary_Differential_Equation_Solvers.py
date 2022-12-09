@@ -55,7 +55,7 @@ class ODESolvers:
     def __int__(self,
                 fcn: callable = None,
                 iteration: int = None,
-                delta: float = None,
+                step: float = None,
                 duration: float = None,
                 n_sim: int = 1,
                 n_states: int = None,
@@ -107,15 +107,22 @@ class ODESolvers:
         else:
             raise Exception('Please enter a float value to specify the duration of simulation.')
 
-        if isinstance(delta, (int, float)):
-            self.delta = delta
-        elif not delta:
-            self.delta = None
+        if isinstance(step, (int, float)):
+            self.step = step
+        elif not step:
+            self.step = None
         else:
             raise Exception('Please enter a positive value to specify the length of interval for solving the system of'
                             ' ODE.')
 
+        if self.step <= 0:
+            raise Exception('The length of steps must be a positive value.')
 
+        if self.iteration <= 0:
+            raise Exception('The number of iterations must be a positive value.')
+
+        if self.iteration <= 0:
+            raise Exception('The number of iterations must be a positive value.')
 
 
 
