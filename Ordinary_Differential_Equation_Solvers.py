@@ -55,7 +55,10 @@ class ODESolvers:
     def __int__(self,
                 fcn: callable = None,
                 n: int = None,
-                method: str = 'Euler'):
+                n_sim: int = 1,
+                n_states: int = None,
+                method: str = 'Euler',
+                activate_jit: bool = False):
         if isinstance(method, str):
             if method not in ['Euler', 'rk2', 'rk4']:
                 self.method = method
@@ -65,3 +68,10 @@ class ODESolvers:
             self.method = 'Euler'
         else:
             raise Exception(f'Please enter the method for solving system of ordinary differential equation.')
+
+        if isinstance(n_sim, int):
+            self.n_sim = n_sim
+        elif not n_sim:
+            self.n_sim = 1
+        else:
+            raise Exception('The number of parallel simulation is not specified correctly.')
