@@ -206,6 +206,22 @@ class ODESolvers:
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
+
         elif self.method == 'rk4':
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])\
+                     * self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) *\
+                     self.delta[itr]
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                     self.delta[itr]
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                     self.delta[itr]
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1/6) * (k1 + 2*k2 + 2*k3 + k4))
+                return states, parameters, inputs
+
         else:
 
+        self.ode_parallel_wrapper = ode_parallel_wrapper
