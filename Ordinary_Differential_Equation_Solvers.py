@@ -20,6 +20,12 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None,
     return dx_dt
 
 
+D = len(ode_fcn)
+
+
+
+
+
 n_par = 3
 chains = 10000
 L = 10000
@@ -162,5 +168,12 @@ class ODESolvers:
 
         if not 'self.delta' in locals():
             self.delta = jnp.ones((self.steps,)) * self.max_step_size
+        # checking the input arguments
+        self.fcn.__code__.co_argcount
+
+
+
 
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
+
+
