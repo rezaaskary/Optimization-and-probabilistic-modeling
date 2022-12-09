@@ -22,10 +22,6 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None,
 
 D = len(ode_fcn)
 
-
-
-
-
 n_par = 3
 chains = 10000
 L = 10000
@@ -65,6 +61,7 @@ class ODESolvers:
                 duration: float = None,
                 n_sim: int = 1,
                 n_states: int = None,
+                n_params: int = None,
                 method: str = 'Euler',
                 activate_jit: bool = False,
                 has_input: bool = False):
@@ -90,6 +87,13 @@ class ODESolvers:
             self.n_sim = 1
         else:
             raise Exception('The number of parallel simulation is not specified correctly.')
+
+        if isinstance(n_params, int):
+            self.n_params = n_params
+        elif not n_params:
+            self.n_params = None
+        else:
+            raise Exception('Please specify the number of parameters')
 
         if isinstance(n_states, int):
             self.n_states = n_states
@@ -169,11 +173,14 @@ class ODESolvers:
         if not 'self.delta' in locals():
             self.delta = jnp.ones((self.steps,)) * self.max_step_size
         # checking the input arguments
-        self.fcn.__code__.co_argcount
-
-
-
+        if self.has_input and (not self.fcn.__code__.co_argcount == 4):
+            raise Exception(f' The number of the input arguments of the function of odes should be 4. '
+                            f' with the order of "x": the array of state variables, "p": the array of parameters,'
+                            f' "t": the index of the step(counter), and "u": the array of the exogenous inputs of'
+                            f' the system of odes at step i')
+        else:
+            # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
+            self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, None], out_axes=1)
 
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
-
-
+        self.parameters = jnp.ones((self.n_states, self.n_sim, self.steps))
