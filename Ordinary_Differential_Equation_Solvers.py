@@ -88,7 +88,7 @@ class ODESolvers:
             raise Exception('The function of ode is not specified properly!')
 
         if isinstance(method, str):
-            if method not in ['euler', 'rk2', 'rk4', 'ralston', 'modified_euler', 'heun', 'rk3']:
+            if method not in ['euler', 'RK2', 'RK4', 'ralston', 'modified_euler', 'heun', 'RK3']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
@@ -212,7 +212,7 @@ class ODESolvers:
                 evaluation = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + evaluation * self.delta[itr])
                 return states, parameters, inputs
-        elif self.method == 'rk2':
+        elif self.method == 'RK2':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -223,7 +223,7 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
 
-        elif self.method == 'rk4':
+        elif self.method == 'RK4':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -272,7 +272,7 @@ class ODESolvers:
                 return states, parameters, inputs
 
 
-        elif self.method == 'rk3':
+        elif self.method == 'RK3':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -283,5 +283,10 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(
                     states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
                 return states, parameters, inputs
+
+        elif self.method == 'AB_2nd':
+
+
+
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
