@@ -68,4 +68,4 @@ class ODESolvers:
         elif not n_sim:
             self.n_sim = 1
         else:
-            raise
+            raise Exception('The number of parallel simulation is not specified correctly.')
