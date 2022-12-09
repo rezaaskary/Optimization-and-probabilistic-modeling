@@ -121,21 +121,19 @@ class ODESolvers:
         if self.iteration <= 0:
             raise Exception('The number of iterations must be a positive value.')
 
-        if self.iteration <= 0:
-            raise Exception('The number of iterations must be a positive value.')
+        if self.duration <= 0:
+            raise Exception('The duration of simulation must be a positive value.')
+
+        if self.iteration and self.duration and not self.step:
+        elif self.iteration and self.step and not self.duration:
+        elif self.step and self.duration and not self.iteration:
+
+        elif self.iteration and not self.duration and not self.step:
+        elif not self.iteration and self.step and not self.duration:
+        elif not self.iteration and not self.step and self.duration:
 
 
 
-
-
-        if iteration and duration and not delta:
-        elif iteration and delta and not duration:
-            elif delta and duration and not
-
-
-
-
-            if
 
 
 
