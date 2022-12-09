@@ -63,6 +63,11 @@ class ODESolvers:
                 activate_jit: bool = False,
                 has_input: bool = False):
 
+        if hasattr(fcn, "__call__"):
+            self.fcn = fcn
+        else:
+            raise Exception('The function of ode is not specified properly!')
+
         if isinstance(method, str):
             if method not in ['Euler', 'rk2', 'rk4']:
                 self.method = method
@@ -79,6 +84,11 @@ class ODESolvers:
             self.n_sim = 1
         else:
             raise Exception('The number of parallel simulation is not specified correctly.')
+
+        if isinstance(n_states, int):
+            self.n_states = n_states
+        else:
+            raise Exception('The number of ODEs is not specified correctly.')
 
         if isinstance(activate_jit, bool):
             self.activate_jit = activate_jit
@@ -152,3 +162,5 @@ class ODESolvers:
 
         if not 'self.delta' in locals():
             self.delta = jnp.ones((self.steps,)) * self.max_step_size
+
+        x = jnp.zeros((self.n_states, self.n_sim, self.steps))
