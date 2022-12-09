@@ -54,8 +54,8 @@ M
 class ODESolvers:
     def __int__(self,
                 fcn: callable = None,
-                iteration: int = None,
-                step: float = None,
+                steps: int = None,
+                max_step_size: float = None,
                 duration: float = None,
                 n_sim: int = 1,
                 n_states: int = None,
@@ -92,10 +92,10 @@ class ODESolvers:
         else:
             raise Exception('Please correctly specify whether the system of ode has input variable.')
 
-        if isinstance(iteration, int):
-            self.iteration = iteration
-        elif not iteration:
-            self.iteration = None
+        if isinstance(steps, int):
+            self.steps = steps
+        elif not steps:
+            self.steps = None
         else:
             raise Exception('Please enter an integer to specify the number of iterations for simulation.')
 
@@ -107,34 +107,39 @@ class ODESolvers:
         else:
             raise Exception('Please enter a float value to specify the duration of simulation.')
 
-        if isinstance(step, (int, float)):
-            self.step = step
-        elif not step:
-            self.step = None
+        if isinstance(max_step_size, (int, float)):
+            self.max_step_size = max_step_size
+        elif not max_step_size:
+            self.max_step_size = None
         else:
             raise Exception('Please enter a positive value to specify the length of interval for solving the system of'
                             ' ODE.')
 
-        if self.step <= 0:
+
+        if self.steps and self.duration and not self.max_step_size:
+            self.max_step_size = self.duration / self.steps
+        elif self.steps and self.max_step_size and not self.duration:
+            self.duration = self.steps * self.max_step_size
+        elif self.max_step_size and self.duration and not self.steps:
+
+        elif self.steps and not self.duration and not self.max_step_size:
+        elif not self.steps and self.max_step_size and not self.duration:
+        elif not self.steps and not self.max_step_size and self.duration:
+
+        elif self.steps and self.duration and self.max_step_size:
+
+
+
+
+
+        if self.max_step_size <= 0:
             raise Exception('The length of steps must be a positive value.')
 
-        if self.iteration <= 0:
+        if self.steps <= 0:
             raise Exception('The number of iterations must be a positive value.')
 
         if self.duration <= 0:
             raise Exception('The duration of simulation must be a positive value.')
-
-        if self.iteration and self.duration and not self.step:
-        elif self.iteration and self.step and not self.duration:
-        elif self.step and self.duration and not self.iteration:
-
-        elif self.iteration and not self.duration and not self.step:
-        elif not self.iteration and self.step and not self.duration:
-        elif not self.iteration and not self.step and self.duration:
-
-
-
-
 
 
 
