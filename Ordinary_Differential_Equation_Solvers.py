@@ -54,7 +54,9 @@ M
 class ODESolvers:
     def __int__(self,
                 fcn: callable = None,
-                n: int = None,
+                iteration: int = None,
+                delta: float = None,
+                duration: float = None,
                 n_sim: int = 1,
                 n_states: int = None,
                 method: str = 'Euler',
@@ -89,4 +91,22 @@ class ODESolvers:
             self.has_input = has_input
         else:
             raise Exception('Please correctly specify whether the system of ode has input variable.')
+
+        if isinstance(iteration, int):
+            self.iteration = iteration
+        else:
+            raise Exception('Please correctly specify the number of iteration for solving the system of ode.')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
