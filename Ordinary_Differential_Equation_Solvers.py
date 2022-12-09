@@ -75,3 +75,10 @@ class ODESolvers:
             self.n_sim = 1
         else:
             raise Exception('The number of parallel simulation is not specified correctly.')
+
+        if isinstance(activate_jit, bool):
+            self.activate_jit = activate_jit
+        elif not activate_jit:
+            self.activate_jit = False
+        else:
+            raise Exception('Please correctly specify jit-in-time compilation feature.')
