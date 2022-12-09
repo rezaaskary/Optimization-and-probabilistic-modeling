@@ -163,4 +163,4 @@ class ODESolvers:
         if not 'self.delta' in locals():
             self.delta = jnp.ones((self.steps,)) * self.max_step_size
 
-        x = jnp.zeros((self.n_states, self.n_sim, self.steps))
+        self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
