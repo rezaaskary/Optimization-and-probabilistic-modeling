@@ -64,7 +64,7 @@ class ODESolvers:
                 n_params: int = None,
                 method: str = 'Euler',
                 activate_jit: bool = False,
-                has_input: bool = False):
+                n_input: int = None):
 
         if hasattr(fcn, "__call__"):
             self.fcn = fcn
@@ -93,7 +93,7 @@ class ODESolvers:
         elif not n_params:
             self.n_params = None
         else:
-            raise Exception('Please specify the number of parameters')
+            raise Exception('Please specify the number of parameters in the system of odes')
 
         if isinstance(n_states, int):
             self.n_states = n_states
@@ -107,8 +107,10 @@ class ODESolvers:
         else:
             raise Exception('Please correctly specify jit-in-time compilation feature.')
 
-        if isinstance(has_input, bool):
-            self.has_input = has_input
+        if isinstance(n_input, int):
+            self.n_input = n_input
+        elif not n_input:
+            self.n_input = None
         else:
             raise Exception('Please correctly specify whether the system of ode has input variable.')
 
@@ -173,11 +175,13 @@ class ODESolvers:
         if not 'self.delta' in locals():
             self.delta = jnp.ones((self.steps,)) * self.max_step_size
         # checking the input arguments
-        if self.has_input and (not self.fcn.__code__.co_argcount == 4):
+        if not self.fcn.__code__.co_argcount == 4:
             raise Exception(f' The number of the input arguments of the function of odes should be 4. '
                             f' with the order of "x": the array of state variables, "p": the array of parameters,'
                             f' "t": the index of the step(counter), and "u": the array of the exogenous inputs of'
                             f' the system of odes at step i')
+        if self.n_params
+
         else:
             # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
             self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, None], out_axes=1)
