@@ -72,7 +72,7 @@ class ODESolvers:
             raise Exception('The function of ode is not specified properly!')
 
         if isinstance(method, str):
-            if method not in ['Euler', 'rk2', 'rk4', 'Ralston']:
+            if method not in ['euler', 'rk2', 'rk4', 'ralston', 'modified_euler']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
@@ -190,7 +190,7 @@ class ODESolvers:
         else:
             self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1)
 
-        if self.method == 'Euler':
+        if self.method == 'euler':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 evaluation = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -200,9 +200,9 @@ class ODESolvers:
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])\
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) *\
+                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
@@ -211,31 +211,36 @@ class ODESolvers:
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])\
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) *\
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
                      self.delta[itr]
                 k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
                      self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
                      self.delta[itr]
-                states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1/6) * (k1 + 2*k2 + 2*k3 + k4))
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
-        elif self.method =='Ralston':
+        elif self.method == 'ralston':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
-                k2 = self.parallelized_odes(states[:, :, itr] + (2/3) * self.delta[itr] * k1, parameters[:, :, itr],
+                k2 = self.parallelized_odes(states[:, :, itr] + (2 / 3) * self.delta[itr] * k1, parameters[:, :, itr],
                                             itr, u[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * k1 +
                                                       0.75 * self.delta[itr] * k2)
                 return states, parameters, inputs
 
+        elif self.method == 'modified_euler':
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
 
-
-
-
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
+                                            itr, u[:, :, itr])
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * k2)
+                return states, parameters, inputs
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
