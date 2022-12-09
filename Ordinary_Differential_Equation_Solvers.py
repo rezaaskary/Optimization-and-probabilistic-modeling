@@ -100,12 +100,21 @@ class ODESolvers:
             raise Exception('Please enter an integer to specify the number of iterations for simulation.')
 
 
-        if isinstance(duration, int):
+        if isinstance(duration, (int, float)):
             self.duration = duration
         elif not duration:
             self.duration = None
         else:
             raise Exception('Please enter a float value to specify the duration of simulation.')
+
+        if isinstance(delta, (int, float)):
+            self.delta = delta
+        elif not delta:
+            self.delta = None
+        else:
+            raise Exception('Please enter a positive value to specify the length of interval for solving the system of'
+                            ' ODE.')
+
 
 
 
