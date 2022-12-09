@@ -94,6 +94,26 @@ class ODESolvers:
 
         if isinstance(iteration, int):
             self.iteration = iteration
+        elif not iteration:
+
+
+
+
+        if iteration and duration and not delta:
+        elif iteration and delta and not duration:
+            elif delta and duration and not
+
+
+
+
+            if
+
+
+
+
+
+
+
         else:
             raise Exception('Please correctly specify the number of iteration for solving the system of ode.')
 
