@@ -190,10 +190,22 @@ class ODESolvers:
         else:
             self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1)
 
-
         if self.method == 'Euler':
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 evaluation = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
-                states = states.at[:, :, itr + 1].set(states[:,:, itr] + evaluation * self.delta[itr])
-                return states, par, u
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + evaluation * self.delta[itr])
+                return states, parameters, inputs
+        elif self.method == 'rk2':
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])\
+                     * self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) *\
+                     self.delta[itr]
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
+                return states, parameters, inputs
+        elif self.method == 'rk4':
+        else:
+
