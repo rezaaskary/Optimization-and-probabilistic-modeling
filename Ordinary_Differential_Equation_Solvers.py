@@ -221,11 +221,14 @@ class ODESolvers:
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                evaluation = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
-                states = states.at[:, :, itr + 1].set(states[:, :, itr] + evaluation * self.delta[itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + fn * self.delta[itr + 1])
                 return states, parameters, inputs
+
+            self.ode_parallel_wrapper = fcn_main_euler
+
         elif self.method == 'RK2':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
@@ -436,6 +439,7 @@ class ODESolvers:
         elif self.method == 'ABAM1':
             self.lower_limit = 0
             self.upper_limit = self.steps - 2
+
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -472,7 +476,7 @@ class ODESolvers:
                 pn3 = states[:, :, itr + 2] + (self.delta[itr + 2] / 12) * (23 * fn2 - 16 * fn1 + 5 * fn)
                 fp3 = self.parallelized_odes(pn3, parameters[:, :, itr + 3], itr + 3, u[:, :, itr + 3])
 
-                states = states.at[:, :, itr + 3].set(states[:, :, itr + 2] + (1/12) * self.delta[itr + 3]
+                states = states.at[:, :, itr + 3].set(states[:, :, itr + 2] + (1 / 12) * self.delta[itr + 3]
                                                       * (5 * fp3 + 8 * fn2 - fn1))
                 return states, parameters, inputs
 
@@ -498,5 +502,3 @@ class ODESolvers:
                 states = states.at[:, :, itr + 5].set(states[:, :, itr + 4] + (1 / 720) * self.delta[itr + 5]
                                                       * (251 * fp5 + 646 * fn4 - 264 * fn3 + 106 * fn2 - 19 * fn1))
                 return states, parameters, inputs
-
-        self.ode_parallel_wrapper = ode_parallel_wrapper
