@@ -429,7 +429,8 @@ class ODESolvers:
                                              u[:, :, itr + 4])
 
                 states = states.at[:, :, itr + 5].set(
-                    states[:, :, itr + 4] + (self.delta[itr + 5] / 720) * (55 * fn3 - 59 * fn2 + 37 * fn1 - 9 * fn))
+                    states[:, :, itr + 4] + (self.delta[itr + 5] / 720) * (1901 * fn4 - 2774 * fn3 + 2616 * fn2
+                                                                           - 1274 * fn1 + 251 * fn))
                 return states, parameters, inputs
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
