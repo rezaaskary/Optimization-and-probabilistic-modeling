@@ -62,6 +62,7 @@ class ODESolvers:
                 n_sim: int = 1,
                 n_states: int = None,
                 n_params: int = None,
+                x0: jnp.ndarray = None,
                 method: str = 'Euler',
                 activate_jit: bool = False,
                 n_input: int = None):
@@ -136,6 +137,17 @@ class ODESolvers:
             self.steps = None
         else:
             raise Exception('Please enter an integer to specify the number of iterations for simulation.')
+
+        if isinstance(x0, jnp.ndarray):
+            self.x0 = x0
+        else:
+            raise Exception('Please enter an integer to specify the number of iterations for simulation.')
+
+
+
+
+
+
 
         if isinstance(duration, (int, float)):
             self.duration = duration
