@@ -143,10 +143,9 @@ class ODESolvers:
         else:
             raise Exception('Please enter the initial condition of state variables.')
 
-
-
-
-
+        if (not self.x0.shape[0]==self.n_states) or (not self.x0.shape[1]==self.n_sim):
+            raise  Exception('Given array of initial condition is not consistent with the number of state variables and'
+                             'the number of simulation(parallel solution)')
 
 
         if isinstance(duration, (int, float)):
