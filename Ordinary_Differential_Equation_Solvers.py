@@ -143,10 +143,9 @@ class ODESolvers:
         else:
             raise Exception('Please enter the initial condition of state variables.')
 
-        if (not self.x0.shape[0]==self.n_states) or (not self.x0.shape[1]==self.n_sim):
-            raise  Exception('Given array of initial condition is not consistent with the number of state variables and'
-                             'the number of simulation(parallel solution)')
-
+        if not self.x0 == (self.n_states, self.n_sim):
+            raise Exception('Given array of initial condition is not consistent with the number of state variables and'
+                            'the number of simulation(parallel solution)')
 
         if isinstance(duration, (int, float)):
             self.duration = duration
@@ -211,8 +210,6 @@ class ODESolvers:
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
         self.x = self.x.at[:, :, 0].set(x_0)
         self.parameters = jnp.ones((self.n_params, self.n_sim, self.steps))
-
-
 
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
         if self.activate_jit:
@@ -306,8 +303,6 @@ class ODESolvers:
                  self.delta[0]
             states = states.at[:, :, 1].set(states[:, :, 0] + 0.5 * (k1 + k2))
 
-
-
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -318,8 +313,5 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(
                     states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
                 return states, parameters, inputs
-
-
-
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
