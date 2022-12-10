@@ -324,4 +324,22 @@ class ODESolvers:
                     states[:, :, itr + 1] + k1 + k2)
                 return states, parameters, inputs
 
+        elif self.method == 'AB_AM_4th':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 2
+
+            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) * \
+                     1.5 * self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1],
+                                            itr, u[:, :, itr + 1]) * - 0.5 * self.delta[itr + 1]
+
+                states = states.at[:, :, itr + 2].set(
+                    states[:, :, itr + 1] + k1 + k2)
+                return states, parameters, inputs
+
+
+
+
         self.ode_parallel_wrapper = ode_parallel_wrapper
