@@ -218,12 +218,16 @@ class ODESolvers:
             self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1)
 
         if self.method == 'euler':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 evaluation = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + evaluation * self.delta[itr])
                 return states, parameters, inputs
         elif self.method == 'RK2':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -235,6 +239,8 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'RK4':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -250,6 +256,8 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'ralston':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -261,6 +269,8 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'modified_euler':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
@@ -271,6 +281,8 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'heun':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
 
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -284,6 +296,8 @@ class ODESolvers:
 
 
         elif self.method == 'RK3':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 1
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -296,6 +310,8 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'AB_2nd':
+            self.lower_limit = 0
+            self.upper_limit = self.steps - 2
 
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
