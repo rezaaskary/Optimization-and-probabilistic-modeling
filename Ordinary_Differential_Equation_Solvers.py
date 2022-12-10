@@ -198,7 +198,10 @@ class ODESolvers:
                             f' the system of odes at step i')
 
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
+        self.x = self.x.at[:, :, 0].set(x_0)
         self.parameters = jnp.ones((self.n_params, self.n_sim, self.steps))
+
+
 
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
         if self.activate_jit:
@@ -285,6 +288,15 @@ class ODESolvers:
                 return states, parameters, inputs
 
         elif self.method == 'AB_2nd':
+
+            k1 = self.parallelized_odes(states[:, :, 0], parameters[:, :, 0], itr, u[:, :, 0]) \
+                 * self.delta[0]
+            k2 = self.parallelized_odes(states[:, :, 0] + k1, parameters[:, :, 0], itr, u[:, :, 0]) * \
+                 self.delta[0]
+            states = states.at[:, :, 1].set(states[:, :, 0] + 0.5 * (k1 + k2))
+
+
+
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
