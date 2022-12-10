@@ -141,7 +141,7 @@ class ODESolvers:
         if isinstance(x0, jnp.ndarray):
             self.x0 = x0
         else:
-            raise Exception('Please enter an integer to specify the number of iterations for simulation.')
+            raise Exception('Please enter the initial condition of state variables.')
 
 
 
