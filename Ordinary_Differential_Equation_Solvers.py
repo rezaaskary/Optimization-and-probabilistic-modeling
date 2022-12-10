@@ -297,21 +297,15 @@ class ODESolvers:
 
         elif self.method == 'AB_2nd':
 
-            k1 = self.parallelized_odes(states[:, :, 0], parameters[:, :, 0], itr, u[:, :, 0]) \
-                 * self.delta[0]
-            k2 = self.parallelized_odes(states[:, :, 0] + k1, parameters[:, :, 0], itr, u[:, :, 0]) * \
-                 self.delta[0]
-            states = states.at[:, :, 1].set(states[:, :, 0] + 0.5 * (k1 + k2))
-
             def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
-                k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
-                                            parameters[:, :, itr], itr, u[:, :, itr])
-                states = states.at[:, :, itr + 1].set(
-                    states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) * \
+                     1.5 * self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1],
+                                            itr, u[:, :, itr + 1]) * - 0.5 * self.delta[itr + 1]
+
+                states = states.at[:, :, itr + 2].set(
+                    states[:, :, itr + 1] + k1 + k2)
                 return states, parameters, inputs
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
