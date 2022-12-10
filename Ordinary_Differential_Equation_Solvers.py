@@ -347,14 +347,7 @@ class ODESolvers:
                 sd2 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, u[:, :, itr + 4])
 
                 sd = states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (9 * sd2 + 19 * fn3 - 5 * fn2 + fn1)
-                states = states.at[:, :, itr + 2].set()
-                # k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) * \
-                #      1.5 * self.delta[itr]
-                # k2 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1],
-                #                             itr, u[:, :, itr + 1]) * - 0.5 * self.delta[itr + 1]
-                #
-                # states = states.at[:, :, itr + 2].set(
-                #     states[:, :, itr + 1] + k1 + k2)
+                states = states.at[:, :, itr + 4].set(sd)
                 return states, parameters, inputs
 
         self.ode_parallel_wrapper = ode_parallel_wrapper
