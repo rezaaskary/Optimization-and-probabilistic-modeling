@@ -52,17 +52,17 @@ def wrapper(itr: int, init_val: tuple) -> tuple:
 
 class ODESolvers:
     def __init__(self,
-                fcn: callable = None,
-                steps: int = None,
-                max_step_size: float = None,
-                duration: float = None,
-                n_sim: int = 1,
-                n_states: int = None,
-                n_params: int = None,
-                x0: jnp.ndarray = None,
-                method: str = 'euler',
-                activate_jit: bool = False,
-                n_input: int = None):
+                 fcn: callable = None,
+                 steps: int = None,
+                 max_step_size: float = None,
+                 duration: float = None,
+                 n_sim: int = 1,
+                 n_states: int = None,
+                 n_params: int = None,
+                 x0: jnp.ndarray = None,
+                 method: str = 'euler',
+                 activate_jit: bool = False,
+                 n_input: int = None):
         """
         reference:
         <<Süli, Endre. "Numerical solution of ordinary differential equations." Mathematical Institute,
@@ -87,7 +87,7 @@ class ODESolvers:
 
         if isinstance(method, str):
             if method in ['euler', 'RK2', 'RK3', 'RK4', 'ralston', 'modified_euler', 'heun', 'AB2', 'AB3', 'AB4',
-                              'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
+                          'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
@@ -148,9 +148,13 @@ class ODESolvers:
 
         if self.x0.shape == (self.n_states, self.n_sim):
             pass
-        elif self.x0.shape == self.n_states:
+
+        if self.x0.shape == self.n_states:
             self.x0 = jnp.tile(A=self.x0, reps=[1, self.n_sim])
-        else:
+        if len(self.x0) == 1:
+            self.x0 = jnp.ones((self.n_states, self.n_sim)) * self.x0
+
+        if not self.x0.shape == (self.n_states, self.n_sim):
             raise Exception('Given array of initial condition is not consistent with the number of state variables and'
                             'the number of simulation(parallel solution)')
 
