@@ -298,7 +298,7 @@ class ODESolvers:
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_heun(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + (1 / 3) * self.delta[itr] * k1, parameters[:, :, itr],
@@ -308,6 +308,7 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * (k1 + k3))
                 return states, parameters, inputs
 
+            self.ode_parallel_wrapper = fcn_main_heun
 
         elif self.method == 'RK3':
             self.lower_limit = 0
