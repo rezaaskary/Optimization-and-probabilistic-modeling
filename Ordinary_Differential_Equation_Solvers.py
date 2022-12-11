@@ -645,16 +645,6 @@ class ODESolvers:
                                                         jnp.where(u.shape == self.n_input,
                                                                   jnp.tile(A=parameter,
                                                                            reps=[1, self.n_sim, self.steps]), None))))
-
-
-        # if u:
-        #     if u.shape == (self.n_input, self.n_sim, self.steps):
-        #         pass
-        #     elif u.shape == (self.n_input, self.steps):
-        #         self.u = jnp.tile(A=u, reps=[1, self.n_sim, 1])
-        # else:
-        #     pass
-
         def solve_with_init() -> tuple:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
                                          upper=self.upper_limit_init,
