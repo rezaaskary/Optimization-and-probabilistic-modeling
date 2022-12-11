@@ -630,28 +630,20 @@ class ODESolvers:
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
 
         def solve_with_init() -> tuple:
-            self.x, _,_ = lax.fori_loop(lower=self.lower_limit,
-                              upper=self.upper_limit_init,
-                              body_fun=self.ode_parallel_wrapper,
-                              init_val=(self.x, self.parameters, self.u))
+            self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
+                                         upper=self.upper_limit_init,
+                                         body_fun=self.ode_parallel_wrapper,
+                                         init_val=(self.x, self.parameters, self.u))
 
             solution = lax.fori_loop(lower=self.lower_limit,
                                      upper=self.upper_limit,
                                      body_fun=self.ode_parallel_wrapper,
                                      init_val=(self.x, self.parameters, self.u))
             return solution
+
         def solve_without_init() -> tuple:
             solution = lax.fori_loop(lower=self.lower_limit,
-                          upper=self.upper_limit,
-                          body_fun=self.ode_parallel_wrapper,
-                          init_val=(self.x, self.parameters, self.u))
+                                     upper=self.upper_limit,
+                                     body_fun=self.ode_parallel_wrapper,
+                                     init_val=(self.x, self.parameters, self.u))
             return solution
-
-
-
-        if self.requires_init:
-
-        else:
-
-
-        return
