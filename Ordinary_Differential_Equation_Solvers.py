@@ -20,8 +20,6 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None,
     return dx_dt
 
 
-D = len(ode_fcn)
-
 n_par = 3
 chains = 10000
 L = 10000
@@ -46,11 +44,10 @@ def wrapper(itr: int, init_val: tuple) -> tuple:
     return x, par, u
 
 
-M = jax.lax.fori_loop(lower=0,
-                      upper=L,
-                      body_fun=wrapper,
-                      init_val=(x, par, u))
-M
+# M = jax.lax.fori_loop(lower=0,
+#                       upper=L,
+#                       body_fun=wrapper,
+#                       init_val=(x, par, u))
 
 
 class ODESolvers:
@@ -644,10 +641,13 @@ class ODESolvers:
                                     jnp.where(parameter.shape == (self.n_params, self.n_sim, self.steps), u,
                                               jnp.where(parameter.shape == (self.n_params, self.steps),
                                                         jnp.tile(A=parameter, reps=[1, self.n_sim, 1]),
-                                                        jnp.where(parameter.shape == self.n_params, jnp.tile(A=parameter,
-                                                        reps=[1, self.n_sim, self.steps]),
-                                                        jnp.where(parameter.shape == (self.n_params, self.n_sim),
-                                                        jnp.tile(A=parameter, reps=[1, 1, self.steps]), None)))))
+                                                        jnp.where(parameter.shape == self.n_params,
+                                                                  jnp.tile(A=parameter,
+                                                                           reps=[1, self.n_sim, self.steps]),
+                                                                  jnp.where(
+                                                                      parameter.shape == (self.n_params, self.n_sim),
+                                                                      jnp.tile(A=parameter, reps=[1, 1, self.steps]),
+                                                                      None)))))
 
         def solve_with_init() -> tuple:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
