@@ -629,12 +629,20 @@ class ODESolvers:
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
 
-        def solve_with_init():
+        def solve_with_init() -> tuple:
+            self.x, _,_ = lax.fori_loop(lower=self.lower_limit,
+                              upper=self.upper_limit_init,
+                              body_fun=self.ode_parallel_wrapper,
+                              init_val=())
 
 
             return
-        def solve_without_init():
-            return
+        def solve_without_init() -> tuple:
+            solution = lax.fori_loop(lower=self.lower_limit,
+                          upper=self.upper_limit,
+                          body_fun=self.ode_parallel_wrapper,
+                          init_val=())
+            return solution
 
 
 
