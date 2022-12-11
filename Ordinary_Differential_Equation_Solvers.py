@@ -146,7 +146,11 @@ class ODESolvers:
         else:
             raise Exception('Please enter the initial condition of state variables.')
 
-        if not self.x0 == (self.n_states, self.n_sim):
+        if self.x0.shape == (self.n_states, self.n_sim):
+            pass
+        elif self.x0.shape == self.n_states:
+            self.x0 = jnp.tile(A=self.x0, reps=[1, self.n_sim])
+        else:
             raise Exception('Given array of initial condition is not consistent with the number of state variables and'
                             'the number of simulation(parallel solution)')
 
