@@ -327,18 +327,20 @@ class ODESolvers:
 
             self.ode_parallel_wrapper = fcn_main_rk3
 
-        elif self.method == 'AB2':  # requires initialization
-            self.lower_limit = 0
-            self.upper_limit = self.steps - 2
-
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
-                states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) * \
-                     1.5 * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1],
-                                            + 1, u[:, :, itr + 1]) * - 0.5 * self.delta[itr + 1]
-                states = states.at[:, :, itr + 2].set(states[:, :, itr + 1] + k1 + k2)
-                return states, parameters, inputs
+        # elif self.method == 'AB2':  # requires initialization
+        #     self.lower_limit = 0
+        #     self.upper_limit = self.steps - 2
+        #
+        #     def fcn_main_ab2(itr: int, init_val: tuple) -> tuple:
+        #         states, parameters, inputs = init_val
+        #         k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) * \
+        #              1.5 * self.delta[itr]
+        #         k2 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1],
+        #                                     + 1, u[:, :, itr + 1]) * - 0.5 * self.delta[itr + 1]
+        #         states = states.at[:, :, itr + 2].set(states[:, :, itr + 1] + k1 + k2)
+        #         return states, parameters, inputs
+        #
+        #     self.ode_parallel_wrapper = fcn_main_ab2
 
         elif self.method == 'ABAM4':
             self.lower_limit = 0
@@ -354,10 +356,9 @@ class ODESolvers:
                 fn3 = self.parallelized_odes(states[:, :, itr + 3], parameters[:, :, itr + 3], itr + 3,
                                              u[:, :, itr + 3])
                 pn4 = states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (55 * fn3 - 59 * fn2 + 37 * fn1 - 9 * fn)
-                sd2 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, u[:, :, itr + 4])
-
-                sd = states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (9 * sd2 + 19 * fn3 - 5 * fn2 + fn1)
-                states = states.at[:, :, itr + 4].set(sd)
+                fp4 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, u[:, :, itr + 4])
+                states = states.at[:, :, itr + 4].set(states[:, :, itr + 3] + (self.delta[itr + 4] / 24)
+                                                      * (9 * fp4 + 19 * fn3 - 5 * fn2 + fn1))
                 return states, parameters, inputs
 
         elif self.method == 'AB3':
