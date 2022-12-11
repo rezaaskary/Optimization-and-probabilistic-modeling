@@ -151,6 +151,7 @@ class ODESolvers:
 
         if self.x0.shape == self.n_states:
             self.x0 = jnp.tile(A=self.x0, reps=[1, self.n_sim])
+
         if len(self.x0) == 1:
             self.x0 = jnp.ones((self.n_states, self.n_sim)) * self.x0
 
