@@ -629,4 +629,18 @@ class ODESolvers:
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
 
+        def solve_with_init():
+
+
+            return
+        def solve_without_init():
+            return
+
+
+
+        if self.requires_init:
+
+        else:
+
+
         return
