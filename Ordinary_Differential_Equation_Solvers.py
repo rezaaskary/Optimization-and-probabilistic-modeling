@@ -633,16 +633,19 @@ class ODESolvers:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
+        # is_none_u = u == None
+        # is_none_p = parameter == None
+        # ff = jnp.where(is_none_u, self.u, u)
 
-        self.u = jnp.where(u == None,
-                           self.u,
-                           jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
-                                     jnp.where(u.shape == (self.n_input, self.steps),
-                                               jnp.tile(A=u, reps=[1, self.n_sim, 1]),
-                                               jnp.where(u.shape == self.n_input,
-                                                         jnp.tile(A=u, reps=[1, self.n_sim, self.steps]),
-                                                         jnp.where(u.shape == (self.n_input, self.n_sim),
-                                                                   jnp.tile(A=u, reps=[1, 1, self.steps]), None)))))
+        ff = jnp.where(u == None,
+                       self.u,
+                       jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
+                                 jnp.where(u.shape == (self.n_input, self.steps),
+                                           jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
+                                           jnp.where(u.shape == self.n_input,
+                                                     jnp.tile(A=u[jnp.newaxis, :, :], reps=[1, self.n_sim, self.steps]),
+                                                     jnp.tile(A=u[jnp.newaxis, jnp.newaxis, :],
+                                                              reps=[1, 1, self.steps])))))
 
         self.parameters = jnp.where(parameter == None,
                                     self.parameters,
