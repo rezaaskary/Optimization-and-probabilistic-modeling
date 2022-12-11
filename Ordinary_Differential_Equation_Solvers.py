@@ -130,7 +130,7 @@ class ODESolvers:
         if isinstance(n_input, int):
             self.n_input = n_input
         elif not n_input:
-            self.n_input = None
+            self.n_input = 1
         else:
             raise Exception('Please correctly specify whether the system of ode has input variable.')
 
@@ -146,13 +146,12 @@ class ODESolvers:
         else:
             raise Exception('Please enter the initial condition of state variables.')
 
-        if self.x0.shape == (self.n_states, self.n_sim):
-            pass
+        # if self.x0.shape == (self.n_states, self.n_sim):
+        #     pass
 
-        if self.x0.shape == self.n_states:
-            self.x0 = jnp.tile(A=self.x0, reps=[1, self.n_sim])
-
-        if len(self.x0) == 1:
+        if self.x0.shape == (self.n_states,):
+            self.x0 = jnp.tile(A=self.x0[:, jnp.newaxis], reps=[1, self.n_sim])
+        elif self.x0.shape == () or self.x0.shape == (1,):
             self.x0 = jnp.ones((self.n_states, self.n_sim)) * self.x0
 
         if not self.x0.shape == (self.n_states, self.n_sim):
@@ -220,7 +219,7 @@ class ODESolvers:
                             f' the system of odes at step i')
         # reallocating input, parameters, and state variables
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
-        self.x = self.x.at[:, :, 0].set(x_0)
+        self.x = self.x.at[:, :, 0].set(self.x0)
         self.parameters = jnp.ones((self.n_params, self.n_sim, self.steps))
         self.u = jnp.ones((self.n_input, self.n_sim, self.steps))
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
