@@ -40,8 +40,8 @@ x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(
 # u = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(3, L), dtype=jnp.float64)
 
 
-odes = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_states=4,n_params=3,x0=x_0,method='euler')
-odes
+odes = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='euler')
+T=odes.solve(parameter=par,u=u)
 
 
 

@@ -675,3 +675,5 @@ class ODESolvers:
                                      body_fun=self.ode_parallel_wrapper,
                                      init_val=(self.x, self.parameters, self.u))
             return solution
+
+        D = lax.cond(self.requires_init, solve_with_init(), solve_without_init())
