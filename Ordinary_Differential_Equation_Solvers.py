@@ -633,10 +633,13 @@ class ODESolvers:
             self.x, _,_ = lax.fori_loop(lower=self.lower_limit,
                               upper=self.upper_limit_init,
                               body_fun=self.ode_parallel_wrapper,
-                              init_val=())
+                              init_val=(self.x, self.parameters, self.u))
 
-
-            return
+            solution = lax.fori_loop(lower=self.lower_limit,
+                                     upper=self.upper_limit,
+                                     body_fun=self.ode_parallel_wrapper,
+                                     init_val=(self.x, self.parameters, self.u))
+            return solution
         def solve_without_init() -> tuple:
             solution = lax.fori_loop(lower=self.lower_limit,
                           upper=self.upper_limit,
