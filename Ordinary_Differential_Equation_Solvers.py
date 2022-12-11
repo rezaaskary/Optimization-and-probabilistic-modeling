@@ -544,7 +544,6 @@ class ODESolvers:
 
             self.ode_parallel_wrapper = fcn_main_abam1
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
         elif self.method == 'ABAM2':
             self.lower_limit = 0
             self.upper_limit = self.steps - 3
@@ -577,8 +576,20 @@ class ODESolvers:
         elif self.method == 'ABAM3':
             self.lower_limit = 0
             self.upper_limit = self.steps - 3
+            self.upper_limit_init = 2
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_abam3_init(itr: int, init_val: tuple) -> tuple:
+                states, parameters, inputs = init_val
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
+                                            itr, u[:, :, itr])
+                k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
+                                            parameters[:, :, itr], itr, u[:, :, itr])
+                states = states.at[:, :, itr + 1].set(
+                    states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
+                return states, parameters, inputs
+
+            def fcn_main_abam3(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
@@ -591,6 +602,9 @@ class ODESolvers:
                 states = states.at[:, :, itr + 3].set(states[:, :, itr + 2] + (1 / 12) * self.delta[itr + 3]
                                                       * (5 * fp3 + 8 * fn2 - fn1))
                 return states, parameters, inputs
+
+            self.ode_parallel_wrapper = fcn_main_abam3
+            self.ode_parallel_wrapper_init = fcn_main_abam3_init
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
         elif self.method == 'ABAM5':
