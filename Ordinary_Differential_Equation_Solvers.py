@@ -99,7 +99,7 @@ class ODESolvers:
         else:
             raise Exception(f'Please enter the method for solving system of ordinary differential equation.')
 
-        if self.method in [ 'AB2', 'AB3', 'AB4', 'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
+        if self.method in ['AB2', 'AB3', 'AB4', 'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
             self.requires_init = True
         else:
             self.requires_init = False
@@ -626,3 +626,8 @@ class ODESolvers:
             self.ode_parallel_wrapper = fcn_main_abam5
             self.ode_parallel_wrapper_init = fcn_main_abam5_init
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+    def solve(self, x: jnp.ndarray = None, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
+
+        return
