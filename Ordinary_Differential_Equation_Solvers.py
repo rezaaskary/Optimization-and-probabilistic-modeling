@@ -644,7 +644,7 @@ class ODESolvers:
             solution = lax.fori_loop(lower=self.lower_limit,
                           upper=self.upper_limit,
                           body_fun=self.ode_parallel_wrapper,
-                          init_val=())
+                          init_val=(self.x, self.parameters, self.u))
             return solution
 
 
