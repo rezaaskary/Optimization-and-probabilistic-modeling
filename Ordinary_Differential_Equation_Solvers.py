@@ -298,7 +298,7 @@ class ODESolvers:
                 return states, parameters, inputs
 
             self.ode_parallel_wrapper = fcn_main_ralston
-
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'modified_euler':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
@@ -313,7 +313,7 @@ class ODESolvers:
                 return states, parameters, inputs
 
             self.ode_parallel_wrapper = fcn_main_modified_euler
-
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'heun':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
@@ -329,14 +329,14 @@ class ODESolvers:
                 return states, parameters, inputs
 
             self.ode_parallel_wrapper = fcn_main_heun
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
-        elif self.method == 'ABAM4':  # requires initialization
+        elif self.method == 'AB4':  # requires initialization
             self.lower_limit = 0
             self.upper_limit = self.steps - 5
             self.upper_limit_init = 3
 
-            def fcn_main_abam4_init(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_ab4_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
                      * self.delta[itr]
@@ -349,7 +349,7 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
-            def fcn_main_abam4(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_ab4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
                 fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
@@ -364,8 +364,8 @@ class ODESolvers:
                                                       * (9 * fp4 + 19 * fn3 - 5 * fn2 + fn1))
                 return states, parameters, inputs
 
-            self.ode_parallel_wrapper = fcn_main_abam4
-            self.ode_parallel_wrapper_init = fcn_main_abam4_init
+            self.ode_parallel_wrapper = fcn_main_ab4
+            self.ode_parallel_wrapper_init = fcn_main_ab4_init
 
         elif self.method == 'AB3':
             self.lower_limit = 0
