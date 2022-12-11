@@ -233,21 +233,23 @@ class ODESolvers:
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_rk2(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
                      * self.delta[itr]
                 k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
-                     self.delta[itr]
+                        self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
+
+            self.ode_parallel_wrapper = fcn_main_rk2
 
         elif self.method == 'RK4':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_rk4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
@@ -261,11 +263,13 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
+            self.ode_parallel_wrapper = fcn_main_rk4
+
         elif self.method == 'ralston':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_ralston(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -274,12 +278,13 @@ class ODESolvers:
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * k1 +
                                                       0.75 * self.delta[itr] * k2)
                 return states, parameters, inputs
+            self.ode_parallel_wrapper = fcn_main_ralston
 
         elif self.method == 'modified_euler':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
 
-            def ode_parallel_wrapper(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_modified_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
@@ -287,6 +292,7 @@ class ODESolvers:
                                             itr, u[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * k2)
                 return states, parameters, inputs
+            self.ode_parallel_wrapper = fcn_main_modified_euler
 
         elif self.method == 'heun':
             self.lower_limit = 0
