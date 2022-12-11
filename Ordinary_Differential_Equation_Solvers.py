@@ -51,7 +51,7 @@ def wrapper(itr: int, init_val: tuple) -> tuple:
 
 
 class ODESolvers:
-    def __int__(self,
+    def __init__(self,
                 fcn: callable = None,
                 steps: int = None,
                 max_step_size: float = None,
@@ -60,7 +60,7 @@ class ODESolvers:
                 n_states: int = None,
                 n_params: int = None,
                 x0: jnp.ndarray = None,
-                method: str = 'Euler',
+                method: str = 'euler',
                 activate_jit: bool = False,
                 n_input: int = None):
         """
@@ -86,13 +86,13 @@ class ODESolvers:
             raise Exception('The function of ode is not specified properly!')
 
         if isinstance(method, str):
-            if method not in ['euler', 'RK2', 'RK3', 'RK4', 'ralston', 'modified_euler', 'heun', 'AB2', 'AB3', 'AB4',
+            if method in ['euler', 'RK2', 'RK3', 'RK4', 'ralston', 'modified_euler', 'heun', 'AB2', 'AB3', 'AB4',
                               'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
         elif not method:
-            self.method = 'Euler'
+            self.method = 'euler'
         else:
             raise Exception(f'Please enter the method for solving system of ordinary differential equation.')
 
