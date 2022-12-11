@@ -29,7 +29,7 @@ chains = 100
 L = 500
 par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
 x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(4, chains), dtype=jnp.float64)
-u = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(2, L), dtype=jnp.float64)
+u = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(3, L), dtype=jnp.float64)
 
 
 

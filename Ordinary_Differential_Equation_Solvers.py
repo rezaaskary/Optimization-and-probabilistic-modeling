@@ -635,16 +635,20 @@ class ODESolvers:
                                      jnp.where(u.shape == (self.n_input, self.steps),
                                                jnp.tile(A=u, reps=[1, self.n_sim, 1]),
                                                jnp.where(u.shape == self.n_input,
-                                                         jnp.tile(A=u, reps=[1, self.n_sim, self.steps]), None))))
+                                                         jnp.tile(A=u, reps=[1, self.n_sim, self.steps]),
+                                                         jnp.where(u.shape == (self.n_input, self.n_sim),
+                                                                   jnp.tile(A=u, reps=[1, 1, self.steps]), None)))))
 
         self.parameters = jnp.where(parameter == None,
                                     self.parameters,
-                                    jnp.where(parameter.shape == (self.n_input, self.n_sim, self.steps), u,
-                                              jnp.where(parameter.shape == (self.n_input, self.steps),
+                                    jnp.where(parameter.shape == (self.n_params, self.n_sim, self.steps), u,
+                                              jnp.where(parameter.shape == (self.n_params, self.steps),
                                                         jnp.tile(A=parameter, reps=[1, self.n_sim, 1]),
-                                                        jnp.where(u.shape == self.n_input,
-                                                                  jnp.tile(A=parameter,
-                                                                           reps=[1, self.n_sim, self.steps]), None))))
+                                                        jnp.where(parameter.shape == self.n_params, jnp.tile(A=parameter,
+                                                        reps=[1, self.n_sim, self.steps]),
+                                                        jnp.where(parameter.shape == (self.n_params, self.n_sim),
+                                                        jnp.tile(A=parameter, reps=[1, 1, self.steps]), None)))))
+
         def solve_with_init() -> tuple:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
                                          upper=self.upper_limit_init,
