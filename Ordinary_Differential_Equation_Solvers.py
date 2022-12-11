@@ -212,11 +212,11 @@ class ODESolvers:
                             f' with the order of "x": the array of state variables, "p": the array of parameters,'
                             f' "t": the index of the step(counter), and "u": the array of the exogenous inputs of'
                             f' the system of odes at step i')
-
+        # reallocating input, parameters, and state variables
         self.x = jnp.zeros((self.n_states, self.n_sim, self.steps))
         self.x = self.x.at[:, :, 0].set(x_0)
         self.parameters = jnp.ones((self.n_params, self.n_sim, self.steps))
-
+        self.u = jnp.ones((self.n_input, self.n_sim, self.steps))
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
         if self.activate_jit:
             self.parallelized_odes = jit(jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1))
@@ -627,7 +627,6 @@ class ODESolvers:
             self.ode_parallel_wrapper_init = fcn_main_abam5_init
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
-    def solve(self, x: jnp.ndarray = None, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
+    def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
 
         return
