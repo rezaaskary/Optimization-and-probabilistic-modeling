@@ -629,13 +629,16 @@ class ODESolvers:
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
 
-        if u:
-            if u.shape == (self.n_input, self.n_sim, self.steps):
-                pass
-            elif u.shape == (self.n_input, self.steps):
-                self.u = jnp.tile(A=u, reps=[1, self.n_sim, 1])
-        else:
-            pass
+        self.u = jnp.where(u == None, self.u, jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
+                                                        jnp.tile(A=u, reps=[1, self.n_sim, 1])))
+
+        # if u:
+        #     if u.shape == (self.n_input, self.n_sim, self.steps):
+        #         pass
+        #     elif u.shape == (self.n_input, self.steps):
+        #         self.u = jnp.tile(A=u, reps=[1, self.n_sim, 1])
+        # else:
+        #     pass
 
         def solve_with_init() -> tuple:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
