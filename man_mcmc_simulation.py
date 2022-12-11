@@ -15,10 +15,10 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None,
     dx2_dt = -0.6 * x[2] + jnp.cos(x[2] + x[0]) - 0.2 * u[2] ** 2
     dx3_dt = -0.9 * x[3] + 0.01 * jnp.sin(x[3] + x[1])*jnp.cos(x[2] + x[0]) - 0.2 * u[0]
 
-    dx_dt = dx_dt.at[0, 0].set(dx0_dt)
-    dx_dt = dx_dt.at[1, 0].set(dx1_dt)
-    dx_dt = dx_dt.at[2, 0].set(dx2_dt)
-    dx_dt = dx_dt.at[3, 0].set(dx3_dt)
+    dx_dt = dx_dt.at[0].set(dx0_dt)
+    dx_dt = dx_dt.at[1].set(dx1_dt)
+    dx_dt = dx_dt.at[2].set(dx2_dt)
+    dx_dt = dx_dt.at[3].set(dx3_dt)
 
     return dx_dt
 
