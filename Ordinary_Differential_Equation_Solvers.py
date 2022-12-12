@@ -328,9 +328,9 @@ class ODESolvers:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
+                k2 = self.parallelized_odes(states[:, :, itr] + self.delta[itr] * k1, parameters[:, :, itr],
                                             itr, inputs[:, :, itr])
-                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * k2)
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * (k2+k1))
                 return states, parameters, inputs
 
             self.ode_parallel_wrapper = fcn_main_modified_euler
