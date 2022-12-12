@@ -49,7 +49,7 @@ plt.plot(T1[1,0,:],'.')
 plt.plot(T1[2,0,:],'.')
 plt.plot(T1[3,0,:],'.')
 
-odes2 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='modified_euler')
+odes2 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='heun')
 T2=odes2.solve(parameter=par,u=u)
 
 plt.plot(T2[0,0,:],'-')
