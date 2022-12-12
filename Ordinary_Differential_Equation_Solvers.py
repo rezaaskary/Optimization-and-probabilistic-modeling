@@ -638,9 +638,11 @@ class ODESolvers:
         # ff = jnp.where(is_none_u, self.u, u)
         ff = jnp.where(u == None, self.u, jnp.where(u.shape == (self.n_input, self.steps),
                                                     jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
-                                                    jnp.ones((self.n_input, self.n_sim, self.steps))))
+                                                    jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
+                                                              jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis],
+                                                                       reps=[1, self.n_sim, self.steps]))
+                                                    ))
 
-        jnp.where(u.shape == (self.n_input, self.n_sim, self.steps))
 
 
         ff = jnp.where(u == None,
