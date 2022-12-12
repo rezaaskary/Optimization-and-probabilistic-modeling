@@ -224,9 +224,11 @@ class ODESolvers:
         self.u = jnp.ones((self.n_input, self.n_sim, self.steps))
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
         if self.activate_jit:
-            self.parallelized_odes = jit(jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1))
+            self.parallelized_odes = jit(jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1,
+                                                  axis_size=self.n_sim))
         else:
-            self.parallelized_odes = jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1)
+            self.parallelized_odes = jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1,
+                                              axis_size=self.n_sim)
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if self.method == 'euler':
             self.lower_limit = 0
