@@ -637,7 +637,7 @@ class ODESolvers:
             self.ode_parallel_wrapper = fcn_main_abam5
             self.ode_parallel_wrapper_init = fcn_main_abam5_init
 
-        def solve_with_init() -> tuple:
+        def solve_with_init() -> jnp.ndarray:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
                                          upper=self.upper_limit_init,
                                          body_fun=self.ode_parallel_wrapper,
@@ -649,7 +649,7 @@ class ODESolvers:
                                            init_val=(self.x, self.parameters, self.u))
             return solution
 
-        def solve_without_init() -> tuple:
+        def solve_without_init() -> jnp.ndarray:
             solution, _, _ = lax.fori_loop(lower=self.lower_limit,
                                            upper=self.upper_limit,
                                            body_fun=self.ode_parallel_wrapper,
@@ -680,7 +680,5 @@ class ODESolvers:
         elif parameter.shape == (self.n_params,):
             self.parameters = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
 
-        if self.requires_init:
-            self.solve_without_init()
-        else:
-            self.solve_with_init()
+        return jnp.where(self.requires_init, self.solve_with_init(), self.solve_without_init())
+
