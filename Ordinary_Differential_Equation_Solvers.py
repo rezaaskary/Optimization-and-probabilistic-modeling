@@ -4,7 +4,7 @@ import jax
 from tqdm import tqdm
 
 
-def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None, u: jnp.ndarray = None) -> jnp.ndarray:
+def ode_fcn_(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None, u: jnp.ndarray = None) -> jnp.ndarray:
     m = 4  # the number of state variables
     dx_dt = jnp.zeros((m, 1))  # reallocating the values of state variables
     dx0_dt = -6 * x[0] + x[1] * x[2] * p[0] + u[0]
@@ -27,7 +27,7 @@ par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(
 x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(4, chains), dtype=jnp.float64)
 u = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(2, L), dtype=jnp.float64)
 
-d_dx = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, None], out_axes=1)
+d_dx = jax.vmap(fun=ode_fcn_, in_axes=[1, 1, None, None], out_axes=1)
 x = jnp.zeros((4, chains, L))
 x = x.at[:, :, 0].set(x_0)
 delta = 1
@@ -224,9 +224,9 @@ class ODESolvers:
         self.u = jnp.ones((self.n_input, self.n_sim, self.steps))
         # x: parallelized, p: parallelized, t: non-parallelized, u: non-parallelized
         if self.activate_jit:
-            self.parallelized_odes = jit(jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1))
+            self.parallelized_odes = jit(jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1))
         else:
-            self.parallelized_odes = jax.vmap(fun=ode_fcn, in_axes=[1, 1, None, 1], out_axes=1)
+            self.parallelized_odes = jax.vmap(fun=self.fcn, in_axes=[1, 1, None, 1], out_axes=1)
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if self.method == 'euler':
             self.lower_limit = 0
