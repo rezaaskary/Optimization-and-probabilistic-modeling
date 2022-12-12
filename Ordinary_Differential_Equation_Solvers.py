@@ -231,6 +231,7 @@ class ODESolvers:
         if self.method == 'euler':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -243,6 +244,7 @@ class ODESolvers:
         elif self.method == 'RK2':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_rk2(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -259,6 +261,7 @@ class ODESolvers:
         elif self.method == 'RK3':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_rk3(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -277,15 +280,18 @@ class ODESolvers:
         elif self.method == 'RK4':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_rk4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
@@ -297,6 +303,7 @@ class ODESolvers:
         elif self.method == 'ralston':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_ralston(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -313,6 +320,7 @@ class ODESolvers:
         elif self.method == 'modified_euler':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_modified_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -328,6 +336,7 @@ class ODESolvers:
         elif self.method == 'heun':
             self.lower_limit = 0
             self.upper_limit = self.steps - 1
+            self.upper_limit_init = 0
 
             def fcn_main_heun(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -410,10 +419,10 @@ class ODESolvers:
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
-                     self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
-                     self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * self.delta[itr]
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
@@ -446,10 +455,10 @@ class ODESolvers:
 
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
-                     self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
-                     self.delta[itr]
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * self.delta[itr]
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
@@ -466,7 +475,6 @@ class ODESolvers:
                                              inputs[:, :, itr + 3])
                 fn4 = self.parallelized_odes(states[:, :, itr + 4], parameters[:, :, itr + 4], itr + 4,
                                              inputs[:, :, itr + 4])
-
                 states = states.at[:, :, itr + 5].set(
                     states[:, :, itr + 4] + (self.delta[itr + 5] / 720) * (1901 * fn4 - 2774 * fn3 + 2616 * fn2
                                                                            - 1274 * fn1 + 251 * fn))
@@ -478,6 +486,7 @@ class ODESolvers:
         elif self.method == 'ABAM1':
             self.lower_limit = 0
             self.upper_limit = self.steps - 2
+            self.upper_limit_init = 0
 
             def fcn_main_abam1(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
@@ -561,9 +570,11 @@ class ODESolvers:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
@@ -592,7 +603,6 @@ class ODESolvers:
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'ABAM5':
-
             self.lower_limit = 0
             self.upper_limit = self.steps - 3
             self.upper_limit_init = 4
@@ -601,9 +611,11 @@ class ODESolvers:
                 states, parameters, inputs = init_val
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
+                                            inputs[:, :, itr]) * \
                      self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
@@ -674,6 +686,7 @@ class ODESolvers:
         elif parameter.shape == (self.n_params,):
             self.parameters = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
 
-        D = jnp.where(self.requires_init, self.solve_without_init(), self.solve_with_init())
-        # D = lax.cond(self.requires_init, self.solve_with_init(), self.solve_without_init())
-        D
+        if self.requires_init:
+            self.solve_without_init()
+        else:
+            self.solve_with_init()

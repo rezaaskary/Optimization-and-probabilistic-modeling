@@ -11,8 +11,7 @@ from Ordinary_Differential_Equation_Solvers import ODESolvers
 
 
 def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: int = None, u: jnp.ndarray = None) -> jnp.ndarray:
-    m = 4  # the number of state variables
-    dx_dt = jnp.zeros((m, 1))  # reallocating the values of state variables
+    dx_dt = jnp.zeros((4,))  # reallocating the values of state variables
     dx0_dt = -0.2 * x[0] + p[0] * x[1] * x[2] + 0.1 * u[2]
     dx1_dt = -0.1 * x[1] + p[1] * jnp.sin(x[1] + x[3]) + 0.3 * u[1]
     dx2_dt = -0.6 * x[2] + jnp.cos(x[2] + x[0]) - 0.2 * u[2] ** 2
