@@ -630,6 +630,28 @@ class ODESolvers:
 
             self.ode_parallel_wrapper = fcn_main_abam5
             self.ode_parallel_wrapper_init = fcn_main_abam5_init
+
+        def solve_with_init() -> tuple:
+            self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
+                                         upper=self.upper_limit_init,
+                                         body_fun=self.ode_parallel_wrapper,
+                                         init_val=(self.x, self.parameters, self.u))
+
+            solution, _, _ = lax.fori_loop(lower=self.lower_limit,
+                                           upper=self.upper_limit,
+                                           body_fun=self.ode_parallel_wrapper,
+                                           init_val=(self.x, self.parameters, self.u))
+            return solution
+
+        def solve_without_init() -> tuple:
+            solution, _, _ = lax.fori_loop(lower=self.lower_limit,
+                                           upper=self.upper_limit,
+                                           body_fun=self.ode_parallel_wrapper,
+                                           init_val=(self.x, self.parameters, self.u))
+            return solution
+
+        self.solve_without_init = solve_without_init
+        self.solve_with_init = solve_with_init
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
@@ -652,73 +674,6 @@ class ODESolvers:
         elif parameter.shape == (self.n_params,):
             self.parameters = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
 
-
-
-
-        index_u = jnp.where(u.shape == (self.n_input, self.steps),
-                            jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
-                            jnp.ones((self.n_input, self.n_sim, self.steps)))
-        index2 = jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u, self.u)
-        index3 = jnp.where(u.shape == (self.n_input,),
-                           jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps]), self.u)
-        index4 = jnp.where(u == None, self.u, self.u)
-
-        if u == None:
-            pass
-        elif u.shape == (self.n_input, self.steps):
-            self.u = jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1])
-        elif u.shape == (self.n_input, self.n_sim, self.steps):
-            self.u = u
-        elif u.shape == (self.n_input,):
-            self.u = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
-
-        ff = jnp.where(u == None, self.u, jnp.where(u.shape == (self.n_input, self.steps),
-                                                    jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
-                                                    jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
-                                                              jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis],
-                                                                       reps=[1, self.n_sim, self.steps]))
-                                                    ))
-
-        ff = jnp.where(u == None,
-                       self.u,
-                       jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
-                                 jnp.where(u.shape == (self.n_input, self.steps),
-                                           jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
-                                           jnp.where(u.shape == self.n_input,
-                                                     jnp.tile(A=u[jnp.newaxis, :, :], reps=[1, self.n_sim, self.steps]),
-                                                     jnp.tile(A=u[jnp.newaxis, jnp.newaxis, :],
-                                                              reps=[1, 1, self.steps])))))
-
-        self.parameters = jnp.where(parameter == None,
-                                    self.parameters,
-                                    jnp.where(parameter.shape == (self.n_params, self.n_sim, self.steps), u,
-                                              jnp.where(parameter.shape == (self.n_params, self.steps),
-                                                        jnp.tile(A=parameter, reps=[1, self.n_sim, 1]),
-                                                        jnp.where(parameter.shape == self.n_params,
-                                                                  jnp.tile(A=parameter,
-                                                                           reps=[1, self.n_sim, self.steps]),
-                                                                  jnp.where(
-                                                                      parameter.shape == (self.n_params, self.n_sim),
-                                                                      jnp.tile(A=parameter, reps=[1, 1, self.steps]),
-                                                                      None)))))
-
-        def solve_with_init() -> tuple:
-            self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
-                                         upper=self.upper_limit_init,
-                                         body_fun=self.ode_parallel_wrapper,
-                                         init_val=(self.x, self.parameters, self.u))
-
-            solution = lax.fori_loop(lower=self.lower_limit,
-                                     upper=self.upper_limit,
-                                     body_fun=self.ode_parallel_wrapper,
-                                     init_val=(self.x, self.parameters, self.u))
-            return solution
-
-        def solve_without_init() -> tuple:
-            solution = lax.fori_loop(lower=self.lower_limit,
-                                     upper=self.upper_limit,
-                                     body_fun=self.ode_parallel_wrapper,
-                                     init_val=(self.x, self.parameters, self.u))
-            return solution
-
-        D = lax.cond(self.requires_init, solve_with_init(), solve_without_init())
+        D = jnp.where(self.requires_init, self.solve_without_init(), self.solve_with_init())
+        # D = lax.cond(self.requires_init, self.solve_with_init(), self.solve_without_init())
+        D
