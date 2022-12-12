@@ -633,17 +633,26 @@ class ODESolvers:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     def solve(self, parameter: jnp.ndarray = None, u: jnp.ndarray = None):
-        # is_none_u = u == None
-        # is_none_p = parameter == None
-        # ff = jnp.where(is_none_u, self.u, u)
+
+        self.u = jnp.where(u == None, )
+
+
+        if u == None:
+            pass
+        elif u.shape == (self.n_input, self.steps):
+            self.u = jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1])
+        elif u.shape == (self.n_input, self.n_sim, self.steps):
+            self.u = u
+        elif u.shape ==(self.n_input,):
+            self.u = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
+
+
         ff = jnp.where(u == None, self.u, jnp.where(u.shape == (self.n_input, self.steps),
                                                     jnp.tile(A=u[:, jnp.newaxis, :], reps=[1, self.n_sim, 1]),
                                                     jnp.where(u.shape == (self.n_input, self.n_sim, self.steps), u,
                                                               jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis],
                                                                        reps=[1, self.n_sim, self.steps]))
                                                     ))
-
-
 
         ff = jnp.where(u == None,
                        self.u,
