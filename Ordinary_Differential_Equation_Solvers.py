@@ -552,7 +552,6 @@ class ODESolvers:
                                              inputs[:, :, itr + 2])
                 pn3 = states[:, :, itr + 2] + (self.delta[itr + 2] / 12) * (23 * fn2 - 16 * fn1 + 5 * fn)
                 fp3 = self.parallelized_odes(pn3, parameters[:, :, itr + 3], itr + 3, inputs[:, :, itr + 3])
-
                 states = states.at[:, :, itr + 3].set(states[:, :, itr + 2] + (1 / 12) * self.delta[itr + 3]
                                                       * (5 * fp3 + 8 * fn2 - fn1))
                 return states, parameters, inputs
@@ -571,11 +570,9 @@ class ODESolvers:
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
-                                            inputs[:, :, itr]) * \
-                     self.delta[itr]
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
-                                            inputs[:, :, itr]) * \
-                     self.delta[itr]
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
@@ -593,7 +590,6 @@ class ODESolvers:
 
                 pn4 = states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (55 * fn3 - 59 * fn2 + 37 * fn1 - 9 * fn)
                 fp4 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, inputs[:, :, itr + 4])
-
                 states = states.at[:, :, itr + 4].set(states[:, :, itr + 3] + (1 / 24) * self.delta[itr + 4]
                                                       * (9 * fp4 + 19 * fn3 - 5 * fn2 + fn1))
                 return states, parameters, inputs
@@ -612,11 +608,9 @@ class ODESolvers:
                 k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr,
-                                            inputs[:, :, itr]) * \
-                     self.delta[itr]
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr,
-                                            inputs[:, :, itr]) * \
-                     self.delta[itr]
+                                            inputs[:, :, itr]) * self.delta[itr]
                 k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
