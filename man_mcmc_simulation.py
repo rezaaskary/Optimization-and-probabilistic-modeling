@@ -37,12 +37,18 @@ u = u.at[2, 300:].set(2)
 
 x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(4, chains), dtype=jnp.float64)
 # u = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(3, L), dtype=jnp.float64)
+## passed
+# euler
 
-v=jnp.tile(A=u[:,jnp.newaxis,:],reps=[1,100,1])
 
 odes = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='euler')
 T=odes.solve(parameter=par,u=u)
-
+plt.figure(dpi=150)
+plt.plot(T[0,0,:])
+plt.plot(T[1,0,:])
+plt.plot(T[2,0,:])
+plt.plot(T[3,0,:])
+plt.show()
 
 
 
