@@ -234,7 +234,7 @@ class ODESolvers:
 
             def fcn_main_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + fn * self.delta[itr + 1])
                 return states, parameters, inputs
 
@@ -247,9 +247,9 @@ class ODESolvers:
             def fcn_main_rk2(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
@@ -262,11 +262,11 @@ class ODESolvers:
 
             def fcn_main_rk3(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
-                                            parameters[:, :, itr], itr, u[:, :, itr])
+                                            parameters[:, :, itr], itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(
                     states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
                 return states, parameters, inputs
@@ -281,13 +281,13 @@ class ODESolvers:
             def fcn_main_rk4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
@@ -301,9 +301,9 @@ class ODESolvers:
             def fcn_main_ralston(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + (2 / 3) * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * k1 +
                                                       0.75 * self.delta[itr] * k2)
                 return states, parameters, inputs
@@ -317,9 +317,9 @@ class ODESolvers:
             def fcn_main_modified_euler(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * k2)
                 return states, parameters, inputs
 
@@ -331,11 +331,11 @@ class ODESolvers:
 
             def fcn_main_heun(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + (1 / 3) * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 k3 = self.parallelized_odes(states[:, :, itr] + (2 / 3) * self.delta[itr] * k2, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * (k1 + k3))
                 return states, parameters, inputs
 
@@ -349,22 +349,22 @@ class ODESolvers:
 
             def fcn_main_ab3_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
-                                            parameters[:, :, itr], itr, u[:, :, itr])
+                                            parameters[:, :, itr], itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(
                     states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
                 return states, parameters, inputs
 
             def fcn_main_ab3(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 states = states.at[:, :, itr + 3].set(
                     states[:, :, itr + 2] + (self.delta[itr + 3] / 12) * (23 * fn2 - 16 * fn1 + 5 * fn))
 
@@ -381,18 +381,18 @@ class ODESolvers:
             def fcn_main_ab2_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
 
             def fcn_main_ab2(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 states = states.at[:, :, itr + 2].set(
                     states[:, :, itr + 1] + (self.delta[itr + 2] / 2) * (3 * fn1 - fn))
                 return states, parameters, inputs
@@ -408,26 +408,26 @@ class ODESolvers:
             def fcn_main_ab4_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
             def fcn_main_ab4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 fn3 = self.parallelized_odes(states[:, :, itr + 3], parameters[:, :, itr + 3], itr + 3,
-                                             u[:, :, itr + 3])
+                                             inputs[:, :, itr + 3])
 
                 states = states.at[:, :, itr + 4].set(
                     states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (55 * fn3 - 59 * fn2 + 37 * fn1 - 9 * fn))
@@ -444,28 +444,28 @@ class ODESolvers:
             def fcn_main_ab5_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
-            def fcn_main_ab5(itr: int, init_val: tuple) -> tuple:
+            def fcn_main_ab5(itr, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 fn3 = self.parallelized_odes(states[:, :, itr + 3], parameters[:, :, itr + 3], itr + 3,
-                                             u[:, :, itr + 3])
+                                             inputs[:, :, itr + 3])
                 fn4 = self.parallelized_odes(states[:, :, itr + 4], parameters[:, :, itr + 4], itr + 4,
-                                             u[:, :, itr + 4])
+                                             inputs[:, :, itr + 4])
 
                 states = states.at[:, :, itr + 5].set(
                     states[:, :, itr + 4] + (self.delta[itr + 5] / 720) * (1901 * fn4 - 2774 * fn3 + 2616 * fn2
@@ -481,9 +481,9 @@ class ODESolvers:
 
             def fcn_main_abam1(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 pn1 = states[:, :, itr] + self.delta[itr] * fn
-                fp1 = self.parallelized_odes(pn1, parameters[:, :, itr + 1], itr + 1, u[:, :, itr + 1])
+                fp1 = self.parallelized_odes(pn1, parameters[:, :, itr + 1], itr + 1, inputs[:, :, itr + 1])
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + self.delta[itr + 1] * fp1)
                 return states, parameters, inputs
 
@@ -497,18 +497,18 @@ class ODESolvers:
             def fcn_main_abam2_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
 
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * (k1 + k2))
                 return states, parameters, inputs
 
             def fcn_main_abam2(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 pn2 = states[:, :, itr + 1] + (self.delta[itr + 1] / 2) * (3 * fn1 - fn)
                 fp2 = self.parallelized_odes(pn2, parameters[:, :, itr + 2], itr + 2, u[:, :, itr + 2])
                 states = states.at[:, :, itr + 2].set(states[:, :, itr + 1] + 0.5 * self.delta[itr + 2] * (fn1 + fp2))
@@ -525,24 +525,24 @@ class ODESolvers:
 
             def fcn_main_abam3_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * self.delta[itr] * k1, parameters[:, :, itr],
-                                            itr, u[:, :, itr])
+                                            itr, inputs[:, :, itr])
                 k3 = self.parallelized_odes(states[:, :, itr] - self.delta[itr] * k1 + 2 * self.delta[itr] * k2,
-                                            parameters[:, :, itr], itr, u[:, :, itr])
+                                            parameters[:, :, itr], itr, inputs[:, :, itr])
                 states = states.at[:, :, itr + 1].set(
                     states[:, :, itr] + (1 / 6) * self.delta[itr] * (k1 + 4 * k2 + k3))
                 return states, parameters, inputs
 
             def fcn_main_abam3(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 pn3 = states[:, :, itr + 2] + (self.delta[itr + 2] / 12) * (23 * fn2 - 16 * fn1 + 5 * fn)
-                fp3 = self.parallelized_odes(pn3, parameters[:, :, itr + 3], itr + 3, u[:, :, itr + 3])
+                fp3 = self.parallelized_odes(pn3, parameters[:, :, itr + 3], itr + 3, inputs[:, :, itr + 3])
 
                 states = states.at[:, :, itr + 3].set(states[:, :, itr + 2] + (1 / 12) * self.delta[itr + 3]
                                                       * (5 * fp3 + 8 * fn2 - fn1))
@@ -559,29 +559,29 @@ class ODESolvers:
 
             def fcn_main_abam4_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
             def fcn_main_abam4(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 fn3 = self.parallelized_odes(states[:, :, itr + 3], parameters[:, :, itr + 3], itr + 3,
-                                             u[:, :, itr + 3])
+                                             inputs[:, :, itr + 3])
 
                 pn4 = states[:, :, itr + 3] + (self.delta[itr + 4] / 24) * (55 * fn3 - 59 * fn2 + 37 * fn1 - 9 * fn)
-                fp4 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, u[:, :, itr + 4])
+                fp4 = self.parallelized_odes(pn4, parameters[:, :, itr + 4], itr + 4, inputs[:, :, itr + 4])
 
                 states = states.at[:, :, itr + 4].set(states[:, :, itr + 3] + (1 / 24) * self.delta[itr + 4]
                                                       * (9 * fp4 + 19 * fn3 - 5 * fn2 + fn1))
@@ -599,31 +599,31 @@ class ODESolvers:
 
             def fcn_main_abam5_init(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr]) \
+                k1 = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr]) \
                      * self.delta[itr]
-                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k2 = self.parallelized_odes(states[:, :, itr] + 0.5 * k1, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k3 = self.parallelized_odes(states[:, :, itr] + 0.5 * k2, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
-                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, u[:, :, itr]) * \
+                k4 = self.parallelized_odes(states[:, :, itr] + k3, parameters[:, :, itr], itr, inputs[:, :, itr]) * \
                      self.delta[itr]
                 states = states.at[:, :, itr + 1].set(states[:, :, itr] + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4))
                 return states, parameters, inputs
 
             def fcn_main_abam5(itr: int, init_val: tuple) -> tuple:
                 states, parameters, inputs = init_val
-                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, u[:, :, itr])
+                fn = self.parallelized_odes(states[:, :, itr], parameters[:, :, itr], itr, inputs[:, :, itr])
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
-                                             u[:, :, itr + 1])
+                                             inputs[:, :, itr + 1])
                 fn2 = self.parallelized_odes(states[:, :, itr + 2], parameters[:, :, itr + 2], itr + 2,
-                                             u[:, :, itr + 2])
+                                             inputs[:, :, itr + 2])
                 fn3 = self.parallelized_odes(states[:, :, itr + 3], parameters[:, :, itr + 3], itr + 3,
-                                             u[:, :, itr + 3])
+                                             inputs[:, :, itr + 3])
                 fn4 = self.parallelized_odes(states[:, :, itr + 4], parameters[:, :, itr + 4], itr + 4,
-                                             u[:, :, itr + 4])
+                                             inputs[:, :, itr + 4])
                 pn5 = states[:, :, itr + 4] + (self.delta[itr + 5] / 720) * (1901 * fn4 - 2774 * fn3
                                                                              + 2616 * fn2 - 1274 * fn1 + 251 * fn)
-                fp5 = self.parallelized_odes(pn5, parameters[:, :, itr + 5], itr + 5, u[:, :, itr + 5])
+                fp5 = self.parallelized_odes(pn5, parameters[:, :, itr + 5], itr + 5, inputs[:, :, itr + 5])
                 states = states.at[:, :, itr + 5].set(states[:, :, itr + 4] + (1 / 720) * self.delta[itr + 5]
                                                       * (251 * fp5 + 646 * fn4 - 264 * fn3 + 106 * fn2 - 19 * fn1))
                 return states, parameters, inputs

@@ -10,7 +10,7 @@ from Ordinary_Differential_Equation_Solvers import ODESolvers
 # from Ordinary_Differential_Equation_Solvers as odes
 
 
-def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: jnp.ndarray = None, u: jnp.ndarray = None) -> jnp.ndarray:
+def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: int = None, u: jnp.ndarray = None) -> jnp.ndarray:
     m = 4  # the number of state variables
     dx_dt = jnp.zeros((m, 1))  # reallocating the values of state variables
     dx0_dt = -0.2 * x[0] + p[0] * x[1] * x[2] + 0.1 * u[2]
