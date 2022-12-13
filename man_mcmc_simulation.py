@@ -53,7 +53,7 @@ plt.plot(T1[2, 0, :], '.')
 plt.plot(T1[3, 0, :], '.')
 
 odes2 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
-                   method='AB2', activate_jit=True)
+                   method='AB3', activate_jit=True)
 T2 = odes2.solve(parameter=par, u=u)
 
 plt.plot(T2[0, 0, :], '-')
@@ -61,6 +61,10 @@ plt.plot(T2[1, 0, :], '-')
 plt.plot(T2[2, 0, :], '-')
 plt.plot(T2[3, 0, :], '-')
 plt.show()
+
+
+
+
 
 # from Probablity_distributions import *
 # from tensorflow_probability.substrates.jax import distributions
