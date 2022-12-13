@@ -41,7 +41,7 @@ x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(
 # euler
 
 
-odes1 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='euler')
+odes1 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='euler',activate_jit=True)
 T1=odes1.solve(parameter=par,u=u)
 plt.figure(dpi=150)
 plt.plot(T1[0,0,:],'.')
@@ -49,7 +49,7 @@ plt.plot(T1[1,0,:],'.')
 plt.plot(T1[2,0,:],'.')
 plt.plot(T1[3,0,:],'.')
 
-odes2 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='AB2')
+odes2 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='AB2',activate_jit=True)
 T2=odes2.solve(parameter=par,u=u)
 
 plt.plot(T2[0,0,:],'-')
