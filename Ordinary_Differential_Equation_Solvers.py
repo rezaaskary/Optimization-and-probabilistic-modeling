@@ -682,5 +682,9 @@ class ODESolvers:
         elif parameter.shape == (self.n_params,):
             self.parameters = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
 
-        return jnp.where(self.requires_init, self.solve_with_init(), self.solve_without_init())
+        if self.requires_init:
+            results = self.solve_with_init()
+        else:
+            results = self.solve_without_init()
+        return results
 
