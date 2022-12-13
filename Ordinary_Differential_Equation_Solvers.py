@@ -487,7 +487,7 @@ class ODESolvers:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'ABAM1':
             self.lower_limit = 0
-            self.upper_limit = self.steps - 2
+            self.upper_limit = self.steps - 1
             self.upper_limit_init = 0
 
             def fcn_main_abam1(itr: int, init_val: tuple) -> tuple:
