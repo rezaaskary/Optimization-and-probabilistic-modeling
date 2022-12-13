@@ -7,6 +7,8 @@ import optax
 from sklearn.decomposition import FactorAnalysis
 import pandas as pd
 from Ordinary_Differential_Equation_Solvers import ODESolvers
+
+
 # from Ordinary_Differential_Equation_Solvers as odes
 
 
@@ -30,7 +32,7 @@ chains = 100
 L = 50000
 # par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
 par = jnp.ones((n_par, chains))
-u = jnp.zeros((3, L),dtype=jnp.float32)
+u = jnp.zeros((3, L), dtype=jnp.float32)
 u = u.at[0, 100:].set(0.4)
 u = u.at[1, 200:].set(-1)
 u = u.at[2, 300:].set(2)
@@ -41,23 +43,24 @@ x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(
 # euler
 
 
-odes1 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='euler',activate_jit=True)
-T1=odes1.solve(parameter=par,u=u)
+odes1 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
+                   method='euler', activate_jit=True)
+T1 = odes1.solve(parameter=par, u=u)
 plt.figure(dpi=150)
-plt.plot(T1[0,0,:],'.')
-plt.plot(T1[1,0,:],'.')
-plt.plot(T1[2,0,:],'.')
-plt.plot(T1[3,0,:],'.')
+plt.plot(T1[0, 0, :], '.')
+plt.plot(T1[1, 0, :], '.')
+plt.plot(T1[2, 0, :], '.')
+plt.plot(T1[3, 0, :], '.')
 
-odes2 = ODESolvers(fcn=ode_fcn,steps=L,duration=50,n_sim=chains,n_input=3 ,n_states=4,n_params=3,x0=x_0,method='AB2',activate_jit=True)
-T2=odes2.solve(parameter=par,u=u)
+odes2 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
+                   method='AB2', activate_jit=True)
+T2 = odes2.solve(parameter=par, u=u)
 
-plt.plot(T2[0,0,:],'-')
-plt.plot(T2[1,0,:],'-')
-plt.plot(T2[2,0,:],'-')
-plt.plot(T2[3,0,:],'-')
+plt.plot(T2[0, 0, :], '-')
+plt.plot(T2[1, 0, :], '-')
+plt.plot(T2[2, 0, :], '-')
+plt.plot(T2[3, 0, :], '-')
 plt.show()
-
 
 # from Probablity_distributions import *
 # from tensorflow_probability.substrates.jax import distributions
