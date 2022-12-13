@@ -347,7 +347,7 @@ class ODESolvers:
                                             itr, inputs[:, :, itr])
                 k3 = self.parallelized_odes(states[:, :, itr] + (2 / 3) * self.delta[itr] * k2, parameters[:, :, itr],
                                             itr, inputs[:, :, itr])
-                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.25 * self.delta[itr] * (k1 + k3))
+                states = states.at[:, :, itr + 1].set(states[:, :, itr] + 0.5 * self.delta[itr] * (k1 + k3))
                 return states, parameters, inputs
 
             self.ode_parallel_wrapper = fcn_main_heun
