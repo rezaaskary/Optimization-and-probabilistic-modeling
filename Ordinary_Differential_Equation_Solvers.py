@@ -642,7 +642,7 @@ class ODESolvers:
         def solve_with_init() -> jnp.ndarray:
             self.x, _, _ = lax.fori_loop(lower=self.lower_limit,
                                          upper=self.upper_limit_init,
-                                         body_fun=self.ode_parallel_wrapper,
+                                         body_fun=self.ode_parallel_wrapper_init,
                                          init_val=(self.x, self.parameters, self.u))
 
             solution, _, _ = lax.fori_loop(lower=self.lower_limit,
