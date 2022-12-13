@@ -449,7 +449,7 @@ class ODESolvers:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'AB5':
             self.lower_limit = 0
-            self.upper_limit = self.steps - 6
+            self.upper_limit = self.steps - 5
             self.upper_limit_init = 4
 
             def fcn_main_ab5_init(itr: int, init_val: tuple) -> tuple:
