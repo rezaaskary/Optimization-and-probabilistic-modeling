@@ -29,7 +29,7 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: int = None, u: jnp.
 
 n_par = 2
 chains = 100
-L = 50000
+L = 3000
 # par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
 par = jnp.ones((n_par, chains))
 u = jnp.zeros((3, L), dtype=jnp.float32)
