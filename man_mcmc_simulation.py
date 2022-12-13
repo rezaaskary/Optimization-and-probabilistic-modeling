@@ -29,7 +29,7 @@ def ode_fcn(x: jnp.ndarray = None, p: jnp.ndarray = None, t: int = None, u: jnp.
 
 n_par = 2
 chains = 100
-L = 3000
+L = 5000
 # par = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(n_par, chains), dtype=jnp.float64)
 par = jnp.ones((n_par, chains))
 u = jnp.zeros((3, L), dtype=jnp.float32)
@@ -53,7 +53,7 @@ plt.plot(T1[2, 0, :], '.')
 plt.plot(T1[3, 0, :], '.')
 
 odes2 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
-                   method='ABAM2', activate_jit=True)
+                   method='ABAM5', activate_jit=True)
 T2 = odes2.solve(parameter=par, u=u)
 
 plt.plot(T2[0, 0, :], '-')
