@@ -87,7 +87,7 @@ class ODESolvers:
 
         if isinstance(method, str):
             if method in ['euler', 'RK2', 'RK3', 'RK4', 'ralston', 'modified_euler', 'heun', 'AB2', 'AB3', 'AB4',
-                          'AB5', 'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
+                          'AB5','ABAM1' ,'ABAM2', 'ABAM3', 'ABAM4', 'ABAM5']:
                 self.method = method
             else:
                 raise Exception('The specified method is not supported')
