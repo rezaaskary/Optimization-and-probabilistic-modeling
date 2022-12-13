@@ -386,7 +386,7 @@ class ODESolvers:
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         elif self.method == 'AB2':
             self.lower_limit = 0
-            self.upper_limit = self.steps - 3
+            self.upper_limit = self.steps - 2
             self.upper_limit_init = 1
 
             def fcn_main_ab2_init(itr: int, init_val: tuple) -> tuple:
