@@ -521,7 +521,7 @@ class ODESolvers:
                 fn1 = self.parallelized_odes(states[:, :, itr + 1], parameters[:, :, itr + 1], itr + 1,
                                              inputs[:, :, itr + 1])
                 pn2 = states[:, :, itr + 1] + (self.delta[itr + 1] / 2) * (3 * fn1 - fn)
-                fp2 = self.parallelized_odes(pn2, parameters[:, :, itr + 2], itr + 2, u[:, :, itr + 2])
+                fp2 = self.parallelized_odes(pn2, parameters[:, :, itr + 2], itr + 2, inputs[:, :, itr + 2])
                 states = states.at[:, :, itr + 2].set(states[:, :, itr + 1] + 0.5 * self.delta[itr + 2] * (fn1 + fp2))
                 return states, parameters, inputs
 
