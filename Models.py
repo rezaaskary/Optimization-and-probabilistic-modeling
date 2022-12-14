@@ -4,7 +4,7 @@ from jax import vmap, jit, grad, random, lax, scipy, jacfwd
 import jax.numpy as jnp
 import sys
 import warnings
-
+import pandas as pd
 
 class PPCA:
     def __init__(self, y: jnp.ndarray = None, n_comp: int = 2, max_iter: int = 500, tolerance: float = 1e-6):
@@ -569,10 +569,38 @@ class PCA:
         #     raise Exception('The format of maximum iterations is not supported.\n'
         #                     ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
 
-        def _linear_pca():
-            self.cov = (1 / self.n) * self.z @ self.z.T
-            u,s,v = jnp.linalg.svd(a=self.z,full_matrices=True,compute_uv=True)
 
+    def solution(self):
+        def _linear_pca():
+            self.cov = (1 / self.n) * self.z.T @ self.z
+            eig_val, eig_vec = jnp.linalg.eig(a=self.cov)
+            eig_val, eig_vec = jnp.real(eig_val), jnp.real(eig_vec)
+            u,s,v = jnp.linalg.svd(a=self.z,full_matrices=False)
+            explained_var =jnp.cumsum(s)/jnp.sum(s)
+            principals = u@jnp.diag(s)
+            rec = u@jnp.diag(s)@v
+            w = self.z - rec
             return u
         self.solve = _linear_pca
 
+        return self.solve()
+
+
+
+
+data = pd.read_csv('winequality-white.csv',delimiter=';')
+x_0 = jnp.array(data.iloc[:, :-4].values)
+
+# x_0 = (random.uniform(key=random.PRNGKey(7), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64))**(3) * (random.uniform(key=random.PRNGKey(89), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64) * 5)**2
+
+# from sklearn.decomposition import PCA
+# dd=PCA(n_components=7)
+# r=dd.fit(x_0)
+# r
+
+
+
+
+
+RR=PCA(x=x_0,n_comp=2,method='SVD')
+R= RR.solution()
