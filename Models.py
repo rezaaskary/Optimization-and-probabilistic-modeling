@@ -487,7 +487,8 @@ class CanonicalCorrelationAnalysis:
                      explained_variance: float = None,
                      max_iter: int = 1000,
                      random_seed: int = 1,
-                     method: str = 'SVD') -> None:
+                     method: str = 'SVD',
+                     kernel: str = 'linear') -> None:
             """
 
             :param x:
@@ -497,6 +498,15 @@ class CanonicalCorrelationAnalysis:
             :param random_seed:
             :param method:
             """
+            if isinstance(kernel, str):
+                if kernel in ['linear', 'rbf']:
+                    self.kernel = kernel
+                else:
+                    raise Exception('The selected kernel method is not implemented!')
+            else:
+                raise Exception('Please specify the kernel method correctly.')
+
+
             if isinstance(method, str) and method in ['sgd', 'SVD']:
                 self.method = method
             elif not method:
