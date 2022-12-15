@@ -551,27 +551,41 @@ class PCA:
             raise Exception('The format of the number of component is not supported.\n'
                             ' Please enter the number of components as a positive integer!')
 
-        # if isinstance(tolerance, float):
-        #     if tolerance > 1:
-        #         raise Exception('Please enter a small value for tolerance. Ex. 1e-6')
-        #     else:
-        #         self.tolerance = tolerance
-        # elif not tolerance:
-        #     self.tolerance = 1e-8
-        # else:
-        #     raise Exception('The format of tolerance is not supported.\n'
-        #                     ' Please enter a small value as tolerance (Ex. 1e-8)')
-        #
-        # if isinstance(max_iter, int):
-        #     if max_iter < 1:
-        #         raise Exception('Please enter a positive integer as the maximum number of iterations.')
-        #     else:
-        #         self.max_iter = max_iter
-        # elif not max_iter:
-        #     self.max_iter = 1000
-        # else:
-        #     raise Exception('The format of maximum iterations is not supported.\n'
-        #                     ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
+        def _linear_pca():
+            self.cov = (1 / (self.n - 1)) * self.z.T @ self.z
+
+            u, s, v = jax.scipy.linalg.svd(a=self.x_m, full_matrices=False)
+
+            max_abs_cols = jnp.argmax(jnp.abs(u), axis=0)
+            signs = jnp.sign(u[max_abs_cols, jnp.arange(u.shape[1], dtype=jnp.int32)])
+            u *= signs
+            v *= signs[:, jnp.newaxis]
+            self.full_scores = u @ jnp.diag(s)
+            self.full_loadings = v
+
+            self.exp_var = (s ** 2) / (self.n - 1)
+            explained_variance_ratio_ = self.exp_var / self.exp_var.sum()
+            self.singular_vals = s.copy()  # Store the singular values.
+            cum_sum_var_ratio = jnp.cumsum(explained_variance_ratio_)
+            self.n_components = jnp.where(cum_sum_var_ratio > 0.95)[0][0] + 1
+            self.scores = u[:, :self.n_components] @ jnp.diag(s[:self.n_components])
+            self.loadings = v[:self.n_components, :]
+            return
+        self.linear_pca = _linear_pca
+
+
+
+
+
+    def fit(self):
+        return self.linear_pca()
+
+    def transform(self, y: jnp.ndarray):
+        self.fit()
+
+        return
+
+
 
     def solution(self):
         def _linear_pca():
@@ -586,19 +600,14 @@ class PCA:
             self.full_scores = u @ jnp.diag(s)
             self.full_loadings = v
 
-            exp_var = (s ** 2) / (self.n - 1)
-            explained_variance_ratio_ = exp_var / exp_var.sum()
-            singular_vals = s.copy()  # Store the singular values.
+            self.exp_var = (s ** 2) / (self.n - 1)
+            explained_variance_ratio_ = self.exp_var / self.exp_var.sum()
+            self.singular_vals = s.copy()  # Store the singular values.
             cum_sum_var_ratio = jnp.cumsum(explained_variance_ratio_)
             self.n_components = jnp.where(cum_sum_var_ratio > 0.95)[0][0] + 1
-            self.scores = u[:, :self.n_components - 1] @ jnp.diag(s[:self.n_components - 1])
-
-            # u,s,v = jnp.linalg.svd(a=self.x,full_matrices=False)
-            explained_var = jnp.cumsum(s) / jnp.sum(s)
-            principals = u @ jnp.diag(s)
-            rec = u @ jnp.diag(s) @ v
-            w = self.z - rec
-            return u
+            self.scores = u[:, :self.n_components] @ jnp.diag(s[:self.n_components])
+            self.loadings = v[:self.n_components, :]
+            return
 
         self.solve = _linear_pca
 
@@ -610,10 +619,11 @@ x_0 = jnp.array(data.iloc[:, :-4].values)
 
 # x_0 = (random.uniform(key=random.PRNGKey(7), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64))**(3) * (random.uniform(key=random.PRNGKey(89), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64) * 5)**2
 
-# from sklearn.decomposition import PCA
-# dd=PCA(n_components=8)
-# r=dd.fit(x_0)
-# r
+from sklearn.decomposition import PCA
+dd=PCA(n_components=8)
+r=dd.fit(x_0)
+r=dd.transform()
+r
 #
 
 
