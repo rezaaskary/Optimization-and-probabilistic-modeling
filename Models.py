@@ -578,14 +578,12 @@ class PCA:
         return self.linear_pca()
 
     def transform(self, y: jnp.ndarray):
+        self.fit()
         if isinstance(y, jnp.ndarray):
             if y.shape[1] == self.p:
-                y_m = y - jnp.tile(self.mean, reps=(self.n, 1))
-
-
-
-        self.fit()
-
+                y_m = y - jnp.tile(self.mean, reps=(y.shape[0], 1))
+                T = y_m @ (self.full_loadings[:self.n_components, :]).T
+                T_full = y_m @ self.full_loadings.T
         return
 
 
