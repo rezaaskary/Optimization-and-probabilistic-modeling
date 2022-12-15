@@ -1,3 +1,4 @@
+import jax.scipy.linalg
 import sklearn.decomposition
 from tensorflow_probability.substrates.jax import distributions
 from jax import vmap, jit, grad, random, lax, scipy, jacfwd
@@ -5,6 +6,7 @@ import jax.numpy as jnp
 import sys
 import warnings
 import pandas as pd
+
 
 class PPCA:
     def __init__(self, y: jnp.ndarray = None, n_comp: int = 2, max_iter: int = 500, tolerance: float = 1e-6):
@@ -480,6 +482,7 @@ class CanonicalCorrelationAnalysis:
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+
 class PCA:
     def __init__(self,
                  x: jnp.ndarray = None,
@@ -532,6 +535,7 @@ class PCA:
                 self.mean = self.x.mean(axis=0)
                 self.std = self.x.std(axis=0)
                 self.z = (self.x - jnp.tile(self.mean, reps=(self.n, 1))) / jnp.tile(self.std, reps=(self.n, 1))
+                self.x_m = (self.x - jnp.tile(self.mean, reps=(self.n, 1)))
         else:
             raise Exception(f'The format of {type(x)} is not supported.\n'
                             f'The input matrix should be given in ndarray format.')
@@ -569,38 +573,49 @@ class PCA:
         #     raise Exception('The format of maximum iterations is not supported.\n'
         #                     ' Please enter positive integer as maximum number of iterations (Ex. 1000)')
 
-
     def solution(self):
         def _linear_pca():
-            self.cov = (1 / self.n) * self.z.T @ self.z
-            eig_val, eig_vec = jnp.linalg.eig(a=self.cov)
-            eig_val, eig_vec = jnp.real(eig_val), jnp.real(eig_vec)
-            u,s,v = jnp.linalg.svd(a=self.z,full_matrices=False)
-            explained_var =jnp.cumsum(s)/jnp.sum(s)
-            principals = u@jnp.diag(s)
-            rec = u@jnp.diag(s)@v
+            self.cov = (1 / (self.n - 1)) * self.z.T @ self.z
+
+            u, s, v = jax.scipy.linalg.svd(a=self.x_m, full_matrices=False)
+
+            max_abs_cols = jnp.argmax(jnp.abs(u), axis=0)
+            signs = jnp.sign(u[max_abs_cols, jnp.arange(u.shape[1], dtype=jnp.int32)])
+            u *= signs
+            v *= signs[:, jnp.newaxis]
+            self.full_scores = u @ jnp.diag(s)
+            self.full_loadings = v
+
+            exp_var = (s ** 2) / (self.n - 1)
+            explained_variance_ratio_ = exp_var / exp_var.sum()
+            singular_vals = s.copy()  # Store the singular values.
+            cum_sum_var_ratio = jnp.cumsum(explained_variance_ratio_)
+            self.n_components = jnp.where(cum_sum_var_ratio > 0.95)[0][0] + 1
+            self.scores = u[:, :self.n_components - 1] @ jnp.diag(s[:self.n_components - 1])
+
+            # u,s,v = jnp.linalg.svd(a=self.x,full_matrices=False)
+            explained_var = jnp.cumsum(s) / jnp.sum(s)
+            principals = u @ jnp.diag(s)
+            rec = u @ jnp.diag(s) @ v
             w = self.z - rec
             return u
+
         self.solve = _linear_pca
 
         return self.solve()
 
 
-
-
-data = pd.read_csv('winequality-white.csv',delimiter=';')
+data = pd.read_csv('winequality-white.csv', delimiter=';')
 x_0 = jnp.array(data.iloc[:, :-4].values)
 
 # x_0 = (random.uniform(key=random.PRNGKey(7), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64))**(3) * (random.uniform(key=random.PRNGKey(89), minval=-4, maxval=4, shape=(1000, 7), dtype=jnp.float64) * 5)**2
 
 # from sklearn.decomposition import PCA
-# dd=PCA(n_components=7)
+# dd=PCA(n_components=8)
 # r=dd.fit(x_0)
 # r
+#
 
 
-
-
-
-RR=PCA(x=x_0,n_comp=2,method='SVD')
-R= RR.solution()
+RR = PCA(x=x_0, n_comp=2, method='SVD')
+R = RR.solution()
