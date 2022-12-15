@@ -683,8 +683,8 @@ class ODESolvers:
             self.parameters = jnp.tile(A=u[:, jnp.newaxis, jnp.newaxis], reps=[1, self.n_sim, self.steps])
 
         if self.requires_init:
-            results = self.solve_with_init()
+            return self.solve_with_init()
         else:
-            results = self.solve_without_init()
-        return results
+            return self.solve_without_init()
+
 
