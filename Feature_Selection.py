@@ -29,13 +29,20 @@ class Fscchi2:
 
         def _chisquared_lone(i: int, val: tuple):
 
+
             return
 
         def _chisquared_all(itr: int, values: tuple):
             unique_x = jnp.unique(self.x[:, itr])
             x_n_categories = unique_x.shape[0]
             contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
+            jax.lax.fori_loop(lower=0,
+                              upper=self.y_n_categories,
+                              body_fun=_chisquared_lone,
+                              init_val=(contigency_matrix, ))
 
+            cTotal = obsCount.sum(axis=1)
+            rTotal = obsCount.sum(axis=0)
 
 
 
