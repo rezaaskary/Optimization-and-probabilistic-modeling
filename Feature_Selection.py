@@ -46,17 +46,29 @@ class Fscchi2:
                 unqx, feat_cnt, i, mat = inner_loop(m=m, values3=(unqx, feat_cnt, i, mat))
             return mat, feat_cnt, unqx, x_n
 
-        def over_features(feat_cnt, values1):
+        def over_features(feat_cnt, values_over_features):
+            chi_squared_statistics, chi_squared_p_values, cramer_v = values_over_features
+
+
             unique_x = jnp.unique(self.x[:, feat_cnt])
             x_n_categories = unique_x.shape[0]
             contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
             for i in range(self.y_n_categories):
                 mat, feat_cnt, unqx, x_n = over_y_categories(i=i, values2=(
                 contigency_matrix, feat_cnt, unique_x, x_n_categories))
-            return
+            return chi_squared_statistics, chi_squared_p_values, cramer_v
+
+        self.chi_squared_statistics = jnp.zeros((self.n_predictors,))
+        self.chi_squared_p_values = jnp.zeros((self.n_predictors,))
+        self.cramer_v = jnp.zeros((self.n_predictors,))
+
 
         for feat_cnt in range(self.n_predictors):
-            over_features(feat_cnt=feat_cnt, values_over_features=())
+            chi_squared_statistics, chi_squared_p_values, cramer_v = over_features(feat_cnt=feat_cnt,
+                                                                                   values_over_features=(
+                                                                                    self.chi_squared_statistics.copy(),
+                                                                                    self.chi_squared_p_values.copy(),
+                                                                                    self.cramer_v.copy()))
 
 
 data = pd.read_csv('winequality-white.csv', delimiter=';')
