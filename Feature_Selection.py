@@ -27,8 +27,16 @@ class Fscchi2:
             self.y_n_categories = self.unique_y.shape[0]
         self.samples, self.n_predictors = self.x.shape
 
+        def _sd(j: int, vc: tuple):
+            mat, i, unqy, xx = vc
+            c = jnp.where(xx == unqy)[0]
+            mat = mat.at[j, i].set(c)
+            return mat, i, unqy, xx
+
         def _chisquared_lone(i: int, val: tuple):
-            matrix, itr, unique_x, x
+            matrix, itr, unique_x, x_n = val
+            unq_y = self.unique_y[i]
+            jax.lax.fori_loop(lower=0, upper=x_n, body_fun=_sd, init_val=(matrix, i, unq_y, self.x[:, itr]))
 
             return
 
@@ -36,22 +44,23 @@ class Fscchi2:
             unique_x = jnp.unique(self.x[:, itr])
             x_n_categories = unique_x.shape[0]
             contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
-
-            jax.lax.fori_loop(lower=0,
-                              upper=self.y_n_categories,
-                              body_fun=_chisquared_lone,
-                              init_val=(contigency_matrix, itr, unique_x, self.x[:, itr]))
-
-            cTotal = obsCount.sum(axis=1)
-            rTotal = obsCount.sum(axis=0)
+            for i in range(self.y_n_categories):
 
 
+            # jax.lax.fori_loop(lower=0,
+            #                   upper=self.y_n_categories,
+            #                   body_fun=_chisquared_lone,
+            #                   init_val=(contigency_matrix, itr, unique_x, x_n_categories))
+
+            # cTotal = obsCount.sum(axis=1)
+            # rTotal = obsCount.sum(axis=0)
 
             return
-
-        jax.lax.fori_loop(lower=0,
-                          upper=self.n_predictors,
-                          body_fun=_chisquared_all,
-                          init_val=None)
+        for itr in range(self.n_predictors):
+           vl =  _chisquared_all(itr, values=None)
+        # jax.lax.fori_loop(lower=0,
+        #                   upper=self.n_predictors,
+        #                   body_fun=_chisquared_all,
+        #                   init_val=None)
 
         jax.scipy.stats.contingency.crosstab
