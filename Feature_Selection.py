@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 import jax
+import pandas as pd
 
 
 class Fscchi2:
@@ -27,6 +28,7 @@ class Fscchi2:
             self.y_n_categories = self.unique_y.shape[0]
         self.samples, self.n_predictors = self.x.shape
 
+    def run(self):
         def _sd(j: int, vc: tuple):
             mat, i, unqy, xx = vc
             c = jnp.where(xx == unqy)[0]
@@ -45,7 +47,7 @@ class Fscchi2:
             x_n_categories = unique_x.shape[0]
             contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
             for i in range(self.y_n_categories):
-
+                _chisquared_lone(i=i, val=(contigency_matrix, itr, unique_x, x_n_categories))
 
             # jax.lax.fori_loop(lower=0,
             #                   upper=self.y_n_categories,
@@ -56,11 +58,22 @@ class Fscchi2:
             # rTotal = obsCount.sum(axis=0)
 
             return
+
         for itr in range(self.n_predictors):
-           vl =  _chisquared_all(itr, values=None)
+            vl = _chisquared_all(itr, values=None)
+
         # jax.lax.fori_loop(lower=0,
         #                   upper=self.n_predictors,
         #                   body_fun=_chisquared_all,
         #                   init_val=None)
 
-        jax.scipy.stats.contingency.crosstab
+
+
+
+data = pd.read_csv('winequality-white.csv', delimiter=';')
+x_0 = jnp.array(data.iloc[:, :-4].values)
+x_0 = jnp.round(x_0[:, :6])
+y_0 = jnp.round(x_0[:, 7])
+x_0
+
+DD = Fscchi2(x=x_0,y=y_0).run()
