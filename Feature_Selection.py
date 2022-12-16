@@ -29,40 +29,62 @@ class Fscchi2:
         self.samples, self.n_predictors = self.x.shape
 
     def run(self):
-        def _sd(j: int, vc: tuple):
-            mat, i, unqy, xx = vc
-            c = jnp.where(xx == unqy)[0]
-            mat = mat.at[j, i].set(c)
-            return mat, i, unqy, xx
 
-        def _chisquared_lone(i: int, val: tuple):
-            matrix, itr, unique_x, x_n = val
-            unq_y = self.unique_y[i]
-            jax.lax.fori_loop(lower=0, upper=x_n, body_fun=_sd, init_val=(matrix, i, unq_y, self.x[:, itr]))
-            for j in range(x_n):
-                mat, i, unqy, xx = _sd(j=j, vc=(matrix,i,unq_y,self.x[:, itr]))
-
-            return
-
-        def _chisquared_all(itr: int, values: tuple):
-            unique_x = jnp.unique(self.x[:, itr])
+        def inner_loop(m, values3):
+            unqqx, j, i, mat = values3
+            ff = jnp.where(self.x[:, j] == unqqx[m] & self.y == self.unique_y[i])
+            mat = mat.at[m, i].set(ff.shape[0])
+            return unqqx, j, i, mat
+        def over_y_categories(i, values2):
+            mat, j, unqx, x_n = values2
+            for m in range(x_n):
+                unqx, j, i, mat=inner_loop(m=m, values3=(unqx, j, i, mat))
+            return mat, j, unqx, x_n
+        def over_features(j, values1):
+            unique_x = jnp.unique(self.x[:, j])
             x_n_categories = unique_x.shape[0]
             contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
             for i in range(self.y_n_categories):
-                _chisquared_lone(i=i, val=(contigency_matrix, itr, unique_x, x_n_categories))
-
-            # jax.lax.fori_loop(lower=0,
-            #                   upper=self.y_n_categories,
-            #                   body_fun=_chisquared_lone,
-            #                   init_val=(contigency_matrix, itr, unique_x, x_n_categories))
-
-            # cTotal = obsCount.sum(axis=1)
-            # rTotal = obsCount.sum(axis=0)
-
+                over_y_categories(i=i, val=(contigency_matrix, j, unique_x, x_n_categories))
             return
 
-        for itr in range(self.n_predictors):
-            vl = _chisquared_all(itr, values=None)
+        for j in range(self.n_predictors):
+            over_features(j=j, values1=())
+
+        # def _sd(j: int, vc: tuple):
+        #     mat, i, unqy, xx = vc
+        #     c = jnp.where(xx == unqy)[0]
+        #     mat = mat.at[j, i].set(c)
+        #     return mat, i, unqy, xx
+        #
+        # def _chisquared_lone(i: int, val: tuple):
+        #     matrix, itr, unique_x, x_n = val
+        #     unq_y = self.unique_y[i]
+        #     # jax.lax.fori_loop(lower=0, upper=x_n, body_fun=_sd, init_val=(matrix, i, unq_y, self.x[:, itr]))
+        #     for j in range(x_n):
+        #         mat, i, unqy, xx = _sd(j=j, vc=(matrix,i,unq_y,self.x[:, itr]))
+        #
+        #     return
+        #
+        # def _chisquared_all(itr: int, values: tuple):
+        #     unique_x = jnp.unique(self.x[:, itr])
+        #     x_n_categories = unique_x.shape[0]
+        #     contigency_matrix = jnp.zeros((x_n_categories, self.y_n_categories))  # rows -> x categ, column ->y categ
+        #     for i in range(self.y_n_categories):
+        #         _chisquared_lone(i=i, val=(contigency_matrix, itr, unique_x, x_n_categories))
+
+        # jax.lax.fori_loop(lower=0,
+        #                   upper=self.y_n_categories,
+        #                   body_fun=_chisquared_lone,
+        #                   init_val=(contigency_matrix, itr, unique_x, x_n_categories))
+
+        # cTotal = obsCount.sum(axis=1)
+        # rTotal = obsCount.sum(axis=0)
+
+        #     return
+        #
+        # for itr in range(self.n_predictors):
+        #     vl = _chisquared_all(itr, values=None)
 
         # jax.lax.fori_loop(lower=0,
         #                   upper=self.n_predictors,
@@ -70,11 +92,9 @@ class Fscchi2:
         #                   init_val=None)
 
 
-
-
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 x_0 = jnp.array(data.iloc[:, :-4].values)
 x_0 = jnp.round(x_0[:, :6])
 y_0 = jnp.round(x_0[:, 7])
 
-DD = Fscchi2(x=x_0,y=y_0).run()
+DD = Fscchi2(x=x_0, y=y_0).run()
