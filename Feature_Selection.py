@@ -36,13 +36,13 @@ class Fscchi2:
 
     def run(self):
 
-        def inner_loop(x_cat_cnt, values_inner_loop):
+        def inner_loop(x_cat_cnt:int, values_inner_loop: tuple) -> tuple:
             unique_x, feat_cnt, y_cat_cnt, contigency_matrix = values_inner_loop
             counts = jnp.where((self.x[:, feat_cnt] == unique_x[x_cat_cnt]) & (self.y == self.unique_y[y_cat_cnt]))[0]
             contigency_matrix = contigency_matrix.at[x_cat_cnt, y_cat_cnt, feat_cnt].set(counts.shape[0])
             return unique_x, feat_cnt, y_cat_cnt, contigency_matrix
 
-        def over_y_categories(y_cat_cnt, values_over_y_catg):
+        def over_y_categories(y_cat_cnt: int, values_over_y_catg: tuple) -> tuple:
             contigency_matrix, feat_cnt, unique_x, x_n_ = values_over_y_catg
             unique_x, feat_cnt, y_cat_cnt, contigency_matrix = jax.lax.fori_loop(lower=0,
                                                                                  upper=x_n_,
@@ -61,7 +61,7 @@ class Fscchi2:
             #                                                                                      contigency_matrix))
             return contigency_matrix, feat_cnt, unique_x, x_n_
 
-        def over_features(feat_cnt, values_over_features):
+        def over_features(feat_cnt: int, values_over_features: tuple) -> tuple:
             contigency_matrix, unique_x_count = values_over_features
             unique_x = jnp.unique(self.x[:, feat_cnt])
             x_n_ = unique_x.shape[0]
@@ -87,7 +87,7 @@ class Fscchi2:
                                                               body_fun=over_features,
                                                               init_val=(self.contigency_matrix.copy(),
                                                                         self.unique_x_count.copy()))
-
+        contigency_matrix
         # for feat_cnt in range(self.n_predictors):
         #     contigency_matrix, unique_x_count = over_features(feat_cnt=feat_cnt, values_over_features=
         #     (self.contigency_matrix.copy(),
