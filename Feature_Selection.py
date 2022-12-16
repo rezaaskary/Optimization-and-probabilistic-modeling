@@ -39,6 +39,8 @@ class Fscchi2:
             matrix, itr, unique_x, x_n = val
             unq_y = self.unique_y[i]
             jax.lax.fori_loop(lower=0, upper=x_n, body_fun=_sd, init_val=(matrix, i, unq_y, self.x[:, itr]))
+            for j in range(x_n):
+                mat, i, unqy, xx = _sd(j=j, vc=(matrix,i,unq_y,self.x[:, itr]))
 
             return
 
@@ -74,6 +76,5 @@ data = pd.read_csv('winequality-white.csv', delimiter=';')
 x_0 = jnp.array(data.iloc[:, :-4].values)
 x_0 = jnp.round(x_0[:, :6])
 y_0 = jnp.round(x_0[:, 7])
-x_0
 
 DD = Fscchi2(x=x_0,y=y_0).run()
