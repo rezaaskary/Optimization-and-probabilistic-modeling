@@ -15,6 +15,7 @@ class Fscchi2:
             else:
                 self.x = x
 
+
         if isinstance(y, jnp.ndarray):
             if jnp.any(jnp.isnan(y)):
                 raise Exception('The target variable contains NaN values!')
@@ -30,11 +31,11 @@ class Fscchi2:
         self.chi_squared_statistics = jnp.zeros((self.n_predictors,))
         self.chi_squared_p_values = jnp.zeros((self.n_predictors,))
         self.cramer_v = jnp.zeros((self.n_predictors,))
-
+        self.contigency_matrix = jnp.zeros((self.samples, self.y_n_, self.n_predictors))  # (samples, n_y_categories, p)
     def run(self):
 
-        def inner_loop(x_cat_cnt, values3):
-            unique_x, feat_cnt, y_cat_cnt, contigency_matrix = values3
+        def inner_loop(x_cat_cnt, values_inner_loop):
+            unique_x, feat_cnt, y_cat_cnt, contigency_matrix = values_inner_loop
             counts = jnp.where((self.x[:, feat_cnt] == unique_x[x_cat_cnt]) & (self.y == self.unique_y[y_cat_cnt]))[0]
             contigency_matrix = contigency_matrix.at[x_cat_cnt, y_cat_cnt].set(counts.shape[0])
             return unique_x, feat_cnt, y_cat_cnt, contigency_matrix
@@ -43,18 +44,18 @@ class Fscchi2:
             contigency_matrix, feat_cnt, unique_x, x_n_ = values_over_y_catg
             for x_cat_cnt in range(x_n_):
                 unique_x, feat_cnt, y_cat_cnt, contigency_matrix = inner_loop(x_cat_cnt=x_cat_cnt,
-                                                                              values3=(unique_x,
-                                                                                       feat_cnt,
-                                                                                       y_cat_cnt,
-                                                                                       contigency_matrix))
+                                                                              values_inner_loop=(unique_x,
+                                                                                                 feat_cnt,
+                                                                                                 y_cat_cnt,
+                                                                                                 contigency_matrix))
             return contigency_matrix, feat_cnt, unique_x, x_n_
 
         def over_features(feat_cnt, values_over_features):
-            chi_squared_statistics, chi_squared_p_values, cramer_v = values_over_features
+            contigency_matrix = values_over_features
 
             unique_x = jnp.unique(self.x[:, feat_cnt])
             x_n_ = unique_x.shape[0]
-            contigency_matrix = jnp.zeros((x_n_, self.y_n_))  # rows -> x categ, column ->y categ
+
             for y_cat_cnt in range(self.y_n_):
                 contigency_matrix, feat_cnt, unique_x, x_n_ = over_y_categories(y_cat_cnt=y_cat_cnt,
                                                                                 values_over_y_catg=(contigency_matrix,
@@ -63,19 +64,32 @@ class Fscchi2:
                                                                                                     x_n_))
 
             ####
-            return chi_squared_statistics, chi_squared_p_values, cramer_v
+            return contigency_matrix
 
         for feat_cnt in range(self.n_predictors):
             chi_squared_statistics, chi_squared_p_values, cramer_v = over_features(feat_cnt=feat_cnt,
-                                                                                   values_over_features=(
-                                                                                       self.chi_squared_statistics.copy(),
-                                                                                       self.chi_squared_p_values.copy(),
-                                                                                       self.cramer_v.copy()))
+                                                                                   values_over_features=self.contigency_matrix.copy())
+
 
 
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 x_0 = jnp.array(data.iloc[:, :-4].values)
 x_0 = jnp.round(x_0[:, :6])
 y_0 = jnp.round(x_0[:, 7])
+
+
+import numpy as np
+
+
+obsCount = pd.crosstab(index=x_0[:,1], columns=y_0, margins=False, dropna=True)
+cTotal = obsCount.sum(axis=1)
+rTotal = obsCount.sum(axis=0)
+nTotal = np.sum(rTotal)
+expCount = np.outer(cTotal, (rTotal / nTotal))
+chiSqStat = ((obsCount - expCount) ** 2 / expCount).to_numpy().sum()
+chiSqDf = (obsCount.shape[0] - 1.0) * (obsCount.shape[1] - 1.0)
+chiSqSig = scipy.stats.chi2.sf(chiSqStat, chiSqDf)
+
+
 
 DD = Fscchi2(x=x_0, y=y_0).run()
