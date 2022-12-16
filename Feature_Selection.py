@@ -34,10 +34,10 @@ class Fscchi2:
     def run(self):
 
         def inner_loop(x_cat_cnt, values3):
-            unique_x, feat_cnt, y_cat_cnt, mat = values3
-            ff = jnp.where((self.x[:, feat_cnt] == unique_x[x_cat_cnt]) & (self.y == self.unique_y[y_cat_cnt]))[0]
-            mat = mat.at[x_cat_cnt, y_cat_cnt].set(ff.shape[0])
-            return unique_x, feat_cnt, y_cat_cnt, mat
+            unique_x, feat_cnt, y_cat_cnt, contigency_matrix = values3
+            counts = jnp.where((self.x[:, feat_cnt] == unique_x[x_cat_cnt]) & (self.y == self.unique_y[y_cat_cnt]))[0]
+            contigency_matrix = contigency_matrix.at[x_cat_cnt, y_cat_cnt].set(counts.shape[0])
+            return unique_x, feat_cnt, y_cat_cnt, contigency_matrix
 
         def over_y_categories(y_cat_cnt, values_over_y_catg):
             contigency_matrix, feat_cnt, unique_x, x_n_ = values_over_y_catg
