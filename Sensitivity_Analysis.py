@@ -72,6 +72,7 @@ class FourierAmplitudeSensitivityTest:
             omega2, omega, idx = values_1
             idx = idx.at[0:i].set(jnp.arange(start=0, stop=i, dtype=jnp.int32))
             idx = idx.at[i:].set(jnp.arange(start=i + 1, stop=self.num_vars - 1, dtype=jnp.int32))
-
+            omega2 = omega2.at[idx].set(omega[1:])
+            z = jnp.arange(start=)
 
             return
