@@ -80,3 +80,5 @@ plt.show()
 #
 # data = pd.read_csv('winequality-white.csv', delimiter=';')
 # data = jnp.array(data.values[:, :-2])
+import SALib
+from SALib.sample.fast_sampler import sample
