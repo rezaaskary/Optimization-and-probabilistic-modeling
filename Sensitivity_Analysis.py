@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import jax.random
 from jax import lax, vmap, jit
 
 bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
@@ -40,3 +41,16 @@ class FourierAmplitudeSensitivityTest:
             self.terms = terms
         else:
             raise Exception('The number of terms used for calculating the Fourier transformation')
+
+        if isinstance(seed, int):
+            self.key = jax.random.PRNGKey(seed)
+        else:
+            raise Exception('Please enter an integer value to fix the random number generator')
+
+
+
+
+
+
+
+
