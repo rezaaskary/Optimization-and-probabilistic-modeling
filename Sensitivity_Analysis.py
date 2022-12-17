@@ -62,19 +62,16 @@ class FourierAmplitudeSensitivityTest:
         self.s = (2 * jnp.pi / self.n) * jnp.arange(self.n)
         self.x = jnp.zeros([self.n * self.terms, self.terms])
 
-        idx = jnp.zeros([self.num_vars - 1])
+        idx = jnp.zeros([self.num_vars - 1], dtype=jnp.int32)
 
         def _phase_shift(j, values_2):
 
             return
 
+        def _phase_shift(i: int, values_1: tuple) -> tuple:
+            omega2, omega, idx = values_1
+            idx = idx.at[0:i].set(jnp.arange(start=0, stop=i, dtype=jnp.int32))
+            idx = idx.at[i:].set(jnp.arange(start=i + 1, stop=self.num_vars - 1, dtype=jnp.int32))
 
-        def _phase_shift(i,values_1):
-            omega2, omega,
+
             return
-
-
-
-
-
-
