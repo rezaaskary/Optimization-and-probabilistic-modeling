@@ -34,6 +34,18 @@ class Fscchi2:
                                            dtype=jnp.int32)  # (samples, n_y_categories, p)
         self.unique_x_count = jnp.zeros((self.n_predictors,), dtype=jnp.int32)
 
+        def _vmaped_unique_x(whole_x):
+            K,c = jnp.unique(whole_x,return_index=False,return_counts=True,return_inverse=False,size=self.samples)
+            return K,c
+
+        VV,c = jax.vmap(fun=_vmaped_unique_x, in_axes=1, out_axes=1, axis_size=self.n_predictors)(self.x)
+        VV
+        # unique_x = jnp.unique(self.x[:, feat_cnt])
+        # x_n_ = unique_x.shape[0]
+        # unique_x_count = unique_x_count.at[feat_cnt].set(x_n_)
+
+
+
     def run(self):
 
         def inner_loop(x_cat_cnt:int, values_inner_loop: tuple) -> tuple:
@@ -96,8 +108,8 @@ class Fscchi2:
 
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 x_0 = jnp.array(data.iloc[:, :-4].values)
-x_0 = jnp.round(x_0[:, :6])
-y_0 = jnp.round(x_0[:, 7])
+x_0 = jnp.round(x_0[1:15, :6])
+y_0 = jnp.round(x_0[1:15, 7])
 
 import numpy as np
 
