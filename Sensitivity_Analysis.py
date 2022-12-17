@@ -51,6 +51,7 @@ class FourierAmplitudeSensitivityTest:
             raise Exception('Sample size n > 4terms^2 is required!')
 
         self.omega = jnp.zeros([self.num_vars])
+        self.omega2 = self.omega.copy()
         self.omega = self.omega.at[0].set(jnp.floor((self.n - 1) / (2 * self.terms)))
 
         self.m = jnp.floor(self.omega[0] / (2 * self.terms))
@@ -58,3 +59,5 @@ class FourierAmplitudeSensitivityTest:
         self.omega = self.omega.at[1:self.num_vars].set(jnp.where(self.m >= self.num_vars - 1,
                                                                   jnp.floor(jnp.linspace(1, self.m, self.num_vars - 1)),
                                                                   jnp.arange(self.num_vars - 1) % self.m + 1))
+        self.s = (2 * jnp.pi / self.n) * jnp.arange(self.n)
+        self.x = jnp.zeros([self.n * self.terms, self.terms])
