@@ -45,22 +45,22 @@ x_0 = jax.random.uniform(key=jax.random.PRNGKey(7), minval=-4, maxval=4, shape=(
 
 odes1 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
                    method='euler', activate_jit=True)
-T1 = odes1.solve(parameter=par, u=u)
-plt.figure(dpi=150)
-plt.plot(T1[0, 0, :], '.')
-plt.plot(T1[1, 0, :], '.')
-plt.plot(T1[2, 0, :], '.')
-plt.plot(T1[3, 0, :], '.')
+# T1 = odes1.solve(parameter=par, u=u)
+# plt.figure(dpi=150)
+# plt.plot(T1[0, 0, :], '.')
+# plt.plot(T1[1, 0, :], '.')
+# plt.plot(T1[2, 0, :], '.')
+# plt.plot(T1[3, 0, :], '.')
+#
+# odes2 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
+#                    method='ABAM5', activate_jit=True)
+# T2 = odes2.solve(parameter=par, u=u)
 
-odes2 = ODESolvers(fcn=ode_fcn, steps=L, duration=50, n_sim=chains, n_input=3, n_states=4, n_params=3, x0=x_0,
-                   method='ABAM5', activate_jit=True)
-T2 = odes2.solve(parameter=par, u=u)
-
-plt.plot(T2[0, 0, :], '-')
-plt.plot(T2[1, 0, :], '-')
-plt.plot(T2[2, 0, :], '-')
-plt.plot(T2[3, 0, :], '-')
-plt.show()
+# plt.plot(T2[0, 0, :], '-')
+# plt.plot(T2[1, 0, :], '-')
+# plt.plot(T2[2, 0, :], '-')
+# plt.plot(T2[3, 0, :], '-')
+# plt.show()
 
 
 
@@ -82,3 +82,13 @@ plt.show()
 # data = jnp.array(data.values[:, :-2])
 import SALib
 from SALib.sample.fast_sampler import sample
+
+problem = {
+    'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6' ],
+    'num_vars': 6,
+    'bounds': [[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]],
+    'groups': ['G1', 'G2', 'G1', 'G1', 'G1', 'G1'],
+    'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
+}
+
+sample(problem=problem,N=2048,M=4,seed=3)
