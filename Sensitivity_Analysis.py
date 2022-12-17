@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import lax, vmap, jit
 
-bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]],dtype=jnp.float32)
+bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
 
 problem = {
     'names': ['x1', 'x2', 'x3'],
@@ -10,7 +10,6 @@ problem = {
     'groups': ['G1', 'G2', 'G1'],
     'dists': ['unif', 'lognorm', 'triang']
 }
-
 
 
 class FourierAmplitudeSensitivityTest:
@@ -31,11 +30,12 @@ class FourierAmplitudeSensitivityTest:
         else:
             raise Exception('The problem is not defined in the format of a dictionary!')
 
+        if isinstance(n, int):
+            self.n = n
+        else:
+            raise Exception('The number samples is not specified correctly!')
 
-
-
-
-
-
-
-
+        if isinstance(terms, int):
+            self.terms = terms
+        else:
+            raise Exception('The ')
