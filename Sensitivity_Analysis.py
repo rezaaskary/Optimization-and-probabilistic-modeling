@@ -16,7 +16,8 @@ class FourierAmplitudeSensitivityTest:
     def __init__(self,
                  problem: dict = None,
                  n: int = None,
-                 terms: int = None):
+                 terms: int = None,
+                 seed: int = None):
         if isinstance(problem, dict):
             self.problem = problem
             if 'names' in self.problem:
@@ -38,4 +39,4 @@ class FourierAmplitudeSensitivityTest:
         if isinstance(terms, int):
             self.terms = terms
         else:
-            raise Exception('The ')
+            raise Exception('The number of terms used for calculating the Fourier transformation')
