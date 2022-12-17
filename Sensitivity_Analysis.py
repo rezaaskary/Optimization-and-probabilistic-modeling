@@ -47,16 +47,14 @@ class FourierAmplitudeSensitivityTest:
         else:
             raise Exception('Please enter an integer value to fix the random number generator')
 
-        if self.n <= 4*terms**2:
+        if self.n <= 4 * terms ** 2:
             raise Exception('Sample size n > 4terms^2 is required!')
 
         self.omega = jnp.zeros([self.num_vars])
         self.omega = self.omega.at[0].set(jnp.floor((self.n - 1) / (2 * self.terms)))
 
+        self.m = jnp.floor(self.omega[0] / (2 * self.terms))
 
-
-
-
-
-
-
+        self.omega = self.omega.at[1:self.num_vars].set(jnp.where(self.m >= self.num_vars - 1,
+                                                                  jnp.floor(jnp.linspace(1, self.m, self.num_vars - 1)),
+                                                                  jnp.arange(self.num_vars - 1) % self.m + 1))
