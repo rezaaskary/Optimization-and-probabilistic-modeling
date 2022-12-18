@@ -65,18 +65,20 @@ class FourierAmplitudeSensitivityTest:
         idex_old = jnp.arange(start=0, stop=self.num_vars - 1, dtype=jnp.int32)
         z = jnp.arange(start=0, stop=self.n, dtype=jnp.int32)
         phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0, minval=0)
-        def _phase_shift(j, values_2):
-
-            return
+        def _phase_shift(j: int, values_2: tuple) -> tuple:
+            omega2, z_idx, x_arg, phi_arg = values_2
+            g = 0.5 + (1 / jnp.pi) * jnp.arcsin(jnp.sin(omega2[j] * self.s + phi_arg))
+            x_arg = x_arg.at[z_idx, j].set(g)
+            return omega2, z_idx, x_arg, phi_arg
 
         def _phase_shift(i: int, values_1: tuple) -> tuple:
-            omega2, omega, idx_new, idex_old, z_idx = values_1
+            omega2, omega, idx_new, idex_old, z_idx, x_arg = values_1
             idx_new = idx_new.at[0:i].set(idex_old[0:i])
             omega2 = omega2.at[idx_new].set(omega[1:])
             z_idx = z_idx.at[:].set(z_idx + 1)
             phi = 2 * jnp.pi * phi_rng_uniform[i]
 
-            lax.fori_loop
+            lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift, init_val=)
 
-            return omega2, omega, idx_new, idex_old, z_idx
+            return omega2, omega, idx_new, idex_old, z_idx, x_arg
 
