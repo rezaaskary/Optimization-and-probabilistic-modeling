@@ -76,3 +76,4 @@ class FourierAmplitudeSensitivityTest:
             z = jnp.arange(start=)
 
             return
+
