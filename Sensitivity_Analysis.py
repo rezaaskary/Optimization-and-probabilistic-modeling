@@ -78,7 +78,8 @@ class FourierAmplitudeSensitivityTest:
             z_idx = z_idx.at[:].set(z_idx + 1)
             phi = 2 * jnp.pi * phi_rng_uniform[i]
 
-            lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift, init_val=)
+            omega2, z_idx, x_arg, phi_arg = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
+                                                          init_val=())
 
             return omega2, omega, idx_new, idex_old, z_idx, x_arg
 
