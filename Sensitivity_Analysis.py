@@ -1,6 +1,5 @@
 import jax.numpy as jnp
-import jax.random
-from jax import lax, vmap, jit
+from jax import lax, vmap, jit, random
 
 bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
 
@@ -43,7 +42,7 @@ class FourierAmplitudeSensitivityTest:
             raise Exception('The number of terms used for calculating the Fourier transformation')
 
         if isinstance(seed, int):
-            self.key = jax.random.PRNGKey(seed)
+            self.key = random.PRNGKey(seed)
         else:
             raise Exception('Please enter an integer value to fix the random number generator')
 
@@ -65,6 +64,7 @@ class FourierAmplitudeSensitivityTest:
         idx_new = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
         idex_old = jnp.arange(start=0, stop=self.num_vars - 1, dtype=jnp.int32)
         z = jnp.arange(start=0, stop=self.n, dtype=jnp.int32)
+        phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0, minval=0)
         def _phase_shift(j, values_2):
 
             return
@@ -73,7 +73,10 @@ class FourierAmplitudeSensitivityTest:
             omega2, omega, idx_new, idex_old, z_idx = values_1
             idx_new = idx_new.at[0:i].set(idex_old[0:i])
             omega2 = omega2.at[idx_new].set(omega[1:])
-            z = z_idx.at[:].set(z_idx + 1)
+            z_idx = z_idx.at[:].set(z_idx + 1)
+            phi = 2 * jnp.pi * phi_rng_uniform[i]
+
+            lax.fori_loop
 
             return omega2, omega, idx_new, idex_old, z_idx
 
