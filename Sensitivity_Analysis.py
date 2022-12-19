@@ -60,11 +60,12 @@ class FourierAmplitudeSensitivityTest:
                                                                   jnp.arange(self.num_vars - 1) % self.m + 1))
         self.s = (2 * jnp.pi / self.n) * jnp.arange(self.n)
         self.x = jnp.zeros([self.n * self.num_vars, self.num_vars])
+        self.z = jnp.arange(start=0, stop=self.n, dtype=jnp.int32)
+        self.idx = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
+        self.phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0,
+                                              minval=0)
 
     def solve(self):
-        idx_new = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
-        z = jnp.arange(start=0, stop=self.n, dtype=jnp.int32)
-        phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0, minval=0)
 
         def _phase_shift_inner(j: int, values_2: tuple) -> tuple:
             omega2, z_idx, x_arg, phi_arg = values_2
@@ -72,19 +73,21 @@ class FourierAmplitudeSensitivityTest:
             return omega2, z_idx, x_arg, phi_arg
 
         def _phase_shift(i: int, values_1: tuple) -> tuple:
-            omega2, idx_new, z_idx, x_arg = values_1
+            omega2, idx_new, x_arg = values_1
             omega2 = omega2.at[i].set(self.omega[0])
             idx_new = jnp.where(i == 0, idx_new, idx_new.at[i - 1].set(idx_new[i - 1] - 1))
             omega2 = omega2.at[idx_new].set(self.omega[1:self.num_vars])
-            z_idx = z_idx.at[:].set(z_idx + i * self.n)
-            phi = 2 * jnp.pi * phi_rng_uniform[i]
-            omega2, z_idx, x_arg, phi_arg = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift_inner,
-                                                          init_val=(omega2, z_idx, x_arg, phi))
-            return omega2, idx_new, z_idx, x_arg
+            # z_idx = z_idx.at[:].set(z_idx + i * self.n)
+            z_idx = self.z + i * self.n
+            phi = 2 * jnp.pi * self.phi_rng_uniform[i]
+            omega2, z_idx_, x_arg, phi_arg = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift_inner,
+                                                           init_val=(omega2, z_idx, x_arg, phi))
+            return omega2, idx_new, x_arg
 
         self.omega2, idx_new, z, cvc = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
-                                    init_val=(self.omega2, idx_new, z, self.x))
+                                                     init_val=(self.omega2, self.idx, self.x))
         return cvc
+
 
 problem = {
     'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6'],
@@ -97,5 +100,6 @@ problem = {
 MM = FourierAmplitudeSensitivityTest(problem=problem, n=2048, terms=5, seed=3)
 RD = MM.solve()
 import numpy as np
+
 RD = np.array(RD)
 RD
