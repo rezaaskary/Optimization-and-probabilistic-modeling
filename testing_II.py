@@ -5,20 +5,21 @@ from sklearn import decomposition
 
 import jax.numpy as jnp
 from jax import lax
-import jax
-from functools import partial
 
 idx_new = jnp.arange(start=1, stop=10, dtype=jnp.int32)
-idex_old = jnp.arange(start=0, stop=9, dtype=jnp.int32)
-
-def dummy_df(i: int, values: tuple) -> tuple:
-    idex_old, idx_new = values
-    slice = lax.dynamic_slice(operand=idex_old, start_indices=(0,), slice_sizes=(i,))
-    idx_new = lax.dynamic_update_slice(operand=idx_new, update=slice, start_indices=(0,))
-    return idex_old, idx_new
+# idex_old = jnp.arange(start=0, stop=9, dtype=jnp.int32)
 
 
-lax.fori_loop(lower=0, upper=9, body_fun=dummy_df, init_val=(idex_old, idx_new))
+def body_fun(i: int, idx_new):
+    idx_new = jnp.where(i==0, idx_new, idx_new.at[i-1].set(idx_new[i-1] - 1))
+    # idx_new = idx_new.at[i].set(idx_new[i] - 1)
+    # idex_old, idx_new = values
+    # slice = lax.dynamic_slice(operand=idex_old, start_indices=(0,), slice_sizes=(i,))
+    # idx_new = lax.dynamic_update_slice(operand=idx_new, update=slice, start_indices=(0,))
+    return idx_new
+
+
+idx_new = lax.fori_loop(lower=0, upper=10, body_fun=body_fun, init_val=idx_new)
 
 data = pd.read_csv('winequality-white.csv', delimiter=';')
 data = np.array(data.values[:, :-2])
