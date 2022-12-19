@@ -73,8 +73,12 @@ class FourierAmplitudeSensitivityTest:
             x_arg = x_arg.at[z_idx, j].set(g)
             return omega2, z_idx, x_arg, phi_arg
 
+        ff = lax.dynamic_slice(operand=idex_old, start_indices=(0,), slice_sizes=(0,))
+        ff
         def _phase_shift(i: int, values_1: tuple) -> tuple:
-            omega2, omega, idx_new, idex_old, z_idx, x_arg = values_1
+            omega2, omega, idx_new, idex_old, z_idx, x_arg, cntr = values_1
+            ff = lax.dynamic_slice(operand=idex_old, start_indices=(0,), slice_sizes=(cntr,))
+            # idx_new = lax.dynamic_update_slice(operand=idx_new, update=)
             idx_new = idx_new.at[0:i].set(idex_old[0:i])
             omega2 = omega2.at[idx_new].set(omega[1:])
             z_idx = z_idx.at[:].set(z_idx + i * self.n)
@@ -84,8 +88,7 @@ class FourierAmplitudeSensitivityTest:
                                                           init_val=(omega2, z_idx, x_arg, phi))
             # for j in range(self.num_vars):
             #     omega2, z_idx, x_arg, phi_arg = _phase_shift_inner(j=j, values_2=(omega2, z_idx, x_arg, phi))
-
-            return omega2, omega, idx_new, idex_old, z_idx, x_arg
+            return omega2, omega, idx_new, idex_old, z_idx, x_arg, cntr + 1
 
         # for i in range(self.num_vars):
         #     self.omega2, self.omega2, idx_new, idex_old, z, self.x = _phase_shift(i=i,
@@ -94,7 +97,7 @@ class FourierAmplitudeSensitivityTest:
         #                                                                               idex_old, z, self.x))
         self.omega2, self.omega2, idx_new, idex_old, z, \
             self.x = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
-                                   init_val=(self.omega2, self.omega, idx_new, idex_old, z, self.x))
+                                   init_val=(self.omega2, self.omega, idx_new, idex_old, z, self.x, 0))
 
 
 problem = {
