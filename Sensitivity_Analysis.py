@@ -84,9 +84,9 @@ class FourierAmplitudeSensitivityTest:
                                                            init_val=(omega2, z_idx, x_arg, phi))
             return omega2, idx_new, x_arg
 
-        self.omega2, idx_new, z, cvc = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
+        self.omega2, idx_new, self.x = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
                                                      init_val=(self.omega2, self.idx, self.x))
-        return cvc
+        return self.x
 
 
 problem = {
