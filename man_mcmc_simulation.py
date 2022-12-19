@@ -91,4 +91,4 @@ problem = {
     'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
 }
 
-sample(problem=problem,N=2048,M=4,seed=3)
+sample(problem=problem,N=2048,M=5,seed=3)
