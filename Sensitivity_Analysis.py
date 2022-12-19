@@ -60,7 +60,7 @@ class FourierAmplitudeSensitivityTest:
                                                                   jnp.arange(self.num_vars - 1) % self.m + 1))
         self.s = (2 * jnp.pi / self.n) * jnp.arange(self.n)
         self.x = jnp.zeros([self.n * self.terms, self.terms])
-
+    def solve(self):
         idx_new = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
         idex_old = jnp.arange(start=0, stop=self.num_vars - 1, dtype=jnp.int32)
         z = jnp.arange(start=0, stop=self.n, dtype=jnp.int32)
@@ -86,3 +86,15 @@ class FourierAmplitudeSensitivityTest:
         self.omega2, self.omega2, idx_new, idex_old, z, \
             self.x = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
                                    init_val=(self.omega2, self.omega, idx_new, idex_old, z, self.x))
+
+
+problem = {
+    'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6' ],
+    'num_vars': 6,
+    'bounds': [[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]],
+    'groups': ['G1', 'G2', 'G1', 'G1', 'G1', 'G1'],
+    'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
+}
+
+MM =FourierAmplitudeSensitivityTest(problem=problem, n=2048, terms=5, seed=1)
+RD = MM.solve()
