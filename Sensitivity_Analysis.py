@@ -52,9 +52,7 @@ class FourierAmplitudeSensitivityTest:
         self.omega = jnp.zeros([self.num_vars])
         self.omega2 = self.omega.copy()
         self.omega = self.omega.at[0].set(jnp.floor((self.n - 1) / (2 * self.terms)))
-
         self.m = jnp.floor(self.omega[0] / (2 * self.terms))
-
         self.omega = self.omega.at[1:self.num_vars].set(jnp.where(self.m >= self.num_vars - 1,
                                                                   jnp.floor(jnp.linspace(1, self.m, self.num_vars - 1)),
                                                                   jnp.arange(self.num_vars - 1) % self.m + 1))
@@ -64,7 +62,6 @@ class FourierAmplitudeSensitivityTest:
         self.idx = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
         self.phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0,
                                               minval=0)
-
     def solve(self):
 
         def _phase_shift_inner(j: int, values_2: tuple) -> tuple:
