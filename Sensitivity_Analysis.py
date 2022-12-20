@@ -15,13 +15,22 @@ problem = {
 class FourierAmplitudeSensitivityTest:
     def __init__(self,
                  problem: dict = None,
-                 lb: list = None,
-                 ub: list = None,
+                 lb: jnp.ndarray = None,
+                 ub: jnp.ndarray = None,
                  names: list = None,
                  groups: list = None,
                  n: int = None,
                  terms: int = None,
                  seed: int = None):
+
+        if isinstance(lb, jnp.ndarray):
+            self.lb = jnp.array(lb, dtype=jnp.float32)
+        else:
+            raise Exception('The values for the lower bound of parameters are not specified correctly')
+        if isinstance(ub, jnp.ndarray):
+            self.ub = jnp.array(ub, dtype=jnp.float32)
+        else:
+            raise Exception('The values for the upper bound of parameters are not specified correctly')
 
         if isinstance(problem, dict):
             self.problem = problem
