@@ -15,6 +15,8 @@ problem = {
 class FourierAmplitudeSensitivityTest:
     def __init__(self,
                  problem: dict = None,
+                 lb: list = None,
+                 ub: list = None,
                  n: int = None,
                  terms: int = None,
                  seed: int = None):
@@ -48,6 +50,9 @@ class FourierAmplitudeSensitivityTest:
 
         if self.n <= 4 * terms ** 2:
             raise Exception('Sample size n > 4terms^2 is required!')
+
+        if
+
 
         self.omega = jnp.zeros([self.num_vars])
         self.omega2 = self.omega.copy()
@@ -88,7 +93,7 @@ class FourierAmplitudeSensitivityTest:
 problem = {
     'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6'],
     'num_vars': 6,
-    'bounds': [[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]],
+    'bounds': jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]]),
     'groups': ['G1', 'G2', 'G1', 'G1', 'G1', 'G1'],
     'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
 }
