@@ -37,6 +37,12 @@ class FourierAmplitudeSensitivityTest:
             raise ValueError('The upper and lower bounds are poorly defined. The values of lower bound cannot\n'
                              'be greater than upper bound.')
 
+        self.num_vars = self.lb.shape[0]
+        if isinstance(names, list):
+            self.names = names
+        elif names is None:
+        else:
+            raise ValueError('Please enter the list of names of parameters is string format.')
 
 
 
