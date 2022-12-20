@@ -24,13 +24,21 @@ class FourierAmplitudeSensitivityTest:
                  seed: int = None):
 
         if isinstance(lb, jnp.ndarray):
-            self.lb = jnp.array(lb, dtype=jnp.float32)
+            self.lb = jnp.array(lb, dtype=jnp.float32).reshape((-1, 1))
         else:
             raise Exception('The values for the lower bound of parameters are not specified correctly')
+
         if isinstance(ub, jnp.ndarray):
-            self.ub = jnp.array(ub, dtype=jnp.float32)
+            self.ub = jnp.array(ub, dtype=jnp.float32).reshape((-1, 1))
         else:
             raise Exception('The values for the upper bound of parameters are not specified correctly')
+
+        if jnp.any(self.lb >= self.ub):
+            raise ValueError('The upper and lower bounds are poorly defined. The values of lower bound cannot\n'
+                             'be greater than upper bound.')
+
+
+
 
         if isinstance(problem, dict):
             self.problem = problem
@@ -63,7 +71,7 @@ class FourierAmplitudeSensitivityTest:
         if self.n <= 4 * terms ** 2:
             raise Exception('Sample size n > 4terms^2 is required!')
 
-        if
+
 
 
         self.omega = jnp.zeros([self.num_vars])
