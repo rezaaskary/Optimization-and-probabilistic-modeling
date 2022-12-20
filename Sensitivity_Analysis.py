@@ -18,6 +18,7 @@ class FourierAmplitudeSensitivityTest:
                  lb: jnp.ndarray = None,
                  ub: jnp.ndarray = None,
                  names: list = None,
+                 dists: list = None,
                  groups: list = None,
                  n: int = None,
                  terms: int = None,
@@ -52,6 +53,13 @@ class FourierAmplitudeSensitivityTest:
             self.groups = ['g' + str(i) for i in range(self.num_vars)]
         else:
             raise ValueError('Please enter the list of names of parameters is string format.')
+
+        if isinstance(dists, list):
+            self.dists = dists
+        elif dists is None:
+            self.dists = ['uniform'] * self.num_vars
+        else:
+            raise Exception('Please correctly enter the list of distance variables.')
 
 
 
