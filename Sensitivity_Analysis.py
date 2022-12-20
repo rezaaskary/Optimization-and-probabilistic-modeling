@@ -38,10 +38,18 @@ class FourierAmplitudeSensitivityTest:
                              'be greater than upper bound.')
 
         self.num_vars = self.lb.shape[0]
+
         if isinstance(names, list):
             self.names = names
         elif names is None:
             self.names = ['x' + str(i) for i in range(self.num_vars)]
+        else:
+            raise ValueError('Please enter the list of names of parameters is string format.')
+
+        if isinstance(groups, list):
+            self.groups = groups
+        elif groups is None:
+            self.groups = ['g' + str(i) for i in range(self.num_vars)]
         else:
             raise ValueError('Please enter the list of names of parameters is string format.')
 
