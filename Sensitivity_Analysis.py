@@ -17,9 +17,12 @@ class FourierAmplitudeSensitivityTest:
                  problem: dict = None,
                  lb: list = None,
                  ub: list = None,
+                 names: list = None,
+                 groups: list = None,
                  n: int = None,
                  terms: int = None,
                  seed: int = None):
+
         if isinstance(problem, dict):
             self.problem = problem
             if 'names' in self.problem:
