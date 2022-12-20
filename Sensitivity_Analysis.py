@@ -11,10 +11,23 @@ problem = {
     'dists': ['unif', 'lognorm', 'triang']
 }
 
+class DistanceNormilizer:
+    def _uniform_(self):
+        return
+    def _triangle_(self):
+        return
+    def _norm_(self):
+        return
+    def _truncnorm_(self):
+        return
+    def _lognorm_(self):
+        return
 
-class FourierAmplitudeSensitivityTest:
+
+
+
+class FourierAmplitudeSensitivityTest(DistanceNormilizer):
     def __init__(self,
-                 problem: dict = None,
                  lb: jnp.ndarray = None,
                  ub: jnp.ndarray = None,
                  names: list = None,
@@ -61,20 +74,18 @@ class FourierAmplitudeSensitivityTest:
         else:
             raise Exception('Please correctly enter the list of distance variables.')
 
-
-
-        if isinstance(problem, dict):
-            self.problem = problem
-            if 'names' in self.problem:
-                self.names = self.problem['names']
-            if 'num_vars' in self.problem:
-                self.num_vars = self.problem['num_vars']
-            if 'groups' in self.problem:
-                self.groups = self.problem['groups']
-            if 'dists' in self.problem['dists']:
-                self.dist = self.problem['dists']
-        else:
-            raise Exception('The problem is not defined in the format of a dictionary!')
+        # if isinstance(problem, dict):
+        #     self.problem = problem
+        #     if 'names' in self.problem:
+        #         self.names = self.problem['names']
+        #     if 'num_vars' in self.problem:
+        #         self.num_vars = self.problem['num_vars']
+        #     if 'groups' in self.problem:
+        #         self.groups = self.problem['groups']
+        #     if 'dists' in self.problem['dists']:
+        #         self.dist = self.problem['dists']
+        # else:
+        #     raise Exception('The problem is not defined in the format of a dictionary!')
 
         if isinstance(n, int):
             self.n = n
