@@ -41,6 +41,7 @@ class FourierAmplitudeSensitivityTest:
         if isinstance(names, list):
             self.names = names
         elif names is None:
+            self.names = ['x' + str(i) for i in range(self.num_vars)]
         else:
             raise ValueError('Please enter the list of names of parameters is string format.')
 
