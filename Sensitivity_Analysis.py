@@ -74,19 +74,6 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         else:
             raise Exception('Please correctly enter the list of distance variables.')
 
-        # if isinstance(problem, dict):
-        #     self.problem = problem
-        #     if 'names' in self.problem:
-        #         self.names = self.problem['names']
-        #     if 'num_vars' in self.problem:
-        #         self.num_vars = self.problem['num_vars']
-        #     if 'groups' in self.problem:
-        #         self.groups = self.problem['groups']
-        #     if 'dists' in self.problem['dists']:
-        #         self.dist = self.problem['dists']
-        # else:
-        #     raise Exception('The problem is not defined in the format of a dictionary!')
-
         if isinstance(n, int):
             self.n = n
         else:
