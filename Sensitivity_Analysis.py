@@ -95,9 +95,12 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     else:
                         raise ValueError(f'The value of standard deviation entered for {cntr}th parameter\n'
                                          f'is a negative value.')
+                elif item == 'triang':
+                    self.dists.append('triang')
+                    self.dist_code = self.dist_code.at[cntr].set(3)
 
-
-                elif item == 'triang'
+                if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (scale_loc[cntr][0] < self.bounds[cntr, 1]):
+                    self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
 
 
 
