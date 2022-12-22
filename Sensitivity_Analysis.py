@@ -30,9 +30,10 @@ class DistanceNormilizer:
                                                                                      loc_std[0] - bounds[0]))) ** 0.5)
         return jnp.clip(a=normed, a_min=bounds[0], a_max=bounds[1])
 
-    def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
-        return
+    def _norm_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
+        return scipy.stats.norm.ppf(q=samples,loc=loc_std[0], scale=loc_std[1])
 
+    # (params[:, i], loc=b1, scale=b2)
     def _truncnorm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
 
