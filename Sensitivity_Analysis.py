@@ -19,9 +19,16 @@ class DistanceNormilizer:
     def _uniform_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
         return samples * (bounds[1] - bounds[0]) + bounds[0]
 
-    def _triangle_(self, samples: jnp.ndarray = None, parameters: list = None):
-
-        return scipy.stats.
+    def _triangle_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
+        samples = jnp.clip(a=samples, a_min=0.0, a_max=1.0)
+        mid = (loc_std[0] - bounds[0]) / (bounds[1] - bounds[0])
+        normed = jnp.where(samples < mid,
+                           bounds[0] + (samples * (bounds[1] - bounds[0]) * (loc_std[0] - bounds[0])) ** 0.5,
+                           bounds[1] - ((bounds[1] - loc_std[0]) ** 2 - (samples * (bounds[1] - bounds[0]) *
+                                                                         (bounds[1] - loc_std[0]) -
+                                                                         (bounds[1] - loc_std[0]) * (
+                                                                                     loc_std[0] - bounds[0]))) ** 0.5)
+        return jnp.clip(a=normed, a_min=bounds[0], a_max=bounds[1])
 
     def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
