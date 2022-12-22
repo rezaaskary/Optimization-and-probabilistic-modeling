@@ -105,6 +105,14 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                 if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (
                         scale_loc[cntr][0] < self.bounds[cntr, 1]):
                     self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
+                elif len(scale_loc[cntr]) != 1:
+                    raise Exception(f'The value of peak for triangular distribution in {cntr}th parameteris is not \n'
+                                    f'specified')
+
+
+
+
+
 
             self.dists = dists
         elif dists is None:
