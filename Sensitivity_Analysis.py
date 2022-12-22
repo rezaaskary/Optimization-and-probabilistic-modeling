@@ -12,7 +12,9 @@ problem = {
 }
 
 class DistanceNormilizer:
-    def _uniform_(self):
+    # def __init__(self):
+
+    def _uniform_(self, parameter : jnp.ndarray = None, lb: jnp.ndarray = None, ub: jnp.ndarray = None):
         return
     def _triangle_(self):
         return
