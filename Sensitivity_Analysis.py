@@ -48,14 +48,20 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                  terms: int = None,
                  seed: int = None):
 
-        if isinstance(scale_loc, list):
-        else:
 
 
         if isinstance(num_vars, int):
             self.num_vars = num_vars
         else:
             raise Exception('The number of variable is not entered')
+
+        if isinstance(scale_loc, list):
+            if len(scale_loc) != self.num_vars:
+                raise Exception('The list of scale/location of parameters is not consistent with the number\n'
+                                ' of parameters')
+        else:
+            raise Exception('')
+
 
         if isinstance(bounds, jnp.ndarray):
             self.bounds = jnp.array(bounds, dtype=jnp.float32).reshape((-1, 2))
