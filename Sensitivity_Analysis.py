@@ -21,6 +21,8 @@ class DistanceNormilizer:
         return samples * (parameters[1] - parameters[0]) + parameters[0]
 
     def _triangle_(self, samples: jnp.ndarray = None, parameters: list = None):
+        if len(parameters) != 3:
+            raise Exception('Using triangular distribution requires')
         return
 
     def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
@@ -35,6 +37,7 @@ class DistanceNormilizer:
 
 class FourierAmplitudeSensitivityTest(DistanceNormilizer):
     def __init__(self,
+                 num_vars: int = None,
                  lb: jnp.ndarray = None,
                  ub: jnp.ndarray = None,
                  names: list = None,
@@ -43,6 +46,11 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                  n: int = None,
                  terms: int = None,
                  seed: int = None):
+
+        if isinstance(num_vars, int):
+            self.num_vars = num_vars
+        else:
+            raise Exception('The number of variable is not entered')
 
         if isinstance(lb, jnp.ndarray):
             self.lb = jnp.array(lb, dtype=jnp.float32).reshape((-1, 1))
