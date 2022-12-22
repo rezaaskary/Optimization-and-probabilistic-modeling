@@ -15,6 +15,7 @@ problem = {
 class DistanceNormilizer:
     def __init__(self, dists: list = None):
         self.ditance_list = jnp.zeros(shape=(6,), dtype=object)
+
     def _uniform_(self, samples: jnp.ndarray = None, parameters: list = None):
         if parameters[1] <= parameters[0]:
             raise ValueError('The value of lower bound cannot be higher than the value of upper bound! (uniform dist)')
@@ -39,6 +40,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
     def __init__(self,
                  num_vars: int = None,
                  bounds: jnp.ndarray = None,
+                 scale_loc: list = None,
                  names: list = None,
                  dists: list = None,
                  groups: list = None,
@@ -56,14 +58,36 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         else:
             raise Exception('The values for the lower/upper bounds of parameters are not specified correctly')
 
+        self.scale_loc = jnp.zeros(shape=(self.num_vars, 2), dtype=jnp.float32)
+        self.scale_loc = self.scale_loc.at[:, :].set(jnp.nan)
+        self.dist_code = jnp.zeros(shape=(self.num_vars,), dtype=int)
+        self.dists = []
+
+        if isinstance(dists, list):
+            for item, cntr in enumerate(dists):
+                if item == 'norm':
+                    self.dists.append('norm')
+                    self.dist_code = self.scale_loc.at[cntr].set(1)
+
+                elif item == 'truncnorm':
+                    self.dists.append('truncnorm')
+
+
+
+
+
+            self.dists = dists
+        elif dists is None:
+            self.dists = ['uniform'] * self.num_vars
+        else:
+            raise Exception('Please correctly enter the list of distance variables.')
+
         if jnp.any(self.bounds[:, 0] >= self.bounds[:, 1]):
             raise ValueError('The upper and lower bounds are poorly defined. The values of lower bound cannot\n'
                              'be greater than upper bound.')
 
         if self.num_vars != self.bounds.shape[0]:
             raise Exception('The number of variables is not consistent with the lower/upper bounds')
-
-
 
         self.num_vars = self.lb.shape[0]
 
@@ -80,13 +104,6 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
             self.groups = ['g' + str(i) for i in range(self.num_vars)]
         else:
             raise ValueError('Please enter the list of names of parameters is string format.')
-
-        if isinstance(dists, list):
-            self.dists = dists
-        elif dists is None:
-            self.dists = ['uniform'] * self.num_vars
-        else:
-            raise Exception('Please correctly enter the list of distance variables.')
 
         if isinstance(n, int):
             self.n = n
