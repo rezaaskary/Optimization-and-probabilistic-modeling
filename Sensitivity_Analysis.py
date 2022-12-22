@@ -16,14 +16,11 @@ class DistanceNormilizer:
     def __init__(self, dists: list = None):
         self.ditance_list = jnp.zeros(shape=(6,), dtype=object)
 
-    def _uniform_(self, samples: jnp.ndarray = None, parameters: list = None):
-        if parameters[1] <= parameters[0]:
-            raise ValueError('The value of lower bound cannot be higher than the value of upper bound! (uniform dist)')
-        return samples * (parameters[1] - parameters[0]) + parameters[0]
+    def _uniform_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
+        return samples * (bounds[1] - bounds[0]) + bounds[0]
 
     def _triangle_(self, samples: jnp.ndarray = None, parameters: list = None):
-        if len(parameters) != 3:
-            raise Exception('Using triangular distribution requires')
+
         return
 
     def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
@@ -101,6 +98,10 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                 elif item == 'triang':
                     self.dists.append('triang')
                     self.dist_code = self.dist_code.at[cntr].set(3)
+
+                    if self.bounds[cntr, 0] < 0 or self.bounds[cntr, 1] >= 1:
+                        raise ValueError('The basis (bounds) values of triangular distribution should be within\n'
+                                         ' interval [0, 1].')
 
                     if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (
                             scale_loc[cntr][0] < self.bounds[cntr, 1]):
