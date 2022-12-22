@@ -106,31 +106,18 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                             scale_loc[cntr][0] < self.bounds[cntr, 1]):
                         self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
                     elif len(scale_loc[cntr]) != 1:
-                        raise Exception(f'The value of peak for triangular distribution in {cntr}th parameters is not \n'
-                                        f'specified.')
+                        raise Exception(
+                            f'The value of peak for triangular distribution in {cntr}th parameters is not \n'
+                            f'specified.')
                     else:
                         raise ValueError(f'The value of lower/upper basis and the location of peak in the triangular\n'
                                          f' distribution for the {cntr}th parameter is not specified correctly')
-
-
-
-
-
-
-            self.dists = dists
-        elif dists is None:
-            self.dists = ['uniform'] * self.num_vars
-        else:
-            raise Exception('Please correctly enter the list of distance variables.')
-
-        if jnp.any(self.bounds[:, 0] >= self.bounds[:, 1]):
-            raise ValueError('The upper and lower bounds are poorly defined. The values of lower bound cannot\n'
-                             'be greater than upper bound.')
+                else:
+                    self.dists.append('unif')
+                    self.dist_code = self.dist_code.at[cntr].set(0)
 
         if self.num_vars != self.bounds.shape[0]:
             raise Exception('The number of variables is not consistent with the lower/upper bounds')
-
-        self.num_vars = self.lb.shape[0]
 
         if isinstance(names, list):
             self.names = names
