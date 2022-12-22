@@ -48,8 +48,6 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                  terms: int = None,
                  seed: int = None):
 
-
-
         if isinstance(num_vars, int):
             self.num_vars = num_vars
         else:
@@ -58,10 +56,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         if isinstance(scale_loc, list):
             if len(scale_loc) != self.num_vars:
                 raise Exception('The list of scale/location of parameters is not consistent with the number\n'
-                                ' of parameters')
+                                'of parameters')
         else:
-            raise Exception('')
-
+            raise Exception('The scale/location parameters should be entered in the format of a list.')
 
         if isinstance(bounds, jnp.ndarray):
             self.bounds = jnp.array(bounds, dtype=jnp.float32).reshape((-1, 2))
@@ -79,7 +76,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     self.dists.append('norm')
                     self.dist_code = self.dist_code.at[cntr].set(1)
 
-                    if len(scale_loc[cntr])==2 and scale_loc[cntr][1] > 0:
+                    if len(scale_loc[cntr]) == 2 and scale_loc[cntr][1] > 0:
                         self.scale_loc = self.scale_loc.at[cntr, 1].set(scale_loc[cntr][1])
                         self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
                     elif len(scale_loc[cntr]) != 2:
@@ -92,7 +89,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                 elif item == 'truncnorm':
                     self.dists.append('truncnorm')
                     self.dist_code = self.dist_code.at[cntr].set(2)
-                    if len(scale_loc[cntr])==2 and scale_loc[cntr][1] > 0:
+                    if len(scale_loc[cntr]) == 2 and scale_loc[cntr][1] > 0:
                         self.scale_loc = self.scale_loc.at[cntr, 1].set(scale_loc[cntr][1])
                         self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
                     elif len(scale_loc[cntr]) != 2:
@@ -105,12 +102,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     self.dists.append('triang')
                     self.dist_code = self.dist_code.at[cntr].set(3)
 
-                if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (scale_loc[cntr][0] < self.bounds[cntr, 1]):
+                if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (
+                        scale_loc[cntr][0] < self.bounds[cntr, 1]):
                     self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
-
-
-
-
 
             self.dists = dists
         elif dists is None:
