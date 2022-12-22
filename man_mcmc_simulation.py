@@ -86,7 +86,7 @@ from SALib.sample.fast_sampler import sample
 problem = {
     'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6' ],
     'num_vars': 6,
-    'bounds': [[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]],
+    'bounds': [[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 4.5], [3, 4.5], [3, 0.5]],
     'groups': ['G1', 'G2', 'G1', 'G1', 'G1', 'G1'],
     'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
 }

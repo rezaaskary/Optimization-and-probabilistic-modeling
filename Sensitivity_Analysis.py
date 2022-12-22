@@ -11,21 +11,26 @@ problem = {
     'dists': ['unif', 'lognorm', 'triang']
 }
 
-class DistanceNormilizer:
-    # def __init__(self):
 
-    def _uniform_(self, parameter : jnp.ndarray = None, lb: jnp.ndarray = None, ub: jnp.ndarray = None):
-        return
+class DistanceNormilizer:
+    def __init__(self, dists: list = None):
+        self.ditance_list = jnp.zeros(shape=(6,),dtype=object)
+
+
+    def _uniform_(self, parameter: jnp.ndarray = None, lb: jnp.ndarray = None, ub: jnp.ndarray = None):
+        return parameter * (ub - lb) + lb
+
     def _triangle_(self):
         return
+
     def _norm_(self):
         return
+
     def _truncnorm_(self):
         return
+
     def _lognorm_(self):
         return
-
-
 
 
 class FourierAmplitudeSensitivityTest(DistanceNormilizer):
@@ -94,9 +99,6 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         if self.n <= 4 * terms ** 2:
             raise Exception('Sample size n > 4terms^2 is required!')
 
-
-
-
         self.omega = jnp.zeros([self.num_vars])
         self.omega2 = self.omega.copy()
         self.omega = self.omega.at[0].set(jnp.floor((self.n - 1) / (2 * self.terms)))
@@ -110,6 +112,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         self.idx = jnp.arange(start=1, stop=self.num_vars, dtype=jnp.int32)
         self.phi_rng_uniform = random.uniform(key=self.key, shape=(self.num_vars,), dtype=jnp.float32, maxval=1.0,
                                               minval=0)
+
     def solve(self):
 
         def _phase_shift_inner(j: int, values_2: tuple) -> tuple:
