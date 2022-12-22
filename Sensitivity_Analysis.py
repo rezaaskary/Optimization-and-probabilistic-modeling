@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 from jax import lax, vmap, jit, random, scipy
-
+from tensorflow_probability.substrates.jax import distributions
 bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
 
 problem = {
@@ -27,15 +27,16 @@ class DistanceNormilizer:
                            bounds[1] - ((bounds[1] - loc_std[0]) ** 2 - (samples * (bounds[1] - bounds[0]) *
                                                                          (bounds[1] - loc_std[0]) -
                                                                          (bounds[1] - loc_std[0]) * (
-                                                                                     loc_std[0] - bounds[0]))) ** 0.5)
+                                                                                 loc_std[0] - bounds[0]))) ** 0.5)
         return jnp.clip(a=normed, a_min=bounds[0], a_max=bounds[1])
 
     def _norm_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
-        return scipy.stats.norm.ppf(q=samples,loc=loc_std[0], scale=loc_std[1])
+        return scipy.stats.norm.ppf(q=samples, loc=loc_std[0], scale=loc_std[1])
 
     # (params[:, i], loc=b1, scale=b2)
-    def _truncnorm_(self, samples: jnp.ndarray = None, parameters: list = None):
-        return
+    def _truncnorm_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
+        return distributions.TruncatedNormal(loc=mu,scale=sigma,low=lower,high=upper).quantile(samples)
+
 
     def _lognorm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
