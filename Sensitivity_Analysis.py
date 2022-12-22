@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 from jax import lax, vmap, jit, random, scipy
 from tensorflow_probability.substrates.jax import distributions
+
 bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
 
 problem = {
@@ -35,8 +36,8 @@ class DistanceNormilizer:
 
     # (params[:, i], loc=b1, scale=b2)
     def _truncnorm_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
-        return distributions.TruncatedNormal(loc=mu,scale=sigma,low=lower,high=upper).quantile(samples)
-
+        return distributions.TruncatedNormal(loc=loc_std[0], scale=loc_std[1], low=bounds[0], high=bounds[1]).quantile(
+            samples)
 
     def _lognorm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
