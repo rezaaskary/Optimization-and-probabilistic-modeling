@@ -48,6 +48,10 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                  terms: int = None,
                  seed: int = None):
 
+        if isinstance(scale_loc, list):
+        else:
+
+
         if isinstance(num_vars, int):
             self.num_vars = num_vars
         else:
@@ -67,10 +71,18 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
             for item, cntr in enumerate(dists):
                 if item == 'norm':
                     self.dists.append('norm')
-                    self.dist_code = self.scale_loc.at[cntr].set(1)
+                    self.dist_code = self.dist_code.at[cntr].set(1)
+
+                    if len(scale_loc[cntr])==2 and scale_loc[cntr][1] > 0:
+                        self.scale_loc = self.scale_loc.at[cntr, 1].set(scale_loc[cntr][1])
+                        self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
+                    elif len(scale_loc[cntr])!=2:
+
 
                 elif item == 'truncnorm':
                     self.dists.append('truncnorm')
+                    self.dist_code = self.dist_code.at[cntr].set(2)
+                elif item == 'triang'
 
 
 
