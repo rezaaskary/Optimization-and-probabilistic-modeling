@@ -102,15 +102,15 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     self.dists.append('triang')
                     self.dist_code = self.dist_code.at[cntr].set(3)
 
-                if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (
-                        scale_loc[cntr][0] < self.bounds[cntr, 1]):
-                    self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
-                elif len(scale_loc[cntr]) != 1:
-                    raise Exception(f'The value of peak for triangular distribution in {cntr}th parameters is not \n'
-                                    f'specified.')
-                else:
-                    raise ValueError(f'The value of lower/upper basis and the location of peak in the triangular\n'
-                                     f' distribution for the {cntr}th parameter is not specified correctly')
+                    if len(scale_loc[cntr]) == 1 and (scale_loc[cntr][0] > self.bounds[cntr, 0]) and (
+                            scale_loc[cntr][0] < self.bounds[cntr, 1]):
+                        self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
+                    elif len(scale_loc[cntr]) != 1:
+                        raise Exception(f'The value of peak for triangular distribution in {cntr}th parameters is not \n'
+                                        f'specified.')
+                    else:
+                        raise ValueError(f'The value of lower/upper basis and the location of peak in the triangular\n'
+                                         f' distribution for the {cntr}th parameter is not specified correctly')
 
 
 
