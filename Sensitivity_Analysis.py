@@ -38,8 +38,7 @@ class DistanceNormilizer:
 class FourierAmplitudeSensitivityTest(DistanceNormilizer):
     def __init__(self,
                  num_vars: int = None,
-                 lb: jnp.ndarray = None,
-                 ub: jnp.ndarray = None,
+                 bounds: jnp.ndarray = None,
                  names: list = None,
                  dists: list = None,
                  groups: list = None,
@@ -52,19 +51,19 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         else:
             raise Exception('The number of variable is not entered')
 
-        if isinstance(lb, jnp.ndarray):
-            self.lb = jnp.array(lb, dtype=jnp.float32).reshape((-1, 1))
+        if isinstance(bounds, jnp.ndarray):
+            self.bounds = jnp.array(bounds, dtype=jnp.float32).reshape((-1, 2))
         else:
-            raise Exception('The values for the lower bound of parameters are not specified correctly')
+            raise Exception('The values for the lower/upper bounds of parameters are not specified correctly')
 
-        if isinstance(ub, jnp.ndarray):
-            self.ub = jnp.array(ub, dtype=jnp.float32).reshape((-1, 1))
-        else:
-            raise Exception('The values for the upper bound of parameters are not specified correctly')
-
-        if jnp.any(self.lb >= self.ub):
+        if jnp.any(self.bounds[:, 0] >= self.bounds[:, 1]):
             raise ValueError('The upper and lower bounds are poorly defined. The values of lower bound cannot\n'
                              'be greater than upper bound.')
+
+        if self.num_vars != self.bounds.shape[0]:
+            raise Exception('The number of variables is not consistent with the lower/upper bounds')
+
+
 
         self.num_vars = self.lb.shape[0]
 
