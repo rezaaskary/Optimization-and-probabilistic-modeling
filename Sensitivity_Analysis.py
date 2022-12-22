@@ -14,22 +14,22 @@ problem = {
 
 class DistanceNormilizer:
     def __init__(self, dists: list = None):
-        self.ditance_list = jnp.zeros(shape=(6,),dtype=object)
+        self.ditance_list = jnp.zeros(shape=(6,), dtype=object)
+    def _uniform_(self, samples: jnp.ndarray = None, parameters: list = None):
+        if parameters[1] <= parameters[0]:
+            raise ValueError('The value of lower bound cannot be higher than the value of upper bound! (uniform dist)')
+        return samples * (parameters[1] - parameters[0]) + parameters[0]
 
-
-    def _uniform_(self, parameter: jnp.ndarray = None, lb: jnp.ndarray = None, ub: jnp.ndarray = None):
-        return parameter * (ub - lb) + lb
-
-    def _triangle_(self):
+    def _triangle_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
 
-    def _norm_(self):
+    def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
 
-    def _truncnorm_(self):
+    def _truncnorm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
 
-    def _lognorm_(self):
+    def _lognorm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
 
 
