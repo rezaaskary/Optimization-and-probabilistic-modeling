@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import lax, vmap, jit, random
+from jax import lax, vmap, jit, random, scipy
 
 bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
 
@@ -21,7 +21,7 @@ class DistanceNormilizer:
 
     def _triangle_(self, samples: jnp.ndarray = None, parameters: list = None):
 
-        return
+        return scipy.stats.
 
     def _norm_(self, samples: jnp.ndarray = None, parameters: list = None):
         return
