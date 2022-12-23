@@ -72,7 +72,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         else:
             raise Exception('The values for the lower/upper bounds of parameters are not specified correctly')
 
-        if jnp.any(self.bounds[:, 0] >= self.bounds[:, 0]):
+        if jnp.any(self.bounds[:, 0] >= self.bounds[:, 1]):
             raise ValueError(f'The values of lower bound cannot be larger than the upper bounds.')
 
         self.scale_loc = jnp.zeros(shape=(self.num_vars, 2), dtype=jnp.float32)
