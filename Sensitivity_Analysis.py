@@ -226,12 +226,12 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
 problem = {
     'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6'],
     'num_vars': 6,
-    'bounds': jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5], [3, 0.5], [3, 0.5], [3, 0.5]]),
+    'bounds': jnp.array([[-jnp.pi, jnp.pi], [-.1, 0.2], [0.5, 0.75], [0.5, 0.75], [0.5, 0.75], [0.5, 0.75]]),
     'groups': ['G1', 'G2', 'G1', 'G1', 'G1', 'G1'],
     'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
 }
 
-scale_loc = [[], [0.5, 1.8], [0.8], [0.8], [0.8], [0.8]]
+scale_loc = [[], [0.5, 1.8], [0.6], [0.6], [0.6], [0.6]]
 MM = FourierAmplitudeSensitivityTest(n=2048, terms=5, seed=3, num_vars=6, bounds=problem['bounds'],
                                      dists=problem['dists'], groups=problem['groups'], names=problem['names'],
                                      scale_loc=scale_loc)
