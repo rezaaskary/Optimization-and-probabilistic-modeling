@@ -93,6 +93,19 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                         raise ValueError(f'The value of standard deviation entered for {cntr}th parameter\n'
                                          f'is a negative value.')
 
+                elif item == 'lognorm':
+                    self.dists.append('lognorm')
+                    self.dist_code = self.dist_code.at[cntr].set(4)
+                    if len(scale_loc[cntr]) == 2 and scale_loc[cntr][1] > 0:
+                        self.scale_loc = self.scale_loc.at[cntr, 1].set(scale_loc[cntr][1])
+                        self.scale_loc = self.scale_loc.at[cntr, 0].set(scale_loc[cntr][0])
+                    elif len(scale_loc[cntr]) != 2:
+                        raise Exception(f'Either standard deviation or mean value for {cntr}th parameter\n'
+                                        f'is not specified')
+                    else:
+                        raise ValueError(f'The value of standard deviation entered for {cntr}th parameter\n'
+                                         f'is a negative value.')
+
                 elif item == 'truncnorm':
                     self.dists.append('truncnorm')
                     self.dist_code = self.dist_code.at[cntr].set(2)
