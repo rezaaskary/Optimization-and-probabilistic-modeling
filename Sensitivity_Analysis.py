@@ -2,20 +2,34 @@ import jax.numpy as jnp
 from jax import lax, vmap, jit, random, scipy
 from tensorflow_probability.substrates.jax import distributions
 
-bounds = jnp.array([[-jnp.pi, jnp.pi], [1.0, 0.2], [3, 0.5]], dtype=jnp.float32)
-
-problem = {
-    'names': ['x1', 'x2', 'x3'],
-    'num_vars': 3,
-    'bounds': bounds,
-    'groups': ['G1', 'G2', 'G1'],
-    'dists': ['unif', 'lognorm', 'triang']
-}
-
 
 class DistanceNormilizer:
     def __init__(self, dists: list = None):
         self.ditance_list = jnp.zeros(shape=(6,), dtype=int)
+
+        def _main_fcn_normalizer(index: int, normalization_parameters: tuple) -> tuple:
+            W = jnp.where(self.dist_code[index] == 4,
+                          self._lognorm_(samples=self.x[:, index], bounds=self.bounds[index, :],
+                                         loc_std=self.scale_loc[index, :]),
+            jnp.where(self.dist_code[index] == 3, self._triangle_(samples=self.x[:, index],
+                                                                  bounds=self.bounds[index, :],
+                                                                  loc_std=self.scale_loc[index, :]),
+            jnp.where(self.dist_code[index] == 2, self._truncnorm_(samples=self.x[:, index],
+                                                                   bounds=self.bounds[index, :],
+                                                                   loc_std=self.scale_loc[index, :]),
+            jnp.where(self.dist_code[index] == 1, self._norm_(samples=self.x[:, index],
+                                                              bounds=self.bounds[index, :],
+                                                              loc_std=self.scale_loc[index, :]),
+                      self._norm_(samples=self.x[:, index],
+                                  bounds=self.bounds[index, :],
+                                  loc_std=self.scale_loc[index, :])))))
+
+            return
+
+        # self._main_fcn_normalizer = _main_fcn_normalizer
+
+    def apply_normalization(self):
+        return 1
 
     def _uniform_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
         return samples * (bounds[1] - bounds[0]) + bounds[0]
@@ -219,6 +233,8 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
 
         self.omega2, idx_new, self.x = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
                                                      init_val=(self.omega2, self.idx, self.x))
+
+        DistanceNormilizer(dists=self.dist_code).apply_normalization(self)
 
         return self.x
 
