@@ -72,6 +72,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         else:
             raise Exception('The values for the lower/upper bounds of parameters are not specified correctly')
 
+        if jnp.any(self.bounds[:, 0] >= self.bounds[:, 0]):
+            raise ValueError(f'The values of lower bound cannot be larger than the upper bounds.')
+
         self.scale_loc = jnp.zeros(shape=(self.num_vars, 2), dtype=jnp.float32)
         self.scale_loc = self.scale_loc.at[:, :].set(jnp.nan)
         self.dist_code = jnp.zeros(shape=(self.num_vars,), dtype=int)
@@ -136,7 +139,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     else:
                         raise ValueError(f'The value of lower/upper basis and the location of peak in the triangular\n'
                                          f' distribution for the {cntr}th parameter is not specified correctly')
-                elif item=='unif':
+                elif item == 'unif':
                     self.dists.append('unif')
                     self.dist_code = self.dist_code.at[cntr].set(0)
                 else:
