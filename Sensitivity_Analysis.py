@@ -15,7 +15,7 @@ problem = {
 
 class DistanceNormilizer:
     def __init__(self, dists: list = None):
-        self.ditance_list = jnp.zeros(shape=(6,), dtype=object)
+        self.ditance_list = jnp.zeros(shape=(6,), dtype=int)
 
     def _uniform_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
         return samples * (bounds[1] - bounds[0]) + bounds[0]
@@ -196,6 +196,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
 
         self.omega2, idx_new, self.x = lax.fori_loop(lower=0, upper=self.num_vars, body_fun=_phase_shift,
                                                      init_val=(self.omega2, self.idx, self.x))
+
         return self.x
 
 
@@ -207,7 +208,10 @@ problem = {
     'dists': ['unif', 'lognorm', 'triang', 'triang', 'triang', 'triang']
 }
 
-MM = FourierAmplitudeSensitivityTest(problem=problem, n=2048, terms=5, seed=3)
+scale_loc = [[], [0.5, 1.8], [0.8], [0.8], [0.8], [0.8]]
+MM = FourierAmplitudeSensitivityTest(n=2048, terms=5, seed=3, num_vars=6, bounds=problem['bounds'],
+                                     dists=problem['dists'], groups=problem['groups'], names=problem['names'],
+                                     scale_loc=scale_loc)
 RD = MM.solve()
 import numpy as np
 
