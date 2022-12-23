@@ -39,8 +39,8 @@ class DistanceNormilizer:
         return distributions.TruncatedNormal(loc=loc_std[0], scale=loc_std[1], low=bounds[0], high=bounds[1]).quantile(
             samples)
 
-    def _lognorm_(self, samples: jnp.ndarray = None, parameters: list = None):
-        return
+    def _lognorm_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
+        return jnp.exp(scipy.stats.norm.ppf(q=samples, loc=loc_std[0], scale=loc_std[1]))
 
 
 class FourierAmplitudeSensitivityTest(DistanceNormilizer):
