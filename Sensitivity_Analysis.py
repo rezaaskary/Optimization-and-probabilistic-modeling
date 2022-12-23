@@ -139,6 +139,10 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                 else:
                     self.dists.append('unif')
                     self.dist_code = self.dist_code.at[cntr].set(0)
+                    print(f'------------------------------------------------------------------------------\n'
+                          f'The distribution function of the {cntr}th variable is not specified correctly.\n'
+                          f'Therefore, uniform distribution is assigned to the {cntr}th variable.\n'
+                          f'------------------------------------------------------------------------------')
 
         if self.num_vars != self.bounds.shape[0]:
             raise Exception('The number of variables is not consistent with the lower/upper bounds')
