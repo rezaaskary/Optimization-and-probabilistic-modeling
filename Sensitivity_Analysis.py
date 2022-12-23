@@ -78,7 +78,7 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         self.dists = []
 
         if isinstance(dists, list):
-            for item, cntr in enumerate(dists):
+            for cntr, item in enumerate(dists):
                 if item == 'norm':
                     self.dists.append('norm')
                     self.dist_code = self.dist_code.at[cntr].set(1)
@@ -136,6 +136,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                     else:
                         raise ValueError(f'The value of lower/upper basis and the location of peak in the triangular\n'
                                          f' distribution for the {cntr}th parameter is not specified correctly')
+                elif item=='unif':
+                    self.dists.append('unif')
+                    self.dist_code = self.dist_code.at[cntr].set(0)
                 else:
                     self.dists.append('unif')
                     self.dist_code = self.dist_code.at[cntr].set(0)
