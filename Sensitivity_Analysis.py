@@ -31,7 +31,9 @@ class DistanceNormilizer:
     def apply_normalization(self):
         lax.fori_loop(lower=0,
                       upper=self.num_vars,
-                      body_fun=self._main_fcn_normalizer
+                      body_fun=self._main_fcn_normalizer,
+                      init_val=(jnp.zeros(jnp.zeros([self.n * self.num_vars, self.num_vars], dtype=jnp.float32)))
+
                       )
 
         return 1
@@ -240,6 +242,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                                                      init_val=(self.omega2, self.idx, self.x))
 
         DistanceNormilizer(dists=self.dist_code).apply_normalization(self)
+        
+
+        
 
         return self.x
 
