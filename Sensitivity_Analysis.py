@@ -8,21 +8,22 @@ class DistanceNormilizer:
         self.ditance_list = jnp.zeros(shape=(6,), dtype=int)
 
         def _main_fcn_normalizer(index: int, normalization_parameters: tuple) -> tuple:
-            W = jnp.where(self.dist_code[index] == 4,
-                          self._lognorm_(samples=self.x[:, index], bounds=self.bounds[index, :],
-                                         loc_std=self.scale_loc[index, :]),
-            jnp.where(self.dist_code[index] == 3, self._triangle_(samples=self.x[:, index],
+            normalized_x = normalization_parameters
+            normalized_x = normalized_x.at[:, index].set(jnp.where(self.dist_code[index] == 4,
+                                        self._lognorm_(samples=self.x[:, index], bounds=self.bounds[index, :],
+                                                                    loc_std=self.scale_loc[index, :]),
+                jnp.where(self.dist_code[index] == 3, self._triangle_(samples=self.x[:, index],
+                                                                      bounds=self.bounds[index, :],
+                                                                      loc_std=self.scale_loc[index, :]),
+                jnp.where(self.dist_code[index] == 2, self._truncnorm_(samples=self.x[:, index],
+                                                                       bounds=self.bounds[index, :],
+                                                                       loc_std=self.scale_loc[index, :]),
+                jnp.where(self.dist_code[index] == 1, self._norm_(samples=self.x[:, index],
                                                                   bounds=self.bounds[index, :],
                                                                   loc_std=self.scale_loc[index, :]),
-            jnp.where(self.dist_code[index] == 2, self._truncnorm_(samples=self.x[:, index],
-                                                                   bounds=self.bounds[index, :],
-                                                                   loc_std=self.scale_loc[index, :]),
-            jnp.where(self.dist_code[index] == 1, self._norm_(samples=self.x[:, index],
-                                                              bounds=self.bounds[index, :],
-                                                              loc_std=self.scale_loc[index, :]),
-                      self._norm_(samples=self.x[:, index],
+                          self._norm_(samples=self.x[:, index],
                                   bounds=self.bounds[index, :],
-                                  loc_std=self.scale_loc[index, :])))))
+                                  loc_std=self.scale_loc[index, :]))))))
 
             return
 
@@ -242,9 +243,9 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
                                                      init_val=(self.omega2, self.idx, self.x))
 
         DistanceNormilizer(dists=self.dist_code).apply_normalization(self)
-        
 
-        
+
+
 
         return self.x
 
