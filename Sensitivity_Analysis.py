@@ -7,7 +7,7 @@ class DistanceNormilizer:
     def __init__(self, dists: list = None):
         self.ditance_list = jnp.zeros(shape=(6,), dtype=int)
 
-        def _main_fcn_normalizer(index: int, normalization_parameters: tuple) -> tuple:
+        def _main_fcn_normalizer(index: int, normalization_parameters: tuple) -> jnp.ndarray:
             normalized_x = normalization_parameters
             normalized_x = normalized_x.at[:, index].set(jnp.where(self.dist_code[index] == 4,
                                         self._lognorm_(samples=self.x[:, index], bounds=self.bounds[index, :],
@@ -24,8 +24,7 @@ class DistanceNormilizer:
                           self._norm_(samples=self.x[:, index],
                                   bounds=self.bounds[index, :],
                                   loc_std=self.scale_loc[index, :]))))))
-
-            return
+            return normalized_x
 
         self._main_fcn_normalizer = _main_fcn_normalizer
 
