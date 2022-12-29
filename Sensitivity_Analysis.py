@@ -249,6 +249,29 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
         return self.x
 
 
+class ExtendedFourierAmplitudeSensitivityTest:
+    def __init__(self,
+                 num_vars: int = None,
+                 bounds: jnp.ndarray = None,
+                 scale_loc: list = None,
+                 names: list = None,
+                 dists: list = None,
+                 groups: list = None,
+                 n: int = None,
+                 seed: int = None):
+
+
+
+
+
+
+
+
+
+
+
+
+
 problem = {
     'names': ['x1', 'x2', 'x3', 'x4', 'x5', 'x6'],
     'num_vars': 6,
