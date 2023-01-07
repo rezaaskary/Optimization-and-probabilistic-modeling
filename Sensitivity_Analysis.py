@@ -259,6 +259,7 @@ class ExtendedFourierAmplitudeSensitivityTest:
                  groups: list = None,
                  n: int = None,
                  seed: int = None):
+    self.num_vars=1
 
 
 
