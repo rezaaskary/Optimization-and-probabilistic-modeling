@@ -29,14 +29,14 @@ class DistanceNormilizer:
         self._main_fcn_normalizer = _main_fcn_normalizer
 
     def apply_normalization(self):
-        lax.fori_loop(lower=0,
+        normed_samples = lax.fori_loop(lower=0,
                       upper=self.num_vars,
                       body_fun=self._main_fcn_normalizer,
                       init_val=(jnp.zeros(jnp.zeros([self.n * self.num_vars, self.num_vars], dtype=jnp.float32)))
 
                       )
 
-        return 1
+        return normed_samples
 
     def _uniform_(self, samples: jnp.ndarray = None, bounds: jnp.ndarray = None, loc_std: jnp.ndarray = None):
         return samples * (bounds[1] - bounds[0]) + bounds[0]
