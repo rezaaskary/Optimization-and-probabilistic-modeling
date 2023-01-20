@@ -30,3 +30,5 @@
 [3] Boyd, Stephen, et al. "Distributed optimization and statistical learning via the alternating direction method of multipliers." Foundations and Trends® in Machine learning 3.1 (2011): 1-122.
 
 [4] Foreman-Mackey, Daniel, et al. "emcee: the MCMC hammer." Publications of the Astronomical Society of the Pacific 125.925 (2013): 306.
+
+[5] Bradbury, James, et al. "JAX: composable transformations of Python+ NumPy programs." Version 0.2 5 (2018): 14-24.
