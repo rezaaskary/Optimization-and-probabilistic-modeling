@@ -574,3 +574,46 @@ class HMC:
         super(HMC, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
                                   x_init=x_init, activate_jit=activate_jit, chains=chains,
                                   progress_bar=progress_bar, random_seed=random_seed, move=move)
+
+
+
+
+
+class NUTS:
+    def __init__(self,log_prop_fcn:callable = None,
+                 grad_log_prob: callable = None,
+                 iterations: int = None,
+                 burnin: int = None,
+                 x_init: jnp.ndarray = None,
+                 activate_jit: bool = False,
+                 chains: int = 1,
+                 progress_bar: bool = True,
+                 random_seed: int = 1,
+                 move: str = 'single_stretch'):
+
+        def nuts(log_prob, grad_log_prob, x0, stepsize, max_depth=10):
+
+            x = x0.copy()
+            samples = [x0]
+            log_prob_x = log_prob(x)
+            grad_log_prob_x = grad_log_prob(x)
+            eps = np.random.normal(size=x0.shape)
+            p = stepsize * eps
+            rho = 1
+            for i in range(max_depth):
+                x_prime = x + p
+                log_prob_x_prime = log_prob(x_prime)
+                grad_log_prob_x_prime = grad_log_prob(x_prime)
+                alpha = np.min([1, np.exp(log_prob_x_prime - log_prob_x - 0.5 * np.dot(p, grad_log_prob_x))])
+                u = np.random.rand()
+                if u < alpha:
+                    samples.append(x_prime)
+                    x = x_prime
+                    log_prob_x = log_prob_x_prime
+                    grad_log_prob_x = grad_log_prob_x_prime
+                else:
+                    p = -p
+                rho = rho * (1 - alpha)
+                if rho < np.random.rand():
+                    break
+            return samples
