@@ -590,9 +590,15 @@ class NUTS(ParameterProposalInitialization):
                  max_depth: int = None,
                  move: str = 'single_stretch'):
 
-        super(NUTS, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
-                                   x_init=x_init, activate_jit=activate_jit, chains=chains,
-                                   progress_bar=progress_bar, random_seed=random_seed, move=move)
+        super(NUTS, self).__init__(log_prop_fcn=log_prop_fcn,
+                                   iterations=iterations,
+                                   burnin=burnin,
+                                   x_init=x_init,
+                                   activate_jit=activate_jit,
+                                   chains=chains,
+                                   progress_bar=progress_bar,
+                                   random_seed=random_seed,
+                                   move=move)
 
         x = x_init.copy()
         samples = [x_init]
