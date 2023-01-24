@@ -3,7 +3,7 @@ from jax import vmap, jit, grad, random, lax
 import scipy as sc
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 class ModelParallelizer:
     def __init__(self, model: callable = None, has_input: bool = True, chains: int = None, n_obs: int = None,
@@ -586,20 +586,24 @@ class NUTS(ParameterProposalInitialization):
                  chains: int = 1,
                  progress_bar: bool = True,
                  random_seed: int = 1,
+                 step_size: float = None,
+                 max_depth: int = None,
                  move: str = 'single_stretch'):
+
         super(NUTS, self).__init__(log_prop_fcn=log_prop_fcn, iterations=iterations, burnin=burnin,
-                                  x_init=x_init, activate_jit=activate_jit, chains=chains,
-                                  progress_bar=progress_bar, random_seed=random_seed, move=move)
-        x = x0.copy()
-        samples = [x0]
-        log_prob_x = log_prob(x)
+                                   x_init=x_init, activate_jit=activate_jit, chains=chains,
+                                   progress_bar=progress_bar, random_seed=random_seed, move=move)
+
+        x = x_init.copy()
+        samples = [x_init]
+        log_prob_x = log_prop_fcn(x)
         grad_log_prob_x = grad_log_prob(x)
-        eps = np.random.normal(size=x0.shape)
-        p = stepsize * eps
+        eps = np.random.normal(size=x_init.shape)
+        p = step_size * eps
         rho = 1
         for i in range(max_depth):
             x_prime = x + p
-            log_prob_x_prime = log_prob(x_prime)
+            log_prob_x_prime = log_prop_fcn(x_prime)
             grad_log_prob_x_prime = grad_log_prob(x_prime)
             alpha = np.min([1, np.exp(log_prob_x_prime - log_prob_x - 0.5 * np.dot(p, grad_log_prob_x))])
             u = np.random.rand()
