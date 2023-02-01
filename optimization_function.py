@@ -2,10 +2,11 @@ import numpy as np
 import scipy as sc
 from tqdm import tqdm
 
+
 class Optimizer:
-    def __init__(self, algorithm: str='SGD',alpha: float = 0.2,\
-                 epsilon: float = None, beta1 :float = None, type_of_optimization :str ='min',\
-                 beta2 :float = None, dimention: int=1):
+    def __init__(self, algorithm: str = 'SGD', alpha: float = 0.2, \
+                 epsilon: float = None, beta1: float = None, type_of_optimization: str = 'min', \
+                 beta2: float = None, dimention: int = 1):
         self.epsilon_adam = epsilon
         self.beta1_adam = beta1
         self.beta2_adam = beta2
@@ -13,10 +14,10 @@ class Optimizer:
         self.alpha = alpha
         self.dimention = dimention
         self.bias_vector = np.abs(np.random.randn(self.dimention, 1))
-        self.m_adam =  np.abs(np.random.randn(self.dimention, 1))
-        self.m_hat_adam =  np.abs(np.random.randn(self.dimention, 1))
-        self.v_adam =  np.abs(np.random.randn(self.dimention, 1))
-        self.v_hat_adam =  np.abs(np.random.randn(self.dimention, 1))
+        self.m_adam = np.abs(np.random.randn(self.dimention, 1))
+        self.m_hat_adam = np.abs(np.random.randn(self.dimention, 1))
+        self.v_adam = np.abs(np.random.randn(self.dimention, 1))
+        self.v_hat_adam = np.abs(np.random.randn(self.dimention, 1))
         if type_of_optimization == 'min':
             self.type_of_optimization = -1
         elif type_of_optimization == 'max':
@@ -37,46 +38,54 @@ class Optimizer:
         parameter = parameter + self.type_of_optimization * self.alpha * derivatives
         return parameter
 
-    def ADAM(self,parameter, derivatives, t):
+    def ADAM(self, parameter, derivatives, t):
         self.m_adam = self.beta1_adam * self.m_adam + (1 - self.beta1_adam) * derivatives
-        self.v_adam = self.beta2_adam * self.v_adam + (1 - self.beta2_adam) * derivatives**2
-        self.m_hat_adam = self.m_adam / (1 - self.beta1_adam**(t+1))
-        self.v_hat_adam = self.v_adam / (1 - self.beta2_adam**(t+1))
-        parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (np.sqrt(self.v_hat_adam ) + self.epsilon_adam)
+        self.v_adam = self.beta2_adam * self.v_adam + (1 - self.beta2_adam) * derivatives ** 2
+        self.m_hat_adam = self.m_adam / (1 - self.beta1_adam ** (t + 1))
+        self.v_hat_adam = self.v_adam / (1 - self.beta2_adam ** (t + 1))
+        parameter = parameter + self.type_of_optimization * self.alpha * self.m_hat_adam / (
+                    np.sqrt(self.v_hat_adam) + self.epsilon_adam)
         return parameter
 
-    def RMSprop(self,parameter, derivatives, t):
-        self.m_adam = self.beta1_adam * self.m_adam + (1 - self.beta1_adam) * derivatives**2
-        parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (np.sqrt(self.m_adam) + self.epsilon_adam)
+    def RMSprop(self, parameter, derivatives, t):
+        self.m_adam = self.beta1_adam * self.m_adam + (1 - self.beta1_adam) * derivatives ** 2
+        parameter = parameter + self.type_of_optimization * self.alpha * derivatives / (
+                    np.sqrt(self.m_adam) + self.epsilon_adam)
         return parameter
+
+
 ##================================================================================================
 ##================================================================================================
 ##================================================================================================
 
 class Convex_problems_dual_ascend():
-    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD', tolerance: float=1e-12):
+    def __init__(self, problem_type: int = 1, learning_rate: float = 0.05, algorithm: str = 'SGD',
+                 tolerance: float = 1e-12):
         self.tolerance = tolerance
         self.problem_type = problem_type
         self.old_opt = np.inf
         self.learning_rate = learning_rate
         self.algorithm = algorithm
+
     # =================================================================
     def loss_f(self):
         self.P = np.eye(self.n)
-        F = self.x.T @self.P @ self.x
-        dF_dx = (self.P + self.P.T)@ self.x
+        F = self.x.T @ self.P @ self.x
+        dF_dx = (self.P + self.P.T) @ self.x
         return F, dF_dx
-    #=======================================================================
+
+    # =======================================================================
     def linear_constraint(self):
         R = (self.A @ self.x - self.b)
         dR_dx = self.A.T
         aug = R.T @ R
         adug_dx = 2 * self.A.T @ R
         return R, dR_dx, aug, adug_dx
-    #============================================================
+
+    # ============================================================
     def lagrangian(self):
         self.opt, dF_dx = self.loss_f()
-        lin_cons, dR_dx,_,_ = self.linear_constraint()
+        lin_cons, dR_dx, _, _ = self.linear_constraint()
 
         L = self.opt + self.y.T @ lin_cons
         dL_dx = dF_dx + dR_dx @ self.y
@@ -89,17 +98,18 @@ class Convex_problems_dual_ascend():
         self.opt, dF_dx = self.loss_f()
         lin_cons, dR_dx, aug, adug_dx = self.linear_constraint()
 
-        L = self.opt + self.y.T @ lin_cons + (self.rho/2) * aug
+        L = self.opt + self.y.T @ lin_cons + (self.rho / 2) * aug
 
-        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho / 2) * adug_dx
         dL_dy = lin_cons
         return L.ravel(), dL_dx, dL_dy
-    #===========================================================================
-    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), tolerance: float=1e-12):
+
+    # ===========================================================================
+    def Dual_Ascent(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1), tolerance: float = 1e-12):
         self.tolerance = tolerance
-        m,n = A.shape       # m is the number of linear constraints
-        m2,n2 = b.shape
-        if m>n:
+        m, n = A.shape  # m is the number of linear constraints
+        m2, n2 = b.shape
+        if m > n:
             raise Exception('Overdetermined Problem!')
         if m != m2:
             raise Exception('The number of parameters and equation is not consistent!')
@@ -107,25 +117,25 @@ class Convex_problems_dual_ascend():
         if n2 != 1:
             raise Exception('Currently the algorithms is not suitable for multi-output problems!')
 
-        self.y = np.random.randn(m,1)
-        self.x =  np.random.randn(n,1)
+        self.y = np.random.randn(m, 1)
+        self.x = np.random.randn(n, 1)
         self.A = A
         self.b = b
         self.m = m
         self.n = n
         self.iterations = 20000
 
-        variable_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
-        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
+        variable_optimizer = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='min')
+        lagrange_optimizer = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='max')
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dy = self.lagrangian()
             L, dl_dx, dl_dy = self.augmented_lagrangian()
-            self.x = variable_optimizer.fit(self.x, dl_dx, itr//1000)
-            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+            self.x = variable_optimizer.fit(self.x, dl_dx, itr // 1000)
+            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr // 1000)
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
-            if tol<self.tolerance:
+            if tol < self.tolerance:
                 print('Optimum values acheived!')
                 break
 
@@ -135,7 +145,9 @@ class Convex_problems_dual_ascend():
         print(f'norm of constraint Error= :  {((self.A @ self.x - self.b) ** 2).sum()}')
         print(f'the value of loss function= :  {self.opt}')
         return self.x, self.opt
-#===============================================================================================
+
+
+# ===============================================================================================
 
 # if __name__=='__main__':
 #     A = np.random.rand(10,12)
@@ -145,24 +157,25 @@ class Convex_problems_dual_ascend():
 #     val
 
 
-
-#=================================================================================
-#=================================================================================
-#=================================================================================
+# =================================================================================
+# =================================================================================
+# =================================================================================
 class ADMM:
-    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
+    def __init__(self, problem_type: int = 1, learning_rate: float = 0.05, algorithm: str = 'SGD',
+                 tolerance: float = 1e-12, iterations: int = 20000):
         self.tolerance = tolerance
         self.problem_type = problem_type
         self.old_opt = np.inf
         self.learning_rate = learning_rate
         self.algorithm = algorithm
         self.iterations = iterations
+
     # =================================================================
     def loss_f(self):
         self.P1 = np.eye(self.n1)
         self.P2 = np.eye(self.n2)
 
-        F1 = self.x.T @self.P1 @ self.x
+        F1 = self.x.T @ self.P1 @ self.x
         F2 = self.z.T @ self.P2 @ self.z
 
         dF_dx = (self.P1 + self.P1.T) @ self.x
@@ -171,7 +184,8 @@ class ADMM:
         F = F1 + F2
 
         return F, dF_dx, dF_dz
-    #=======================================================================
+
+    # =======================================================================
     def linear_constraint(self):
 
         R = self.A @ self.x + self.B @ self.z - self.c
@@ -184,28 +198,30 @@ class ADMM:
         adug_dz = 2 * dR_dz @ R
 
         return R, aug, dR_dx, dR_dz, adug_dx, adug_dz
-    #============================================================
+
+    # ============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
         F, dF_dx, dF_dz = self.loss_f()
         R, aug, dR_dx, dR_dz, adug_dx, adug_dz = self.linear_constraint()
 
         Cons = self.y.T @ R
-        L = F + Cons + (self.rho/2) * aug
+        L = F + Cons + (self.rho / 2) * aug
 
-        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
-        dL_dz = dF_dz + dR_dz @ self.y + (self.rho/2) * adug_dz
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho / 2) * adug_dx
+        dL_dz = dF_dz + dR_dz @ self.y + (self.rho / 2) * adug_dz
         dL_dy = R
-        self.opt = F + (self.rho/2) * aug
+        self.opt = F + (self.rho / 2) * aug
         return L, dL_dx, dL_dz, dL_dy
-    #===========================================================================
+
+    # ===========================================================================
     def ADMM_dual_ascent(self, A: np.ndarray = np.eye(1), B: np.ndarray = np.eye(1), c: np.ndarray = np.eye(1)):
 
-        p1,n1 = A.shape
+        p1, n1 = A.shape
         p2, n2 = B.shape
-        p3,n3 = c.shape
+        p3, n3 = c.shape
 
-        if p1==p2==p3:
+        if p1 == p2 == p3:
             self.p = p1
         else:
             raise Exception('The matrices of linear constraint are not consistent!')
@@ -213,35 +229,35 @@ class ADMM:
         self.n1 = n1
         self.n2 = n2
 
-        self.y = np.random.randn(self.p,1)
-        self.x =  np.random.randn(n1,1)
+        self.y = np.random.randn(self.p, 1)
+        self.x = np.random.randn(n1, 1)
         self.z = np.random.randn(n2, 1)
 
         self.A = A
         self.B = B
         self.c = c
 
-        variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
-        variable_optimizer_z = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
-        lagrange_optimizer = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'max')
+        variable_optimizer_x = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='min')
+        variable_optimizer_z = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='min')
+        lagrange_optimizer = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='max')
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
 
-            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
+            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr // 1000)
             self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
-            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
+            self.y = lagrange_optimizer.fit(self.y, dl_dy, itr // 1000)
 
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
-            if tol<self.tolerance:
+            if tol < self.tolerance:
                 print('Optimum values acheived!')
                 break
 
         if itr == self.iterations - 1:
             print('Optimization terminated due to the maximum iteration!')
 
-        print(f'norm of constraint Error= :  {((self.A @ self.x +self.B @ self.z - self.c) ** 2).sum()}')
+        print(f'norm of constraint Error= :  {((self.A @ self.x + self.B @ self.z - self.c) ** 2).sum()}')
         print(f'the value of loss function= :  {self.opt}')
         return self.x, self.opt
 
@@ -255,28 +271,31 @@ class ADMM:
 #     val
 
 
-#=================================================================================
-#=================================================================================
-#=================================================================================
+# =================================================================================
+# =================================================================================
+# =================================================================================
 class Linear_quadratic_programming:
-    def __init__(self,problem_type: int=1, learning_rate:float = 0.05, algorithm:str='SGD',tolerance: float=1e-12, iterations:int = 20000):
+    def __init__(self, problem_type: int = 1, learning_rate: float = 0.05, algorithm: str = 'SGD',
+                 tolerance: float = 1e-12, iterations: int = 20000):
         self.tolerance = tolerance
         self.problem_type = problem_type
         self.old_opt = np.inf
         self.learning_rate = learning_rate
         self.algorithm = algorithm
         self.iterations = iterations
+
     # =================================================================
     def loss_f(self):
         self.P = np.eye(self.n)
         self.q = -0.1 * np.ones((self.n,))
         self.r = 5
 
-        F = (1/2) * self.x.T @self.P @ self.x + self.q.T @ self.x + self.r
-        dF_dx = (1/2) * (self.P + self.P.T) @ self.q
+        F = (1 / 2) * self.x.T @ self.P @ self.x + self.q.T @ self.x + self.r
+        dF_dx = (1 / 2) * (self.P + self.P.T) @ self.q
 
         return F, dF_dx
-    #=======================================================================
+
+    # =======================================================================
     def linear_constraint(self):
 
         R = self.A @ self.x - self.b
@@ -287,7 +306,8 @@ class Linear_quadratic_programming:
         adug_dx = 2 * dR_dx @ R
 
         return R, aug, dR_dx, adug_dx
-    #============================================================
+
+    # ============================================================
     def augmented_lagrangian(self):
         self.rho = 0.01
         F, dF_dx = self.loss_f()
@@ -297,12 +317,13 @@ class Linear_quadratic_programming:
         dL_dz = None
         dL_dy = None
 
-        dL_dx = dF_dx + dR_dx @ self.y + (self.rho/2) * adug_dx
+        dL_dx = dF_dx + dR_dx @ self.y + (self.rho / 2) * adug_dx
 
         dL_dy = R
-        self.opt = F + (self.rho/2) * aug
+        self.opt = F + (self.rho / 2) * aug
         return L, dL_dx, dL_dz, dL_dy
-    #===========================================================================
+
+    # ===========================================================================
     def LQR(self, A: np.ndarray = np.eye(1), b: np.ndarray = np.eye(1)):
         """
         The standard form quadratic program (QP) is
@@ -315,62 +336,58 @@ class Linear_quadratic_programming:
         m1, n = A.shape
         m2, n2 = b.shape
 
-
-        if m1==m2:
+        if m1 == m2:
             self.m = m1
         else:
             raise Exception('The matrices of linear constraint are not consistent!')
 
-        if n!=1:
+        if n != 1:
             raise Exception('Select a correct array b!')
         else:
             self.n = n
 
-
         if self.m > self.n:
             raise Exception('over specified optimization problem!')
 
-
-        self.z = np.random.randn(self.n,1)
-        self.x =  np.random.randn(self.n,1)
+        self.z = np.random.randn(self.n, 1)
+        self.x = np.random.randn(self.n, 1)
         self.u = np.random.randn(self.n, 1)
 
         self.A = A
         self.b = b
 
-        variable_optimizer_x = Optimizer(algorithm = self.algorithm, alpha = self.learning_rate, type_of_optimization = 'min')
+        variable_optimizer_x = Optimizer(algorithm=self.algorithm, alpha=self.learning_rate, type_of_optimization='min')
 
         for itr in tqdm(range(self.iterations)):
             L, dl_dx, dl_dz, dl_dy = self.augmented_lagrangian()
 
-            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr//1000)
+            self.x = variable_optimizer_x.fit(self.x, dl_dx, itr // 1000)
             # self.z = variable_optimizer_z.fit(self.z, dl_dz, itr // 1000)
             # self.y = lagrange_optimizer.fit(self.y, dl_dy, itr//1000)
 
             tol = np.abs(self.opt - self.old_opt)
             self.old_opt = self.opt
-            if tol<self.tolerance:
+            if tol < self.tolerance:
                 print('Optimum values acheived!')
                 break
 
         if itr == self.iterations - 1:
             print('Optimization terminated due to the maximum iteration!')
 
-        print(f'norm of constraint Error= :  {((self.A @ self.x +self.B @ self.z - self.c) ** 2).sum()}')
+        print(f'norm of constraint Error= :  {((self.A @ self.x + self.B @ self.z - self.c) ** 2).sum()}')
         print(f'the value of loss function= :  {self.opt}')
         return self.x, self.opt
 
 
-if __name__=='__main__':
-    n = 7       # the number of variables x
-    m = 3       # the number of equality constraints
-    p = 2       # the number of inequality
+if __name__ == '__main__':
+    n = 7  # the number of variables x
+    m = 3  # the number of equality constraints
+    p = 2  # the number of inequality
     d = 1
 
-
-    A = np.random.rand(10,12)
+    A = np.random.rand(10, 12)
     B = np.random.rand(10, 4)
-    c = np.random.rand(10,1)
-    D = Linear_quadratic_programming(problem_type = 1, learning_rate=0.05, algorithm='SGD')
-    val,opt = D.ADMM_dual_ascent(A=A,B=B, c=c)
+    c = np.random.rand(10, 1)
+    D = Linear_quadratic_programming(problem_type=1, learning_rate=0.05, algorithm='SGD')
+    val, opt = D.ADMM_dual_ascent(A=A, B=B, c=c)
     val
