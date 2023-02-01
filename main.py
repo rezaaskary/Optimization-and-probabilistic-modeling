@@ -1,7 +1,6 @@
-def main_fcn():
+
+def first_check():
     print('test_file')
 
-
-if __name__ == '__main__':
-    main_fcn()
+first_check()
 
