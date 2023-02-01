@@ -3,38 +3,54 @@ from jax import lax, vmap, jit, random, scipy
 from tensorflow_probability.substrates.jax import distributions
 
 
-class DistanceNormilizer:
+class DistanceNormalizer:
     def __init__(self, dists: list = None):
         self.ditance_list = jnp.zeros(shape=(6,), dtype=int)
 
         def _main_fcn_normalizer(index: int, normalization_parameters: tuple) -> jnp.ndarray:
             normalized_x = normalization_parameters
             normalized_x = normalized_x.at[:, index].set(jnp.where(self.dist_code[index] == 4,
-                                        self._lognorm_(samples=self.x[:, index], bounds=self.bounds[index, :],
-                                                                    loc_std=self.scale_loc[index, :]),
-                jnp.where(self.dist_code[index] == 3, self._triangle_(samples=self.x[:, index],
-                                                                      bounds=self.bounds[index, :],
-                                                                      loc_std=self.scale_loc[index, :]),
-                jnp.where(self.dist_code[index] == 2, self._truncnorm_(samples=self.x[:, index],
-                                                                       bounds=self.bounds[index, :],
-                                                                       loc_std=self.scale_loc[index, :]),
-                jnp.where(self.dist_code[index] == 1, self._norm_(samples=self.x[:, index],
-                                                                  bounds=self.bounds[index, :],
-                                                                  loc_std=self.scale_loc[index, :]),
-                          self._norm_(samples=self.x[:, index],
-                                  bounds=self.bounds[index, :],
-                                  loc_std=self.scale_loc[index, :]))))))
+                                                                   self._lognorm_(samples=self.x[:, index],
+                                                                                  bounds=self.bounds[index, :],
+                                                                                  loc_std=self.scale_loc[index, :]),
+                                                                   jnp.where(self.dist_code[index] == 3,
+                                                                             self._triangle_(samples=self.x[:, index],
+                                                                                             bounds=self.bounds[index,
+                                                                                                    :],
+                                                                                             loc_std=self.scale_loc[
+                                                                                                     index, :]),
+                                                                             jnp.where(self.dist_code[index] == 2,
+                                                                                       self._truncnorm_(
+                                                                                           samples=self.x[:, index],
+                                                                                           bounds=self.bounds[index, :],
+                                                                                           loc_std=self.scale_loc[index,
+                                                                                                   :]),
+                                                                                       jnp.where(
+                                                                                           self.dist_code[index] == 1,
+                                                                                           self._norm_(
+                                                                                               samples=self.x[:, index],
+                                                                                               bounds=self.bounds[index,
+                                                                                                      :],
+                                                                                               loc_std=self.scale_loc[
+                                                                                                       index, :]),
+                                                                                           self._norm_(
+                                                                                               samples=self.x[:, index],
+                                                                                               bounds=self.bounds[index,
+                                                                                                      :],
+                                                                                               loc_std=self.scale_loc[
+                                                                                                       index, :]))))))
             return normalized_x
 
         self._main_fcn_normalizer = _main_fcn_normalizer
 
     def apply_normalization(self):
         normed_samples = lax.fori_loop(lower=0,
-                      upper=self.num_vars,
-                      body_fun=self._main_fcn_normalizer,
-                      init_val=(jnp.zeros(jnp.zeros([self.n * self.num_vars, self.num_vars], dtype=jnp.float32)))
+                                       upper=self.num_vars,
+                                       body_fun=self._main_fcn_normalizer,
+                                       init_val=(jnp.zeros(
+                                           jnp.zeros([self.n * self.num_vars, self.num_vars], dtype=jnp.float32)))
 
-                      )
+                                       )
 
         return normed_samples
 
@@ -243,9 +259,6 @@ class FourierAmplitudeSensitivityTest(DistanceNormilizer):
 
         DistanceNormilizer(dists=self.dist_code).apply_normalization(self)
 
-
-
-
         return self.x
 
 
@@ -259,18 +272,7 @@ class ExtendedFourierAmplitudeSensitivityTest:
                  groups: list = None,
                  n: int = None,
                  seed: int = None):
-    self.num_vars=1
-
-
-
-
-
-
-
-
-
-
-
+        self.num_vars = 1
 
 
 problem = {
