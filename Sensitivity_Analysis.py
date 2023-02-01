@@ -19,19 +19,26 @@ class DistanceNormalizer:
                                                                                                     :],
                                                                                              loc_std=self.scale_loc[
                                                                                                      index, :]),
-                                                                   jnp.where(self.dist_code[index] == 2,
-                                                                             self._truncnorm_(
-                                                                             samples=self.x[:, index],
-                                                                             bounds=self.bounds[index, :],
-                                                                             loc_std=self.scale_loc[index, :]),
-                                                                   jnp.where(self.dist_code[index] == 1,
-                                                                       self._norm_(
-                                                                           samples=self.x[:, index],
-                                                                           bounds=self.bounds[index, :],
-                                                                           loc_std=self.scale_loc[index, :]),
-                                                                       self._norm_(samples=self.x[:, index],
-                                                                           bounds=self.bounds[index, :],
-                                                                           loc_std=self.scale_loc[index, :]))))))
+                                                                             jnp.where(self.dist_code[index] == 2,
+                                                                                       self._truncnorm_(
+                                                                                           samples=self.x[:, index],
+                                                                                           bounds=self.bounds[index, :],
+                                                                                           loc_std=self.scale_loc[index,
+                                                                                                   :]),
+                                                                                       jnp.where(
+                                                                                           self.dist_code[index] == 1,
+                                                                                           self._norm_(
+                                                                                               samples=self.x[:, index],
+                                                                                               bounds=self.bounds[index,
+                                                                                                      :],
+                                                                                               loc_std=self.scale_loc[
+                                                                                                       index, :]),
+                                                                                           self._norm_(
+                                                                                               samples=self.x[:, index],
+                                                                                               bounds=self.bounds[index,
+                                                                                                      :],
+                                                                                               loc_std=self.scale_loc[
+                                                                                                       index, :]))))))
             return normalized_x
 
         self._main_fcn_normalizer = _main_fcn_normalizer
