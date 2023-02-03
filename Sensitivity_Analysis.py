@@ -96,8 +96,20 @@ def checker(func: callable) -> tuple:
         else:
             raise Exception('The number of variable is not entered')
 
+        if isinstance(scale_loc, list):
+            if len(scale_loc) != num_vars:
+                raise Exception('The list of scale/location of parameters is not consistent with the number\n'
+                                'of parameters')
+        else:
+            raise Exception('The scale/location parameters should be entered in the format of a list.')
 
+        if isinstance(bounds, jnp.ndarray):
+            bounds = jnp.array(bounds, dtype=jnp.float32).reshape((-1, 2))
+        else:
+            raise Exception('The values for the lower/upper bounds of parameters are not specified correctly')
 
+        if jnp.any(bounds[:, 0] >= bounds[:, 1]):
+            raise ValueError(f'The values of lower bound cannot be larger than the upper bounds.')
 
         return func()
 
