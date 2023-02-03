@@ -80,7 +80,31 @@ class DistanceNormalizer:
         return jnp.exp(scipy.stats.norm.ppf(q=samples, loc=loc_std[0], scale=loc_std[1]))
 
 
-class FourierAmplitudeSensitivityTest(DistanceNormilizer):
+def checker(func: callable) -> tuple:
+    def inner_check_fcn(num_vars: int = None,
+                        bounds: jnp.ndarray = None,
+                        scale_loc: list = None,
+                        names: list = None,
+                        dists: list = None,
+                        groups: list = None,
+                        n: int = None,
+                        terms: int = None,
+                        seed: int = None):
+
+        if isinstance(num_vars, int):
+            pass
+        else:
+            raise Exception('The number of variable is not entered')
+
+
+
+
+        return func()
+
+    return inner_check_fcn
+
+
+class FourierAmplitudeSensitivityTest(DistanceNormalizer):
     def __init__(self,
                  num_vars: int = None,
                  bounds: jnp.ndarray = None,
