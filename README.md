@@ -22,7 +22,6 @@
 
 
 
-
 [1] Chib, Siddhartha, and Edward Greenberg. "Understanding the metropolis-hastings algorithm." The american statistician 49.4 (1995): 327-335.
 
 [2] Diwekar, Urmila M. Introduction to applied optimization. Vol. 22. Springer Nature, 2020.
