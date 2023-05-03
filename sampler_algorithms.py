@@ -5,6 +5,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class ModelParallelizer:
     def __init__(self, model: callable = None, has_input: bool = True, chains: int = None, n_obs: int = None,
                  activate_jit: bool = False):
@@ -481,21 +482,13 @@ class MCMCHammer(ParameterProposalInitialization):
         #     self.index = self.index.at[:, i].set(random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i),
         #                                                        replace=True, shape=(self.iterations,)))
         #
-        # n_split = 4
-        # self.n_split = n_split
-        # self.split_len = self.n_chains // self.n_split
-        # ordered_index = jnp.arange(self.n_split).astype(int)
-        # single_split = jnp.arange(start=0, step=1, stop=self.split_len)
-        # for i in range(self.n_split):
-        #     selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index, obj=i), replace=True,
-        #                                    shape=(self.iterations, 1))
-        #     # XX = random.permutation(key=self.key, x=selected_split * self.split_len + single_split, axis=1, independent=True)
-        #     self.index = self.index.at[:, i * self.split_len:(i + 1) * \
-        #                                                      self.split_len].set(random.permutation(key=self.key,
-        #                                                                                             x=selected_split * self.split_len + single_split,
-        #                                                                                             axis=1,
-        #                                                                                             independent=True))
-        #     self.key += 1
+        # n_split = 4 self.n_split = n_split self.split_len = self.n_chains // self.n_split ordered_index =
+        # jnp.arange(self.n_split).astype(int) single_split = jnp.arange(start=0, step=1, stop=self.split_len) for i
+        # in range(self.n_split): selected_split = random.choice(key=self.key, a=jnp.delete(arr=ordered_index,
+        # obj=i), replace=True, shape=(self.iterations, 1)) # XX = random.permutation(key=self.key, x=selected_split
+        # * self.split_len + single_split, axis=1, independent=True) self.index = self.index.at[:,
+        # i * self.split_len:(i + 1) * \ self.split_len].set(random.permutation(key=self.key, x=selected_split *
+        # self.split_len + single_split, axis=1, independent=True)) self.key += 1
 
         def alg_with_progress_bar(itr: int = None) -> None:
             # The function suited for using progress bar
