@@ -1,4 +1,11 @@
 FROM python:3.9
-MAINTAINER Mohammad Reza Askari <maskari@hawk.iit.edu>
-RUN pip install -r requirements.txt
-CMD ['python', '-m', 'unittest', '-s','Tests']
+MAINTAINER  Reza Askari <reza.askary99@gmail.com>
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "-m", "unittest", "-s", "Tests"]
